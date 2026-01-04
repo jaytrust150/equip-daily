@@ -65,19 +65,32 @@ function App() {
       <main>
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
-          {/* 📅 TOP NAVIGATION & DATE DISPLAY */}
-          <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
-            <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">
-              ← Prior Day
-            </button>
-            
-            <div style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50', minWidth: '180px' }}>
-              {displayDate}
+          {/* 📅 TOP NAVIGATION SECTION */}
+          <div style={{ marginBottom: '30px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+              <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">
+                ← Prior Day
+              </button>
+              
+              <div style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50', minWidth: '180px' }}>
+                {displayDate}
+              </div>
+              
+              <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">
+                Next Day →
+              </button>
             </div>
             
-            <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">
-              Next Day →
-            </button>
+            {/* 🎯 "Today" Button placed directly below the date */}
+            <div style={{ marginTop: '10px' }}>
+              <button 
+                onClick={() => setDayOffset(0)} 
+                className="nav-btn" 
+                style={{ backgroundColor: '#f0f0f0', color: '#333', fontSize: '0.9rem', padding: '5px 15px' }}
+              >
+                Today
+              </button>
+            </div>
           </div>
 
           <div 
@@ -97,7 +110,7 @@ function App() {
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
-          {/* 📅 BOTTOM NAVIGATION */}
+          {/* 📅 BOTTOM NAVIGATION (Keeping for easy access after reading) */}
           <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
             <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">
               ← Prior Day
