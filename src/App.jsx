@@ -13,7 +13,6 @@ function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   
   // Reflection States
-  const [showReflection, setShowReflection] = useState(false);
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false); // 🌟 Confirmation Trigger
   
@@ -27,6 +26,7 @@ function App() {
     "July", "August", "September", "October", "November", "December"
   ];
 
+  // 📖 Fetch Devotional based on Date
   useEffect(() => {
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + dayOffset);
@@ -43,8 +43,9 @@ function App() {
       })
       .then(text => {
         setDevotional(text);
-        setShowReflection(false); 
-        setHasShared(false); // Reset when day changes
+        // Reset everything for the new day
+        setHasShared(false); 
+        setReflection("");
       })
       .catch(() => {
         setDevotional(`
@@ -57,6 +58,7 @@ function App() {
       });
   }, [dayOffset]);
 
+  // 🔥 Save Reflection to Firebase & Show Confirmation
   const saveReflection = async () => {
     if (!reflection.trim()) return;
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
@@ -73,11 +75,12 @@ function App() {
         location: "Sebastian"
       });
       
-      // 🚀 THE FIX: State updates to hide the box and show the "Amen"
+      // 🚀 SUCCESS: Update state to show the green "Amen" box
       setHasShared(true); 
-      setShowReflection(false); 
+      
     } catch (e) {
       console.error("Error saving reflection: ", e);
+      alert("Something went wrong saving your reflection. Please try again!");
     }
   };
 
@@ -127,14 +130,26 @@ function App() {
       <main>
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
+          {/* 📅 Date Navigation Bar (Dynamic Spacing Fix) */}
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '15px' }}>
-                <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '110px' }}>
+                <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '110px', paddingRight: '5px' }}>
                   {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
                 </select>
-                <select value={currentDate.getDate()} onChange={handleDayChange} style={{ ...secretSelectStyle, width: '40px', textAlign: 'left', marginLeft: '5px' }}>
+                
+                {/* 🌟 THE FIX: Dynamic width based on digit count */}
+                <select 
+                  value={currentDate.getDate()} 
+                  onChange={handleDayChange} 
+                  style={{ 
+                    ...secretSelectStyle, 
+                    width: currentDate.getDate() > 9 ? '28px' : '16px', // Tightens if single digit
+                    textAlign: 'center' 
+                  }}
+                >
                   {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
                 </select>
+
                 <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>, {currentDate.getFullYear()}</span>
             </div>
             
@@ -155,24 +170,22 @@ function App() {
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
-          {/* ✍️ Updated Reflection Logic Area */}
+          {/* ✍️ Reflection Logic */}
           <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
             {user && !hasShared ? (
-              // Always show the box if we haven't shared yet
               <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
-                <textarea 
-                  placeholder="What is the Spirit saying to you today?"
-                  value={reflection}
-                  onChange={(e) => setReflection(e.target.value)}
-                  style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit' }}
-                />
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                  <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>Share with the Body</button>
-                  <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
-                </div>
+                  <textarea 
+                    placeholder="What is the Spirit saying to you today?"
+                    value={reflection}
+                    onChange={(e) => setReflection(e.target.value)}
+                    style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit' }}
+                  />
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                    <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>Share with the Body</button>
+                    <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                  </div>
               </div>
             ) : hasShared ? (
-              // Show confirmation once shared
               <div style={{ padding: '20px', backgroundColor: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: '#276749' }}>
                 <p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body!</p>
                 <p style={{ fontSize: '0.9rem', marginTop: '5px' }}>Your brothers and sisters can now see your reflection in the directory.</p>
@@ -188,6 +201,7 @@ function App() {
         {user && (
           <section className="directory" style={{ marginTop: '40px' }}>
             <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
+            {/* 🛡️ Passing shared thought down to card */}
             <MemberCard user={user} thought={hasShared ? reflection : null} />
           </section>
         )}
