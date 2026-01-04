@@ -4,12 +4,19 @@ import './App.css';
 import { auth, db } from "./firebase";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore"; 
 
 function App() {
   const [user, loading] = useAuthState(auth);
   const [devotional, setDevotional] = useState("Loading the Word...");
   const [dayOffset, setDayOffset] = useState(0); 
   const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Reflection States
+  const [showReflection, setShowReflection] = useState(false);
+  const [reflection, setReflection] = useState("");
+  const [hasShared, setHasShared] = useState(false); // 🌟 Confirmation Trigger
+  
   const provider = new GoogleAuthProvider();
 
   const login = () => signInWithPopup(auth, provider);
@@ -34,7 +41,11 @@ function App() {
         if (!res.ok) throw new Error("File not found");
         return res.text();
       })
-      .then(text => setDevotional(text))
+      .then(text => {
+        setDevotional(text);
+        setShowReflection(false); 
+        setHasShared(false); // Reset when day changes
+      })
       .catch(() => {
         setDevotional(`
           <div style="text-align: center; padding: 20px;">
@@ -45,6 +56,30 @@ function App() {
         `);
       });
   }, [dayOffset]);
+
+  const saveReflection = async () => {
+    if (!reflection.trim()) return;
+    const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
+    
+    try {
+      const docRef = doc(db, "reflections", `${user.uid}_${dateKey}`);
+      await setDoc(docRef, {
+        userId: user.uid,
+        userName: user.displayName,
+        userPhoto: user.photoURL,
+        text: reflection,
+        date: dateKey,
+        timestamp: serverTimestamp(),
+        location: "Sebastian"
+      });
+      
+      // 🚀 THE FIX: State updates to hide the box and show the "Amen"
+      setHasShared(true); 
+      setShowReflection(false); 
+    } catch (e) {
+      console.error("Error saving reflection: ", e);
+    }
+  };
 
   const handleMonthChange = (e) => {
     const newMonth = parseInt(e.target.value);
@@ -71,19 +106,8 @@ function App() {
   if (loading) return <div className="app-container"><h3>Loading...</h3></div>;
 
   const secretSelectStyle = {
-    border: 'none',
-    background: 'transparent',
-    fontWeight: 'bold',
-    fontSize: '1.25rem',
-    color: '#2c3e50',
-    cursor: 'pointer',
-    appearance: 'none',
-    WebkitAppearance: 'none',
-    outline: 'none',
-    padding: '0',
-    margin: '0',
-    display: 'inline-block',
-    fontFamily: 'inherit'
+    border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '1.25rem',
+    color: '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit'
   };
 
   return (
@@ -92,50 +116,32 @@ function App() {
         <h1>Equip Daily</h1>
         <p>For the equipping of the saints.</p>
         <hr style={{ width: '50%', margin: '20px auto', borderColor: '#eee' }} />
+        {user && (
+          <div className="user-profile" style={{ marginBottom: '20px' }}>
+            <p>Grace and peace, {user.displayName}</p>
+            <button onClick={logout} className="secondary-btn">Logout</button>
+          </div>
+        )}
       </header>
       
       <main>
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
           <div style={{ marginBottom: '30px' }}>
-            {/* 🎯 LEFT-ALIGNED DATE NAVIGATION */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'center', // This keeps the group centered, but...
-              alignItems: 'baseline',
-              marginBottom: '15px',
-              width: '100%',
-              paddingLeft: '0px' // Adjusted to keep the whole block naturally aligned
-            }}>
-              <div style={{ display: 'flex', gap: '0px', alignItems: 'baseline' }}>
-                <select 
-                  value={currentDate.getMonth()} 
-                  onChange={handleMonthChange} 
-                  style={{ ...secretSelectStyle, textAlign: 'right', paddingRight: '8px' }}
-                >
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '15px' }}>
+                <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '110px' }}>
                   {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
                 </select>
-
-                <select 
-                  value={currentDate.getDate()} 
-                  onChange={handleDayChange} 
-                  style={{ 
-                    ...secretSelectStyle, 
-                    width: currentDate.getDate() > 9 ? '26px' : '15px',
-                    textAlign: 'center'
-                  }}
-                >
+                <select value={currentDate.getDate()} onChange={handleDayChange} style={{ ...secretSelectStyle, width: '40px', textAlign: 'left', marginLeft: '5px' }}>
                   {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
                 </select>
-
                 <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>, {currentDate.getFullYear()}</span>
-              </div>
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-              <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">← Prior Day</button>
+              <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">← Prior</button>
               <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ backgroundColor: '#f0f0f0', color: '#333' }}>Today</button>
-              <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">Next Day →</button>
+              <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">Next →</button>
             </div>
           </div>
 
@@ -149,15 +155,40 @@ function App() {
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
+          {/* ✍️ Updated Reflection Logic Area */}
+          <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
+            {user && !hasShared ? (
+              // Always show the box if we haven't shared yet
+              <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
+                <textarea 
+                  placeholder="What is the Spirit saying to you today?"
+                  value={reflection}
+                  onChange={(e) => setReflection(e.target.value)}
+                  style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit' }}
+                />
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>Share with the Body</button>
+                  <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                </div>
+              </div>
+            ) : hasShared ? (
+              // Show confirmation once shared
+              <div style={{ padding: '20px', backgroundColor: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: '#276749' }}>
+                <p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body!</p>
+                <p style={{ fontSize: '0.9rem', marginTop: '5px' }}>Your brothers and sisters can now see your reflection in the directory.</p>
+              </div>
+            ) : null}
+          </div>
+
           <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '40px' }}>
             There are <strong>14 others</strong> in Sebastian reading this today.
           </p>
         </section>
 
-        {!user && (
-          <section className="welcome" style={{ textAlign: 'center', marginTop: '40px' }}>
-            <p>Ready to join the local Body?</p>
-            <button onClick={login} className="login-btn">Login to Join the Directory</button>
+        {user && (
+          <section className="directory" style={{ marginTop: '40px' }}>
+            <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
+            <MemberCard user={user} thought={hasShared ? reflection : null} />
           </section>
         )}
       </main>
