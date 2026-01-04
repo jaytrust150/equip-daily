@@ -1,41 +1,50 @@
-import { auth, db } from './firebase';
-import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
-import { useAuthState } from 'react-firebase-hooks/auth'; // We need to install this!
-import { useState } from 'react';
+import MemberCard from './MemberCard';
+import './App.css'
+import { auth, db } from "./firebase";
+import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useState } from "react";
 
 function App() {
   const [user] = useAuthState(auth);
+  const provider = new GoogleAuthProvider();
 
-  const login = () => {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider);
-  };
-
+  const login = () => signInWithPopup(auth, provider);
   const logout = () => signOut(auth);
 
   return (
-    <div style={{ padding: '50px', fontFamily: 'Arial', textAlign: 'center' }}>
-      <h1>Equip Daily</h1>
-      <p>For the equipping of the saints.</p>
-      <hr />
-
-      {user ? (
-        <div>
-          <p>Welcome back, <strong>{user.displayName}</strong>!</p>
-          <button onClick={logout} style={{ padding: '10px 20px', cursor: 'pointer' }}>
-            Sign Out
-          </button>
-        </div>
-      ) : (
-        <div>
-          <p>Welcome to the body. Please sign in to join us.</p>
-          <button onClick={login} style={{ padding: '10px 20px', backgroundColor: '#4285F4', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-            Sign in with Google
-          </button>
-        </div>
-      )}
+    <div className="app-container">
+      <header>
+        <h1>Equip Daily</h1>
+        {user ? (
+          <div className="user-profile">
+            <p>Grace and peace, {user.displayName}</p>
+            <button onClick={logout} className="secondary-btn">Logout</button>
+          </div>
+        ) : (
+          <button onClick={login} className="primary-btn">Login with Google</button>
+        )}
+      </header>
+      
+      <main>
+        {user ? (
+          <section className="directory">
+            <h2>Church Directory</h2>
+            <p>The body is one, yet has many members...</p>
+            
+            {/* 🛡️ Your new MemberCard shows up here! */}
+            <MemberCard user={user} />
+            
+            {/* Future: This is where we will list OTHER members from Firestore! */}
+          </section>
+        ) : (
+          <section className="welcome">
+            <p>Please login to access the "Body" directory and daily devotionals.</p>
+          </section>
+        )}
+      </main>
     </div>
-  );
+  )
 }
 
 export default App;

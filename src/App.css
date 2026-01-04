@@ -1,0 +1,51 @@
+/* 🏠 Main Container Centering */
+.app-container {
+  max-width: 800px;    /* Keeps the app from getting too wide */
+  margin: 0 auto;      /* Centers the whole box on the screen */
+  padding: 2rem;
+  text-align: center;  /* 🎯 This centers all your titles and text! */
+}
+
+/* 📋 Header Styles */
+header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.user-profile {
+  margin-bottom: 2rem;
+}
+
+/* 🧱 Your Existing Directory Styles */
+.directory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.member-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: transform 0.2s;
+}
+
+.member-card:hover {
+  transform: translateY(-5px);
+}
+
+.member-role {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+/* 🔘 Button Styles */
+.primary-btn, .secondary-btn {
+  padding: 0.6em 1.2em;
+  border-radius: 8px;
+  cursor: pointer;
+}
