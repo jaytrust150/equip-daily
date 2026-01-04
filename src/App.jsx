@@ -70,7 +70,6 @@ function App() {
 
   if (loading) return <div className="app-container"><h3>Loading...</h3></div>;
 
-  // Clean style for secret dropdowns
   const secretSelectStyle = {
     border: 'none',
     background: 'transparent',
@@ -78,10 +77,13 @@ function App() {
     fontSize: '1.25rem',
     color: '#2c3e50',
     cursor: 'pointer',
-    appearance: 'none', // 🏹 This removes the arrow
-    WebkitAppearance: 'none', // For Safari
+    appearance: 'none',
+    WebkitAppearance: 'none',
     outline: 'none',
-    padding: '0 2px'
+    padding: '0',
+    margin: '0',
+    display: 'inline-block',
+    fontFamily: 'inherit'
   };
 
   return (
@@ -96,17 +98,38 @@ function App() {
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
           <div style={{ marginBottom: '30px' }}>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '5px', marginBottom: '15px' }}>
-              
-              <select value={currentDate.getMonth()} onChange={handleMonthChange} style={secretSelectStyle}>
-                {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
-              </select>
+            {/* 🎯 LEFT-ALIGNED DATE NAVIGATION */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', // This keeps the group centered, but...
+              alignItems: 'baseline',
+              marginBottom: '15px',
+              width: '100%',
+              paddingLeft: '0px' // Adjusted to keep the whole block naturally aligned
+            }}>
+              <div style={{ display: 'flex', gap: '0px', alignItems: 'baseline' }}>
+                <select 
+                  value={currentDate.getMonth()} 
+                  onChange={handleMonthChange} 
+                  style={{ ...secretSelectStyle, textAlign: 'right', paddingRight: '8px' }}
+                >
+                  {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
+                </select>
 
-              <select value={currentDate.getDate()} onChange={handleDayChange} style={secretSelectStyle}>
-                {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-              </select>
+                <select 
+                  value={currentDate.getDate()} 
+                  onChange={handleDayChange} 
+                  style={{ 
+                    ...secretSelectStyle, 
+                    width: currentDate.getDate() > 9 ? '26px' : '15px',
+                    textAlign: 'center'
+                  }}
+                >
+                  {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
+                </select>
 
-              <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>{currentDate.getFullYear()}</span>
+                <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>, {currentDate.getFullYear()}</span>
+              </div>
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
