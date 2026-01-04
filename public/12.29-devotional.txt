@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comfort in Affliction</title>
+</head>
+<body>
+
+  <h1>Comfort in Affliction</h1>
+
+  <p>“Blessed be the God and Father of our Lord Jesus Christ, the Father of mercies and God of all comfort, who comforts us in all our affliction so that we will be able to comfort those who are in any affliction with the comfort with which we ourselves are comforted by God. For just as the sufferings of Christ are ours in abundance, so also our comfort is abundant through Christ.” - 2 Corinthians 1:3-5</p>
+
+  <p>Amen 🙏</p> 
+
+</body>
+</html>

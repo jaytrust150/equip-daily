@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Delivered Out of Afflictions</title>
+</head>
+<body>
+
+  <h1>Delivered Out of Afflictions</h1>
+
+  <p>"Many are the afflictions of the righteous, But the Lord delivers him out of them all." - Psalm 34:19</p>
+
+</body>
+</html>

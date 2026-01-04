@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Numbered Hairs and Unfailing Care</title>
+</head>
+<body>
+
+  <h1>Numbered Hairs and Unfailing Care</h1>
+
+  <p>"Indeed, the very hairs of your head are all numbered. Do not fear; you are more valuable than many sparrows." - Luke 12:7</p>
+
+  <p>Let us not forget that our God has such great care for us that even the very hairs on our heads are numbered. "Fear not," the Scriptures tell us. God is always there, ready to provide for us when we least expect it.</p>
+
+  <p>"He who did not spare His own Son, but delivered Him over for us all, how will He not also with Him freely give us all things?" - Romans 8:32</p>
+
+</body>
+</html>

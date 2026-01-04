@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A Reason for Hope: Defending Your Faith with Gentleness and Reverence</title>
+</head>
+<body>
+
+  <h1>A Reason for Hope: Defending Your Faith with Gentleness and Reverence</h1>
+
+  <p>“But sanctify Christ as Lord in your hearts, always being ready to make a defense to everyone who asks you to give an account for the hope that is in you, yet with gentleness and reverence.” - 1 Peter 3:15</p>
+
+  <p>“A person can do nothing better than to eat and drink and find satisfaction in their own toil. This too, I see, is from the hand of God.” - Ecclesiastes 2:24</p>
+
+</body>
+</html>

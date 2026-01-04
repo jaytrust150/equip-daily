@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Faithful and Sensible Steward</title>
+</head>
+<body>
+
+  <h1>The Faithful and Sensible Steward</h1>
+
+  <p>"Peter said, 'Lord, are You addressing this parable to us, or to everyone else as well?' And the Lord said, 'Who then is the faithful and sensible steward, whom his master will put in charge of his servants, to give them their rations at the proper time?'" - Luke 12:41-42 (NASB95)</p>
+
+  <p>Read this chapter to find out...</p>
+
+</body>
+</html>

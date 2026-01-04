@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hospitality and the Heart: Reflecting God's Character</title>
+</head>
+<body>
+
+  <h1>Hospitality and the Heart: Reflecting God's Character</h1>
+
+  <p>"Do not neglect to show hospitality to strangers, for by this some have entertained angels without knowing it." - Hebrews 13:2</p>
+
+  <p>Be careful how you treat people. It shows what is in your heart.</p>
+
+  <p>"For there is no good tree which produces bad fruit, nor, on the other hand, a bad tree which produces good fruit. For each tree is known by its own fruit. For men do not gather figs from thorns, nor do they pick grapes from a briar bush. The good man out of the good treasure of his heart brings forth what is good; and the evil man out of the evil treasure brings forth what is evil; for his mouth speaks from that which fills his heart." - Luke 6:43-45</p>
+
+</body>
+</html>
