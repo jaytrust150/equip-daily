@@ -4,7 +4,8 @@ import './App.css';
 import { auth, db } from "./firebase";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"; 
+// 🆕 ADDED: 'collection', 'query', 'where', 'onSnapshot' to fetches data
+import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore"; 
 
 function App() {
   const [user, loading] = useAuthState(auth);
@@ -14,7 +15,9 @@ function App() {
   
   // Reflection States
   const [reflection, setReflection] = useState("");
-  const [hasShared, setHasShared] = useState(false); 
+  const [hasShared, setHasShared] = useState(false);
+  // 🆕 ADDED: State to hold everyone's shared thoughts
+  const [communityReflections, setCommunityReflections] = useState([]);
   
   const provider = new GoogleAuthProvider();
 
@@ -57,22 +60,45 @@ function App() {
       });
   }, [dayOffset]);
 
-  // 🔥 Save Reflection with DEBUG ALERTS
-  const saveReflection = async () => {
-    // 🔍 DEBUG STEP 1: Check if button click works
-    alert("Nova Debug: Starting share process...");
+  // 🆕 ADDED: Listen for Community Reflections for THIS DATE
+  useEffect(() => {
+    const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
+    
+    // Create a query to find ALL reflections that match today's date
+    const q = query(
+      collection(db, "reflections"), 
+      where("date", "==", dateKey)
+    );
 
-    if (!reflection.trim()) {
-        alert("Nova Debug: Text is empty! Type something first.");
-        return;
-    }
+    // Turn on the live listener
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetchedReflections = [];
+      querySnapshot.forEach((doc) => {
+        fetchedReflections.push(doc.data());
+      });
+      setCommunityReflections(fetchedReflections);
+      
+      // Check if CURRENT user has already shared today (to update UI state)
+      if (user) {
+        const myPost = fetchedReflections.find(r => r.userId === user.uid);
+        if (myPost) {
+          setHasShared(true);
+          setReflection(myPost.text);
+        }
+      }
+    });
+
+    // Clean up listener when date changes
+    return () => unsubscribe();
+  }, [currentDate, user]);
+
+  // 🔥 Save Reflection
+  const saveReflection = async () => {
+    if (!reflection.trim()) return;
     
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
     
     try {
-      // 🔍 DEBUG STEP 2: Check if database connection works
-      alert(`Nova Debug: Attempting to save to reflections/${user.uid}_${dateKey}`);
-
       const docRef = doc(db, "reflections", `${user.uid}_${dateKey}`);
       await setDoc(docRef, {
         userId: user.uid,
@@ -81,21 +107,16 @@ function App() {
         text: reflection,
         date: dateKey,
         timestamp: serverTimestamp(),
-        location: "Sebastian"
+        location: "Sebastian" // Future-proofing for your location feature!
       });
-      
-      // 🔍 DEBUG STEP 3: Success!
-      alert("Nova Debug: Save successful! Updating screen now...");
-      
-      setHasShared(true); 
+      // No need to manually setHasShared(true) here because the Listener above will see the change and do it for us!
       
     } catch (e) {
       console.error("Error saving reflection: ", e);
-      // 🔍 DEBUG STEP 4: Error Catcher
-      alert("Nova Debug Error: " + e.message);
     }
   };
 
+  // ... (Keep handleMonthChange, handleDayChange, updateOffset the same) ...
   const handleMonthChange = (e) => {
     const newMonth = parseInt(e.target.value);
     const newDate = new Date(currentDate);
@@ -143,23 +164,14 @@ function App() {
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
           <div style={{ marginBottom: '30px' }}>
+             {/* ... (Date Picker Logic remains exactly the same) ... */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '15px' }}>
                 <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '110px', paddingRight: '5px' }}>
                   {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
                 </select>
-                
-                <select 
-                  value={currentDate.getDate()} 
-                  onChange={handleDayChange} 
-                  style={{ 
-                    ...secretSelectStyle, 
-                    width: currentDate.getDate() > 9 ? '28px' : '16px', 
-                    textAlign: 'center' 
-                  }}
-                >
+                <select value={currentDate.getDate()} onChange={handleDayChange} style={{ ...secretSelectStyle, width: currentDate.getDate() > 9 ? '28px' : '16px', textAlign: 'center' }}>
                   {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
                 </select>
-
                 <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>, {currentDate.getFullYear()}</span>
             </div>
             
@@ -203,14 +215,29 @@ function App() {
           </div>
 
           <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '40px' }}>
-            There are <strong>14 others</strong> in Sebastian reading this today.
+            There are <strong>{communityReflections.length > 0 ? communityReflections.length - 1 : 0} others</strong> in Sebastian reading this today.
           </p>
         </section>
 
         {user ? (
           <section className="directory" style={{ marginTop: '40px' }}>
             <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
-            <MemberCard user={user} thought={hasShared ? reflection : null} />
+            
+            {/* 🆕 UPDATED: Map through ALL community reflections */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {communityReflections.length === 0 ? (
+                <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p>
+              ) : (
+                communityReflections.map((post) => (
+                  <MemberCard 
+                    key={post.userId} 
+                    user={{ displayName: post.userName, photoURL: post.userPhoto }} 
+                    thought={post.text} 
+                  />
+                ))
+              )}
+            </div>
+            
           </section>
         ) : (
           <section className="welcome" style={{ textAlign: 'center', marginTop: '40px' }}>
