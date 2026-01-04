@@ -4,7 +4,6 @@ import './App.css';
 import { auth, db } from "./firebase";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-// 🆕 ADDED: 'collection', 'query', 'where', 'onSnapshot' to fetches data
 import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore"; 
 
 function App() {
@@ -16,7 +15,6 @@ function App() {
   // Reflection States
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
-  // 🆕 ADDED: State to hold everyone's shared thoughts
   const [communityReflections, setCommunityReflections] = useState([]);
   
   const provider = new GoogleAuthProvider();
@@ -60,17 +58,15 @@ function App() {
       });
   }, [dayOffset]);
 
-  // 🆕 ADDED: Listen for Community Reflections for THIS DATE
+  // 👂 Real-time Listener for Community Reflections
   useEffect(() => {
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
     
-    // Create a query to find ALL reflections that match today's date
     const q = query(
       collection(db, "reflections"), 
       where("date", "==", dateKey)
     );
 
-    // Turn on the live listener
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const fetchedReflections = [];
       querySnapshot.forEach((doc) => {
@@ -78,7 +74,6 @@ function App() {
       });
       setCommunityReflections(fetchedReflections);
       
-      // Check if CURRENT user has already shared today (to update UI state)
       if (user) {
         const myPost = fetchedReflections.find(r => r.userId === user.uid);
         if (myPost) {
@@ -88,7 +83,6 @@ function App() {
       }
     });
 
-    // Clean up listener when date changes
     return () => unsubscribe();
   }, [currentDate, user]);
 
@@ -107,16 +101,15 @@ function App() {
         text: reflection,
         date: dateKey,
         timestamp: serverTimestamp(),
-        location: "Sebastian" // Future-proofing for your location feature!
+        location: "Sebastian"
       });
-      // No need to manually setHasShared(true) here because the Listener above will see the change and do it for us!
+      // The listener will handle updating the UI!
       
     } catch (e) {
       console.error("Error saving reflection: ", e);
     }
   };
 
-  // ... (Keep handleMonthChange, handleDayChange, updateOffset the same) ...
   const handleMonthChange = (e) => {
     const newMonth = parseInt(e.target.value);
     const newDate = new Date(currentDate);
@@ -141,9 +134,21 @@ function App() {
 
   if (loading) return <div className="app-container"><h3>Loading...</h3></div>;
 
+  // 📱 Mobile-Optimized Select Styles
   const secretSelectStyle = {
-    border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '1.25rem',
-    color: '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit'
+    border: 'none', 
+    background: 'transparent', 
+    fontWeight: 'bold', 
+    fontSize: '1.25rem',
+    color: '#2c3e50', 
+    cursor: 'pointer', 
+    appearance: 'none', 
+    WebkitAppearance: 'none', // 👈 Fix for iOS Safari
+    MozAppearance: 'none',
+    outline: 'none', 
+    fontFamily: 'inherit',
+    padding: 0, 
+    margin: 0
   };
 
   return (
@@ -164,15 +169,26 @@ function App() {
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
           <div style={{ marginBottom: '30px' }}>
-             {/* ... (Date Picker Logic remains exactly the same) ... */}
+            {/* 📅 Date Picker - Fixed "Gap" by aligning text to right */}
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '15px' }}>
-                <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '110px', paddingRight: '5px' }}>
+                <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '120px', paddingRight: '5px' }}>
                   {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
                 </select>
-                <select value={currentDate.getDate()} onChange={handleDayChange} style={{ ...secretSelectStyle, width: currentDate.getDate() > 9 ? '28px' : '16px', textAlign: 'center' }}>
+                
+                <select 
+                  value={currentDate.getDate()} 
+                  onChange={handleDayChange} 
+                  style={{ 
+                    ...secretSelectStyle, 
+                    // CHANGE 1: Tighter width for single numbers (20px instead of 22px)
+                    width: currentDate.getDate() > 9 ? '35px' : '20px', 
+                    // CHANGE 2: Align 'right' so the number touches the comma
+                    textAlign: 'right',
+                    paddingRight: '2px' 
+                  }}
+                >
                   {[...Array(31)].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}
-                </select>
-                <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>, {currentDate.getFullYear()}</span>
+                </select><span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50' }}>, {currentDate.getFullYear()}</span>
             </div>
             
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
@@ -223,7 +239,6 @@ function App() {
           <section className="directory" style={{ marginTop: '40px' }}>
             <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
             
-            {/* 🆕 UPDATED: Map through ALL community reflections */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {communityReflections.length === 0 ? (
                 <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p>
