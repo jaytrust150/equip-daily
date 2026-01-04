@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Parable of the Rich Fool: Riches Versus True Wealth</title>
+</head>
+<body>
+
+  <h1>The Parable of the Rich Fool: Riches Versus True Wealth</h1>
+
+  <p>The Parable of the Rich Fool</p>
+
+  <p>Someone in the crowd said to him, “Teacher, tell my brother to divide the inheritance with me.” Jesus replied, “Man, who appointed me a judge or an arbiter between you?” Then he said to them, “Watch out! Be on your guard against all kinds of greed; life does not consist in an abundance of possessions.” And he told them this parable: “The ground of a certain rich man yielded an abundant harvest. He thought to himself, ‘What shall I do? I have no place to store my crops.’ Then he said, ‘This is what I’ll do. I will tear down my barns and build bigger ones, and there I will store my surplus grain. And I’ll say to myself, 'You have plenty of grain laid up for many years. Take life easy; eat, drink and be merry.' But God said to him, ‘You fool! This very night your life will be demanded from you. Then who will get what you have prepared for yourself?' 'This is how it will be with whoever stores up things for themselves but is not rich toward God.'” - Luke 12:13-21</p>
+
+  <p>“Warren Buffett once said that in looking for people to hire, you look for three qualities: integrity, intelligence, and energy. Then he said something I have never heard anybody say before: 'If they don’t have the first one, the other two will kill you.' Now think about that again: integrity, intelligence, and energy. If they don’t have integrity, their intelligence and their energy will be used against you, and it will kill you.” - David Jeremiah</p>
+
+</body>
+</html>

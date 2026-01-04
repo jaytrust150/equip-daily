@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The God of Abraham, Isaac, and Jacob</title>
+</head>
+<body>
+
+  <h1>The God of Abraham, Isaac, and Jacob</h1>
+
+  <p>Who is the God that Christians worship?</p>
+
+  <p>It's the same God who appeared to Moses in the burning bush, whom the Jewish people to this day still worship.</p>
+
+  <p>"He said also, 'I am the God of your father, the God of Abraham, the God of Isaac, and the God of Jacob.' Then Moses hid his face, for he was afraid to look at God. ... God, furthermore, said to Moses, 'Thus you shall say to the sons of Israel, 'The Lord, the God of your fathers, the God of Abraham, the God of Isaac, and the God of Jacob, has sent me to you.' This is My name forever, and this is My memorial-name to all generations.'" - Exodus 3:6, 15 (NASB95)</p>
+
+  <p>Jesus said it best when being asked a question about the resurrection:</p>
+
+  <p>"But regarding the resurrection of the dead, have you not read what was spoken to you by God: 'I AM THE GOD OF ABRAHAM, AND THE GOD OF ISAAC, AND THE GOD OF JACOB'? He is not the God of the dead but of the living.” - Matthew 22:31-32 (NASB95)</p>
+
+</body>
+</html>
