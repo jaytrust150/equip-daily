@@ -57,12 +57,22 @@ function App() {
       });
   }, [dayOffset]);
 
-  // 🔥 Save Reflection to Firebase & Show Confirmation
+  // 🔥 Save Reflection with DEBUG ALERTS
   const saveReflection = async () => {
-    if (!reflection.trim()) return;
+    // 🔍 DEBUG STEP 1: Check if button click works
+    alert("Nova Debug: Starting share process...");
+
+    if (!reflection.trim()) {
+        alert("Nova Debug: Text is empty! Type something first.");
+        return;
+    }
+    
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
     
     try {
+      // 🔍 DEBUG STEP 2: Check if database connection works
+      alert(`Nova Debug: Attempting to save to reflections/${user.uid}_${dateKey}`);
+
       const docRef = doc(db, "reflections", `${user.uid}_${dateKey}`);
       await setDoc(docRef, {
         userId: user.uid,
@@ -74,11 +84,15 @@ function App() {
         location: "Sebastian"
       });
       
+      // 🔍 DEBUG STEP 3: Success!
+      alert("Nova Debug: Save successful! Updating screen now...");
+      
       setHasShared(true); 
       
     } catch (e) {
       console.error("Error saving reflection: ", e);
-      alert("Something went wrong saving your reflection. Please try again!");
+      // 🔍 DEBUG STEP 4: Error Catcher
+      alert("Nova Debug Error: " + e.message);
     }
   };
 
@@ -128,7 +142,6 @@ function App() {
       <main>
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
           
-          {/* 📅 Date Navigation Bar (Dynamic Spacing Fix) */}
           <div style={{ marginBottom: '30px' }}>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', marginBottom: '15px' }}>
                 <select value={currentDate.getMonth()} onChange={handleMonthChange} style={{ ...secretSelectStyle, textAlign: 'right', width: '110px', paddingRight: '5px' }}>
@@ -167,7 +180,6 @@ function App() {
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
-          {/* ✍️ Reflection Logic (Only shows if User is Logged In) */}
           <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
             {user && !hasShared ? (
               <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
@@ -195,7 +207,6 @@ function App() {
           </p>
         </section>
 
-        {/* 🛡️ Directory OR Login Button (THE FIX IS HERE) */}
         {user ? (
           <section className="directory" style={{ marginTop: '40px' }}>
             <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
