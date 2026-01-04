@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Greatest Commandments</title>
+</head>
+<body>
+
+  <h1>The Greatest Commandments</h1>
+
+  <p>“On these two commandments depend the whole Law and the Prophets.” - Jesus Christ (Matthew 22:40)</p>
+
+  <p>Wow, that is a powerful verse that Jesus says when tested by a lawyer. He pretty much says the Old Testament (the whole Law and the Prophets) is summed up in two commandments. Makes you wonder what those two commandments are? They are found in the short account below.</p>
+
+  <h3>Matthew 22:35-40</h3>
+
+  <p>One of them, a lawyer, asked Him a question, testing Him, 36 “Teacher, which is the great commandment in the Law?” 37 And He said to him, “‘You shall love the Lord your God with all your heart, and with all your soul, and with all your mind.’ 38 This is the great and foremost commandment. 39 The second is like it, ‘You shall love your neighbor as yourself.’ 40 On these two commandments depend the whole Law and the Prophets.”</p>
+
+</body>
+</html>

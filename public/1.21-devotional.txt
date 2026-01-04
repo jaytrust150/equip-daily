@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Garbage is Gone</title>
+</head>
+<body>
+
+  <h1>The Garbage is Gone</h1>
+
+  <p>
+    "The garbage is gone!"
+  </p>
+
+  <p>
+    A fresh start! The above is what my wife yelled at me after noticing the garbage collectors had picked up the trash from the curb. This is significant because I had overpacked the garbage cans this week.
+  </p>
+
+  <p>
+    I was worried, wondering if they would actually take the trash. I wish I had a picture to show how there were literally bags overflowing from the sides and stacked above where the lid closes. I was so relieved to hear her yell, "The garbage is gone!"
+  </p>
+
+  <p>
+    As we start the new year, I'm reminded that's what Christ did and continues to DO for us; it's a part of the gospel package. He takes the garbage away! "The garbage is gone!"...
+  </p>
+
+  <p>
+    "[1Jo 1:9 NASB95] 9 If we confess our sins, He is faithful and righteous to forgive us our sins and to cleanse us from all unrighteousness."
+  </p>
+
+</body>
+</html>
