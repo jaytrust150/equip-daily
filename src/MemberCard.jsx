@@ -1,27 +1,47 @@
-function MemberCard({ user }) {
+import React from 'react';
+
+function MemberCard({ user, thought }) {
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#f9f9f9',
-      padding: '20px',
-      borderRadius: '15px',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+    <div style={{ 
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '15px', 
+      padding: '15px', 
+      border: '1px solid #eee', 
+      borderRadius: '12px',
+      backgroundColor: '#fff',
       maxWidth: '400px',
-      margin: '20px auto'
+      margin: '0 auto',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
     }}>
-      {/* 1. The Profile Picture */}
+      {/* 1. User Photo */}
       <img 
         src={user.photoURL} 
-        alt="Profile" 
-        style={{ borderRadius: '50%', width: '60px', marginRight: '20px' }} 
+        alt={user.displayName} 
+        style={{ 
+          width: '50px', 
+          height: '50px', 
+          borderRadius: '50%', 
+          objectFit: 'cover' 
+        }} 
       />
       
-      {/* 2. The Text Info */}
+      {/* 2. User Info & Thought */}
       <div style={{ textAlign: 'left' }}>
-        <h3 style={{ margin: 0 }}>{user.displayName}</h3>
-        <p style={{ margin: 0, fontSize: '14px', color: '#666' }}>Member of the Body</p>
+        <h3 style={{ margin: '0 0 5px 0', fontSize: '1rem', color: '#333' }}>
+          {user.displayName}
+        </h3>
+        
+        {/* 🌟 If they shared a thought, show it! Otherwise, show "Member of the Body" */}
+        {thought ? (
+          <p style={{ margin: 0, fontSize: '0.9rem', color: '#555', fontStyle: 'italic' }}>
+            "{thought}"
+          </p>
+        ) : (
+          <p style={{ margin: 0, fontSize: '0.8rem', color: '#888' }}>
+            Member of the Body
+          </p>
+        )}
       </div>
     </div>
   );
