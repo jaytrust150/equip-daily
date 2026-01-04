@@ -8,7 +8,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 function App() {
   const [user, loading] = useAuthState(auth);
   const [devotional, setDevotional] = useState("Loading the Word...");
-  const [dayOffset, setDayOffset] = useState(0); // 0 is today, -1 is yesterday, etc.
+  const [dayOffset, setDayOffset] = useState(0); 
   const [displayDate, setDisplayDate] = useState("");
   const provider = new GoogleAuthProvider();
 
@@ -16,7 +16,6 @@ function App() {
   const logout = () => signOut(auth);
 
   useEffect(() => {
-    // Calculate the target date based on the offset
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + dayOffset);
     
@@ -24,11 +23,9 @@ function App() {
     const day = targetDate.getDate();
     const fileName = `${month}.${day}-devotional.txt`;
 
-    // Set a friendly date string for the header
     const options = { month: 'long', day: 'numeric', year: 'numeric' };
     setDisplayDate(targetDate.toLocaleDateString(undefined, options));
 
-    // Fetch the file from the public folder
     fetch(`/${fileName}`)
       .then(res => {
         if (!res.ok) throw new Error("File not found");
@@ -44,7 +41,7 @@ function App() {
           </div>
         `);
       });
-  }, [dayOffset]); // Re-runs every time a button is clicked
+  }, [dayOffset]);
 
   if (loading) {
     return <div className="app-container"><h3>Loading...</h3></div>;
@@ -67,8 +64,22 @@ function App() {
       
       <main>
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
-          <h3 style={{ color: '#555', marginBottom: '10px' }}>{displayDate}</h3>
           
+          {/* 📅 TOP NAVIGATION & DATE DISPLAY */}
+          <div style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
+            <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">
+              ← Prior Day
+            </button>
+            
+            <div style={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#2c3e50', minWidth: '180px' }}>
+              {displayDate}
+            </div>
+            
+            <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">
+              Next Day →
+            </button>
+          </div>
+
           <div 
             className="devotional-content"
             style={{ 
@@ -79,15 +90,15 @@ function App() {
               textAlign: 'left',
               color: '#333',
               backgroundColor: '#fff',
-              padding: '20px',
-              borderRadius: '8px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              padding: '25px',
+              borderRadius: '12px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.05)'
             }}
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
-          {/* 📅 Navigation Buttons */}
-          <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
+          {/* 📅 BOTTOM NAVIGATION */}
+          <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
             <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">
               ← Prior Day
             </button>
@@ -99,7 +110,7 @@ function App() {
             </button>
           </div>
           
-          <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '30px' }}>
+          <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '40px' }}>
             There are <strong>14 others</strong> in Sebastian reading this today.
           </p>
         </section>
