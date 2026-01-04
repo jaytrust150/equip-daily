@@ -1,8 +1,16 @@
+import './App.css'
+
 function App() {
   return (
-    <div style={{ padding: '50px', fontFamily: 'Arial' }}>
-      <h1>Equip Daily</h1>
-      <p>System Online. Ready for construction.</p>
+    <div className="app-container">
+      <header>
+        <h1>Equip Daily</h1>
+        <p>For the equipping of the saints.</p>
+      </header>
+      
+      <main>
+        <p>Welcome to the body.</p>
+      </main>
     </div>
   )
 }
