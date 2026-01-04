@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Parable of the Shrewd Manager</title>
+</head>
+<body>
+
+  <h1>The Parable of the Shrewd Manager</h1>
+
+  <p>“Now He was also saying to the disciples, ‘There was a rich man who had a manager, and this manager was reported to him as squandering his possessions. And he called him and said to him, “What is this I hear about you? Give an accounting of your management, for you can no longer be manager.” The manager said to himself, “What shall I do, since my master is taking the management away from me? I am not strong enough to dig; I am ashamed to beg. I know what I shall do, so that when I am removed from the management people will welcome me into their homes.” And he summoned each one of his master's debtors, and he began saying to the first, “How much do you owe my master?” And he said, “A hundred measures of oil.” And he said to him, “Take your bill, and sit down quickly and write fifty.” Then he said to another, “And how much do you owe?” And he said, “A hundred measures of wheat.” He said to him, “Take your bill, and write eighty.” And his master praised the unrighteous manager because he had acted shrewdly; for the sons of this age are more shrewd in relation to their own kind than the sons of light. And I say to you, make friends for yourselves by means of the wealth of unrighteousness, so that when it fails, they will receive you into the eternal dwellings. He who is faithful in a very little thing is faithful also in much; and he who is unrighteous in a very little thing is unrighteous also in much. Therefore if you have not been faithful in the use of unrighteous wealth, who will entrust the true riches to you? And if you have not been faithful in the use of that which is another's, who will give you that which is your own? No servant can serve two masters; for either he will hate the one and love the other, or else he will be devoted to one and despise the other. You cannot serve God and wealth.’” - Luke 16:1-13 (NASB95)</p>
+
+</body>
+</html>

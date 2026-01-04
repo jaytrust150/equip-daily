@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Rich and the Kingdom of God</title>
+</head>
+<body>
+
+  <h1>The Rich and the Kingdom of God</h1>
+
+  <p>“A ruler questioned Him, saying, ‘Good Teacher, what shall I do to inherit eternal life?’” - Luke 18:18</p>
+
+  <p>It’s God who replies (Jesus Christ)...</p>
+
+  <p>“When Jesus heard this, He said to him, ‘One thing you still lack; sell all that you possess and distribute it to the poor, and you shall have treasure in heaven; and come, follow Me.’ But when he had heard these things, he became very sad, for he was extremely rich. And Jesus looked at him and said, ‘How hard it is for those who are wealthy to enter the kingdom of God! For it is easier for a camel to go through the eye of a needle than for a rich man to enter the kingdom of God.’ They who heard it said, ‘Then who can be saved?’ But He said, ‘The things that are impossible with people are possible with God.’ Peter said, ‘Behold, we have left our own homes and followed You.’ And He said to them, ‘Truly I say to you, there is no one who has left house or wife or brothers or parents or children, for the sake of the kingdom of God, who will not receive many times as much at this time and in the age to come, eternal life.’” - Luke 18:22-30</p>
+
+</body>
+</html>

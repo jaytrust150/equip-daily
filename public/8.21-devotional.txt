@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Believing in Jesus: The Resurrection and the Life</title>
+</head>
+<body>
+
+  <h1>Believing in Jesus: The Resurrection and the Life</h1>
+
+  <p>“And Jesus cried out and said, ‘He who believes in Me, does not believe in Me but in Him who sent Me. He who sees Me sees the One who sent Me. I have come as Light into the world, so that everyone who believes in Me will not remain in darkness. If anyone hears My sayings and does not keep them, I do not judge him; for I did not come to judge the world, but to save the world. He who rejects Me and does not receive My sayings, has one who judges him; the word I spoke is what will judge him at the last day. For I did not speak on My own initiative, but the Father Himself who sent Me has given Me a commandment as to what to say and what to speak. I know that His commandment is eternal life; therefore the things I speak, I speak just as the Father has told Me.’” - John 12:44-50</p>
+
+  <p>“I am the resurrection and the life; he who believes in Me will live even if he dies, and everyone who lives and believes in Me will never die.” - John 11:25-26</p>
+
+  <p>The above are Jesus’ words. Do you believe in Him?</p>
+
+</body>
+</html>

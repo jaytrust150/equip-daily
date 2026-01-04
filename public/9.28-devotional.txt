@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Simplicity of Faith: Believing is the Work</title>
+</head>
+<body>
+
+  <h1>The Simplicity of Faith: Believing is the Work</h1>
+
+  <p>“Then they inquired, ‘What must we do to perform the works of God?’ Jesus replied, ‘The work of God is this: to believe in the One He has sent.’” - John 6:28-29</p>
+
+  <p>“and though you have not seen Him, you love Him, and though you do not see Him now, but believe in Him, you greatly rejoice with joy inexpressible and full of glory, obtaining as the outcome of your faith the salvation of your souls.” - 1 Peter 1:8-9</p>
+
+  <p>“When tomorrow comes, don't forget our yesterday and remember today.” - Trust (Jonathan Vargas)</p> 
+
+</body>
+</html>

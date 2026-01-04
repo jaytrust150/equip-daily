@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Boasting in the Lord: True Strength and Wisdom</title>
+</head>
+<body>
+
+  <h1>Boasting in the Lord: True Strength and Wisdom</h1>
+
+  <p>“The fear of man brings a snare, but he who trusts in the LORD will be exalted.” - Proverbs 29:25</p>
+
+  <p>“This is what the LORD says: ‘Let not the wise man boast of his wisdom or the strong man boast of his strength or the rich man boast of his riches, but let him who boasts boast about this: that he understands and knows me, that I am the LORD, who exercises kindness, justice and righteousness on earth, for in these I delight,’ declares the LORD.” - Jeremiah 9:23-24</p>
+
+  <p>“A woman who fears the Lord shall be praised.” - Proverbs 31:30</p>
+
+</body>
+</html>

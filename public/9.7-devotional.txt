@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A Multitude Gathered: Wisdom, Gentleness, and Forgiveness for All Nations</title> 
+</head>
+<body>
+
+  <h1>A Multitude Gathered: Wisdom, Gentleness, and Forgiveness for All Nations</h1>
+
+  <p>“The way of a fool is right in his own eyes, But a person who listens to advice is wise.” - Proverbs 12:15</p>
+
+  <p>“with all humility and gentleness, with patience, bearing with one another in love.” - Ephesians 4:2</p>
+
+  <p>“A person’s discretion makes him slow to anger, And it is his glory to overlook an offense.” - Proverbs 19:11</p>
+
+  <p>“After this I looked, and behold, a great multitude that no one could number, from every nation, from all tribes and peoples and languages, standing before the throne and before the Lamb, clothed in white robes, with palm branches in their hands.” - Revelation 7:9</p>
+
+  <p>“For God so loved the world, that He gave His only begotten Son, that whoever believes in Him shall not perish, but have eternal life.” - John 3:16</p>
+
+</body>
+</html>
