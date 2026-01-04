@@ -7,44 +7,36 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 function App() {
   const [user, loading] = useAuthState(auth);
-  const [devotional, setDevotional] = useState("Loading the Word...");
-  const [dayOffset, setDayOffset] = useState(0); // 0 is today, -1 is yesterday, etc.
-  const [displayDate, setDisplayDate] = useState("");
+  const [devotional, setDevotional] = useState("Loading today's Word...");
   const provider = new GoogleAuthProvider();
 
   const login = () => signInWithPopup(auth, provider);
   const logout = () => signOut(auth);
 
+  // 📝 Fetch the daily devotional based on Month.Day format (e.g., 1.4-devotional.txt)
   useEffect(() => {
-    // Calculate the target date based on the offset
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + dayOffset);
-    
-    const month = targetDate.getMonth() + 1;
-    const day = targetDate.getDate();
-    const fileName = `${month}.${day}-devotional.txt`;
+    const today = new Date();
+    const month = today.getMonth() + 1;
+    const day = today.getDate();
+    // Matches your specific naming convention
+    const filePath = `/${month}.${day}-devotional.txt`;
 
-    // Set a friendly date string for the header
-    const options = { month: 'long', day: 'numeric', year: 'numeric' };
-    setDisplayDate(targetDate.toLocaleDateString(undefined, options));
-
-    // Fetch the file from the public folder
-    fetch(`/${fileName}`)
+    fetch(filePath)
       .then(res => {
-        if (!res.ok) throw new Error("File not found");
+        if (!res.ok) throw new Error("Devotional not found");
         return res.text();
       })
       .then(text => setDevotional(text))
-      .catch(() => {
+      .catch(err => {
+        console.error("Devotional fetch error:", err);
+        // Fallback message if the specific file isn't found
         setDevotional(`
-          <div style="text-align: center; padding: 20px;">
-            <p>Edits in Progress for ${targetDate.toLocaleDateString()}</p>
-            <p>May God bless your heart for seeking Him!</p>
-            <p>Just say a prayer for today to Him! In Jesus' name, Amen!</p>
-          </div>
+          <p>Edits in Progress</p>
+          <p>May God bless your heart for seeking Him!</p>
+          <p>Just say a prayer for today to Him! In Jesus' name, Amen!</p>
         `);
       });
-  }, [dayOffset]); // Re-runs every time a button is clicked
+  }, []);
 
   if (loading) {
     return <div className="app-container"><h3>Loading...</h3></div>;
@@ -52,11 +44,15 @@ function App() {
 
   return (
     <div className="app-container">
+      {/* 🏠 Header Section (Your Original Branding & Layout) */}
       <header style={{ textAlign: 'center', paddingTop: '20px' }}>
         <h1>Equip Daily</h1>
         <p>For the equipping of the saints.</p>
+        
+        {/* ➖ Your Original Separator Line */}
         <hr style={{ width: '50%', margin: '20px auto', borderColor: '#eee' }} />
 
+        {/* Logout Profile - Only visible when logged in */}
         {user && (
           <div className="user-profile" style={{ marginBottom: '20px' }}>
             <p>Grace and peace, {user.displayName}</p>
@@ -66,9 +62,9 @@ function App() {
       </header>
       
       <main>
+        {/* 🌿 THE FRONT PORCH (Public Devotional - Now using your date-based files) */}
         <section className="devotional-porch" style={{ textAlign: 'center', padding: '20px' }}>
-          <h3 style={{ color: '#555', marginBottom: '10px' }}>{displayDate}</h3>
-          
+          {/* dangerouslySetInnerHTML allows the HTML tags in your .txt files to render (like <p> or <b>) */}
           <div 
             className="devotional-content"
             style={{ 
@@ -76,50 +72,56 @@ function App() {
               maxWidth: '700px', 
               margin: '0 auto', 
               lineHeight: '1.7',
-              textAlign: 'left',
-              color: '#333',
-              backgroundColor: '#fff',
-              padding: '20px',
-              borderRadius: '8px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+              textAlign: 'left', // Aligns text for easier reading of paragraphs
+              color: '#333'
             }}
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
-          {/* 📅 Navigation Buttons */}
-          <div style={{ marginTop: '25px', display: 'flex', justifyContent: 'center', gap: '15px' }}>
-            <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">
-              ← Prior Day
-            </button>
-            <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ backgroundColor: '#f0f0f0', color: '#333' }}>
-              Today
-            </button>
-            <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">
-              Next Day →
-            </button>
-          </div>
-          
+          {/* Locality Pulse - Placeholder */}
           <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '30px' }}>
             There are <strong>14 others</strong> in Sebastian reading this today.
           </p>
         </section>
 
+        {/* 📖 MEMBERS AREA (Login Conditional) */}
         {user ? (
           <section className="directory" style={{ marginTop: '40px' }}>
             <h2 style={{ textAlign: 'center' }}>Church Directory</h2>
+            <p style={{ textAlign: 'center', color: '#888', marginBottom: '20px' }}>
+              The body is one, yet has many members...
+            </p>
+            
+            {/* 🛡️ Your Personal Member Card */}
             <MemberCard user={user} />
           </section>
         ) : (
           <section className="welcome" style={{ textAlign: 'center', marginTop: '40px' }}>
             <p>Ready to join the local Body?</p>
-            <button onClick={login} className="login-btn">
+            
+            {/* 🟦 The Login Button */}
+            <button 
+              onClick={login} 
+              style={{ 
+                padding: '12px 24px', 
+                backgroundColor: '#4285F4', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '5px', 
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                marginTop: '15px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+              }}
+            >
               Login to Join the Directory
             </button>
           </section>
         )}
       </main>
     </div>
-  );
+  )
 }
 
 export default App;
