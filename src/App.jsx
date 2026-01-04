@@ -14,7 +14,7 @@ function App() {
   
   // Reflection States
   const [reflection, setReflection] = useState("");
-  const [hasShared, setHasShared] = useState(false); // 🌟 Confirmation Trigger
+  const [hasShared, setHasShared] = useState(false); 
   
   const provider = new GoogleAuthProvider();
 
@@ -43,7 +43,6 @@ function App() {
       })
       .then(text => {
         setDevotional(text);
-        // Reset everything for the new day
         setHasShared(false); 
         setReflection("");
       })
@@ -75,7 +74,6 @@ function App() {
         location: "Sebastian"
       });
       
-      // 🚀 SUCCESS: Update state to show the green "Amen" box
       setHasShared(true); 
       
     } catch (e) {
@@ -137,13 +135,12 @@ function App() {
                   {months.map((m, i) => <option key={m} value={i}>{m}</option>)}
                 </select>
                 
-                {/* 🌟 THE FIX: Dynamic width based on digit count */}
                 <select 
                   value={currentDate.getDate()} 
                   onChange={handleDayChange} 
                   style={{ 
                     ...secretSelectStyle, 
-                    width: currentDate.getDate() > 9 ? '28px' : '16px', // Tightens if single digit
+                    width: currentDate.getDate() > 9 ? '28px' : '16px', 
                     textAlign: 'center' 
                   }}
                 >
@@ -170,7 +167,7 @@ function App() {
             dangerouslySetInnerHTML={{ __html: devotional }} 
           />
           
-          {/* ✍️ Reflection Logic */}
+          {/* ✍️ Reflection Logic (Only shows if User is Logged In) */}
           <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
             {user && !hasShared ? (
               <div style={{ background: '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
@@ -198,11 +195,16 @@ function App() {
           </p>
         </section>
 
-        {user && (
+        {/* 🛡️ Directory OR Login Button (THE FIX IS HERE) */}
+        {user ? (
           <section className="directory" style={{ marginTop: '40px' }}>
             <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
-            {/* 🛡️ Passing shared thought down to card */}
             <MemberCard user={user} thought={hasShared ? reflection : null} />
+          </section>
+        ) : (
+          <section className="welcome" style={{ textAlign: 'center', marginTop: '40px' }}>
+            <p>Ready to join the local Body?</p>
+            <button onClick={login} className="login-btn">Login to Join the Directory</button>
           </section>
         )}
       </main>
