@@ -81,3 +81,84 @@ header h1 {
   border-radius: 8px; /* */
   cursor: pointer; /* */
 }
+/* --- BIBLE APP STYLES --- */
+
+/* The Verse Box */
+.verse-container {
+  display: flex;
+  align-items: flex-start; /* Aligns text to top */
+  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background-color: #fff;
+  transition: all 0.2s ease;
+}
+
+.verse-container:hover {
+  border-color: #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* When a verse is selected */
+.verse-container.highlighted {
+  background-color: #e6f7ff; /* Light Blue */
+  border-color: #1890ff;
+}
+
+.verse-number {
+  font-weight: bold;
+  margin-right: 8px;
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 3px; /* visual alignment */
+}
+
+.verse-text {
+  flex-grow: 1;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.verse-checkbox {
+  margin-right: 12px;
+  margin-top: 5px;
+  transform: scale(1.2); /* Make checkbox slightly bigger */
+}
+
+/* Navigation Pills */
+.pills-container {
+  display: flex;
+  justify-content: center;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  background-color: #f5f5f5;
+  border-radius: 25px;
+  padding: 5px 15px;
+  border: 1px solid #ddd;
+}
+
+/* Action Buttons */
+#copySelected {
+  background-color: #ff9900;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+#prevChapter, #nextChapter {
+  background-color: #5cb85c;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px;
+  flex: 1;
+  font-size: 1rem;
+  margin: 0 5px;
+}
