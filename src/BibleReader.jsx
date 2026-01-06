@@ -201,8 +201,18 @@ function BibleReader({ theme }) {
   };
 
   const ControlBar = () => (
-    <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40px' }}>
-        <div style={{ position: 'absolute', left: 0, display: 'flex', alignItems: 'baseline', gap: '3px' }}>
+    <div style={{ 
+        position: 'relative', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        gap: '10px',              // Adds space between the two groups
+        flexWrap: 'wrap',         // ⚡ ALLOWS WRAPPING ON MOBILE
+        padding: '10px 0',        // Adds breathing room
+        minHeight: '40px'         // Changed height to minHeight so it grows
+    }}>
+        {/* Group 1: Selectors (Book, Chapter, Version) */}
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>
                 {bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}
             </select>
@@ -219,7 +229,9 @@ function BibleReader({ theme }) {
                 <option value="bbe" style={{color: '#333'}}>BBE</option>
             </select>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+
+        {/* Group 2: Action Buttons */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button onClick={handleShare} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Share</button>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
