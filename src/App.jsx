@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import BibleReader from './BibleReader'; 
 import MemberCard from './MemberCard';
-import Login from './Login'; // ⚡ Import the new component
+import Login from './Login'; 
 import { auth, db } from "./firebase";
-import { signOut } from "firebase/auth"; // Removed signInWithPopup etc since Login.jsx handles it
+import { signOut } from "firebase/auth"; 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore";
 import './App.css';
@@ -43,13 +43,23 @@ function App() {
     '--devotional-font-size': `${fontSize}rem` 
   };
 
+  // Header Button Style (Matches BibleReader Compact Style)
   const buttonStyle = {
     background: theme === 'dark' ? '#333' : '#f0f0f0',
     color: theme === 'dark' ? '#fff' : '#333',
-    borderRadius: '20px', padding: '8px 15px', 
+    borderRadius: '20px', 
+    padding: '5px 12px', 
     border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', 
-    fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem',
+    fontWeight: 'bold', 
+    cursor: 'pointer', 
+    fontSize: '0.85rem', 
     boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+  };
+
+  // Devotional Nav Button Style (Matches BibleReader ControlBar)
+  const navBtnStyle = {
+    padding: '5px 10px', 
+    fontSize: '0.85rem'
   };
 
   useEffect(() => {
@@ -66,7 +76,6 @@ function App() {
       .catch(() => { setDevotional(`<div style="text-align: center; padding: 20px;"><p>Edits in Progress for ${targetDate.toLocaleDateString()}</p></div>`); });
   }, [dayOffset]);
 
-  // ⚡ SAFETY CHECK: Prevents white screen if DB fails
   useEffect(() => {
     if (!db) {
       console.error("Database not initialized! Check firebase.js and .env");
@@ -131,11 +140,17 @@ function App() {
   return (
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
+        
+        {/* ⚡ FIXED: Daily/Bible Toggle Button (No manual color override) */}
         <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
-           <button onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} style={{ ...buttonStyle, backgroundColor: activeTab === 'bible' ? '#2196F3' : buttonStyle.background, color: activeTab === 'bible' ? 'white' : buttonStyle.color }}>
+           <button 
+             onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} 
+             style={buttonStyle}
+           >
             {activeTab === 'devotional' ? '📖 Bible' : '🙏 Daily'}
           </button>
         </div>
+
         <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
            <button onClick={toggleTheme} style={buttonStyle}>
             {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
@@ -170,10 +185,10 @@ function App() {
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
-                  <button onClick={handleShare} className="nav-btn" style={{ backgroundColor: '#e3f2fd', color: '#1976d2', border: '1px solid #bbdefb' }}>Share</button>
-                  <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">← Prior</button>
-                  <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
-                  <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">Next →</button>
+                  <button onClick={handleShare} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: '#e3f2fd', color: '#1976d2', border: '1px solid #bbdefb' }}>Share</button>
+                  <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn" style={navBtnStyle}>← Prior</button>
+                  <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
+                  <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
                   <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
                   <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
                 </div>
@@ -223,7 +238,6 @@ function App() {
             ) : (
               <section className="welcome" style={{ textAlign: 'center', marginTop: '40px' }}>
                 <p>Ready to join the local Body?</p>
-                {/* ⚡ UPDATED: Shows Login Component instead of just button */}
                 <Login theme={theme} />
               </section>
             )}
