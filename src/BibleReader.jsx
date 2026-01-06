@@ -4,6 +4,7 @@ import BibleTracker from './BibleTracker';
 import MemberCard from './MemberCard'; 
 import Login from './Login'; 
 import { auth, db } from "./firebase";
+import confetti from 'canvas-confetti'; // ⚡ NEW: Import Confetti
 import { useAuthState } from "react-firebase-hooks/auth";
 import { 
   doc, 
@@ -41,7 +42,7 @@ function BibleReader({ theme }) {
   // --- 1. Fetch User Progress ---
   useEffect(() => {
     if (!user) {
-        setReadChapters([]); // Guests see empty tracker
+        setReadChapters([]); 
         return;
     }
     const docRef = doc(db, "users", user.uid);
@@ -82,20 +83,33 @@ function BibleReader({ theme }) {
     setIsChapterRead(readChapters.includes(chapterKey));
   }, [book, chapter, readChapters]);
 
-  // --- ⚡ UPDATED SAVING LOGIC ---
-  const toggleChapterRead = async (e) => {
-    // 1. IF GUEST: Stop them and show the "Old Error Message"
+  // --- ⚡ UPDATED SAVING LOGIC WITH CONFETTI ⚡ ---
+  // Now wrapped in useCallback so we can use it inside handleTrackerNavigation
+  const toggleChapterRead = useCallback(async (e) => {
+    // 1. Determine if we are checking or unchecking
+    // If triggered by event (checkbox), use checked status. If triggered by function call (grid click), toggle current state.
+    const isNowChecked = (e && e.target && e.target.type === 'checkbox') ? e.target.checked : !isChapterRead;
+    
+    // 2. Guest Check
     if (!user) { 
-        e.preventDefault(); // Stop the box from checking
+        if(e && e.preventDefault) e.preventDefault(); 
         alert("Please log in to track your progress and unlock the Living Bookshelf."); 
-        // Optional: Smooth scroll to the login form at the bottom
         document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
         return; 
     }
     
-    // 2. IF MEMBER: Proceed as normal
+    // 3. 🎆 FIRE CONFETTI if marking as read! 🎆
+    if (isNowChecked) {
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#276749', '#38b2ac', '#ffffff', '#FFD700'] // Theme greens + Gold
+        });
+    }
+
+    // 4. Save to Firebase
     const chapterKey = `${book} ${chapter}`;
-    const isNowChecked = e.target.checked;
     const userRef = doc(db, "users", user.uid);
 
     setIsChapterRead(isNowChecked);
@@ -109,9 +123,9 @@ function BibleReader({ theme }) {
       }, { merge: true });
     } catch (err) {
       console.error("Error saving progress:", err);
-      setIsChapterRead(!isNowChecked);
+      setIsChapterRead(!isNowChecked); 
     }
-  };
+  }, [user, book, chapter, isChapterRead]);
 
   const saveReflection = async () => {
     if (!reflection.trim() || !user) return;
@@ -129,11 +143,18 @@ function BibleReader({ theme }) {
     } catch (e) { console.error("Error saving reflection:", e); }
   };
 
+  // --- ⚡ UPDATED NAV LOGIC ⚡ ---
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
-      setBook(newBook); 
-      setChapter(newChapter);
-      setTopNavMode(null); 
-  }, []);
+      // IF clicking the exact chapter we are already on...
+      if (newBook === book && newChapter === parseInt(chapter)) {
+          // ...Then treat it as a "Mark as Read" toggle!
+          toggleChapterRead();
+      } else {
+          // Otherwise, navigate normally
+          setBook(newBook); 
+          setChapter(newChapter);
+      }
+  }, [book, chapter, toggleChapterRead]);
 
   // --- Bible Data Fetching ---
   useEffect(() => {
@@ -231,7 +252,7 @@ function BibleReader({ theme }) {
                 <option value="bbe" style={{color: '#333'}}>BBE</option>
             </select>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={handleShare} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Share</button>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
@@ -240,6 +261,42 @@ function BibleReader({ theme }) {
             </button>
             <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
             <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
+
+            {/* TRACKER BUTTON */}
+            <label 
+                style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    cursor: 'pointer', 
+                    padding: '5px 12px', 
+                    borderRadius: '10px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    transition: 'all 0.3s ease',
+                    marginLeft: '5px',
+                    backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#333' : '#f0f0f0'),
+                    border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
+                    color: isChapterRead ? '#276749' : (theme === 'dark' ? '#fff' : '#333'),
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+                }}
+            >
+                <input 
+                    type="checkbox" 
+                    checked={isChapterRead} 
+                    onChange={toggleChapterRead} 
+                    style={{ 
+                        width: '16px', 
+                        height: '16px', 
+                        accentColor: '#276749', 
+                        cursor: 'pointer',
+                        backgroundColor: 'white' 
+                    }} 
+                />
+                <span style={{ whiteSpace: 'nowrap' }}>
+                    Track Read for Daily Bible Plan
+                </span>
+            </label>
         </div>
     </div>
   );
@@ -262,6 +319,9 @@ function BibleReader({ theme }) {
         .verse-box.dark { background-color: #000; color: #ccc; border: 1px solid #333; }
         .verse-box.dark:hover { background-color: #333; } 
         .verse-box.dark.selected { background-color: #1e3a5f; border: 1px solid #4a90e2; }
+        /* Ensuring nav buttons look standard */
+        .nav-btn { background-color: ${theme === 'dark' ? '#333' : '#f0f0f0'}; color: ${theme === 'dark' ? '#fff' : '#333'}; border: ${theme === 'dark' ? '1px solid #444' : '1px solid #ccc'}; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-weight: bold; }
+        .nav-btn:hover { opacity: 0.9; }
         .nav-toggle-btn { padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; border: 1px solid #eee; background-color: #fff; color: #555; transition: all 0.2s ease; }
         .nav-toggle-btn.active { background-color: #e3f2fd; color: #1976d2; border: 1px solid #2196F3; }
       `}</style>
@@ -343,14 +403,8 @@ function BibleReader({ theme }) {
           </div>
         </section>
 
-        {/* --- ⚡ TRACKER & LOGIN SECTION --- */}
+        {/* --- TRACKER & LOGIN SECTION --- */}
         <div style={{ borderTop: '1px solid #eee', marginTop: '40px', paddingTop: '20px' }}>
-             
-             {/* 1. BUTTON: Visible to all, but logic in handleToggle blocks guests */}
-             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px 25px', backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#111' : '#f9f9f9'), border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #333' : '1px solid #eee'), borderRadius: '30px', transition: 'all 0.3s ease' }}>
-                <input type="checkbox" checked={isChapterRead} onChange={toggleChapterRead} style={{ width: '20px', height: '20px', accentColor: '#276749', cursor: 'pointer' }} />
-                <span style={{ fontWeight: 'bold', color: isChapterRead ? '#276749' : (theme === 'dark' ? '#888' : '#555'), fontSize: '1rem' }}>{isChapterRead ? "✓ Tracked as Read" : "Track Read for Daily Bible Plan"}</span>
-             </label>
              
              {/* 2. GRID: Visible to all (Looks cool!) */}
              <div style={{ marginTop: '20px' }}>
