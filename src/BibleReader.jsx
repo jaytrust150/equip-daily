@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { bibleData } from './bibleData'; 
 import BibleTracker from './BibleTracker'; 
+import MemberCard from './MemberCard'; // ⚡ Critical Import
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, setDoc, onSnapshot, collection, query, where, serverTimestamp } from "firebase/firestore";
 
 function BibleReader({ theme }) {
   const [user] = useAuthState(auth);
@@ -20,6 +21,12 @@ function BibleReader({ theme }) {
   const [topNavMode, setTopNavMode] = useState(null);
   const [fontSize, setFontSize] = useState(1.1); 
 
+  // ⚡ REFLECTION STATE
+  const [reflection, setReflection] = useState("");
+  const [hasShared, setHasShared] = useState(false);
+  const [chapterReflections, setChapterReflections] = useState([]);
+
+  // 1. Fetch User Progress
   useEffect(() => {
     if (!user) return;
     const docRef = doc(db, "users", user.uid);
@@ -30,6 +37,32 @@ function BibleReader({ theme }) {
     });
     return () => unsubscribe();
   }, [user]);
+
+  // 2. Fetch Reflections for Current Chapter
+  useEffect(() => {
+    const chapterKey = `${book} ${chapter}`;
+    // Find all reflections that match this specific chapter
+    const q = query(collection(db, "reflections"), where("chapter", "==", chapterKey));
+    
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const fetched = [];
+      querySnapshot.forEach((doc) => fetched.push(doc.data()));
+      setChapterReflections(fetched);
+      
+      // If I have already shared, hide the box and show my text
+      if (user) {
+        const myPost = fetched.find(r => r.userId === user.uid);
+        if (myPost) {
+          setHasShared(true);
+          setReflection(myPost.text);
+        } else {
+          setHasShared(false);
+          setReflection("");
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, [book, chapter, user]);
 
   useEffect(() => {
     const chapterKey = `${book} ${chapter}`;
@@ -46,12 +79,29 @@ function BibleReader({ theme }) {
     try { await setDoc(doc(db, "users", user.uid), { readChapters: updatedList }, { merge: true }); } catch (err) { console.error("Error saving:", err); }
   };
 
+  // 3. Save Reflection Function
+  const saveReflection = async () => {
+    if (!reflection.trim() || !user) return;
+    const chapterKey = `${book} ${chapter}`;
+    try {
+      await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), {
+        userId: user.uid,
+        userName: user.displayName,
+        userPhoto: user.photoURL,
+        text: reflection,
+        chapter: chapterKey, 
+        timestamp: serverTimestamp(),
+        location: "Sebastian"
+      });
+    } catch (e) { console.error("Error saving reflection:", e); }
+  };
+
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
       setBook(newBook); 
       setChapter(newChapter);
   }, []);
 
-  // 📖 MAIN FETCH LOGIC (EXACT RANGE FIX)
+  // 📖 MAIN FETCH LOGIC
   useEffect(() => {
     setLoading(true);
     
@@ -60,7 +110,6 @@ function BibleReader({ theme }) {
         readerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // 🛠️ NUCLEAR FIX: Hard-code exact verse counts for single-chapter books
     const singleChapterConfig = {
         "Obadiah": 21,
         "Philemon": 25,
@@ -71,16 +120,12 @@ function BibleReader({ theme }) {
     
     let query;
     if (singleChapterConfig[book]) {
-        // If it's a special book, request "Book 1:1-[LastVerse]"
-        // Example: "Jude 1:1-25"
         const lastVerse = singleChapterConfig[book];
         query = `${book} 1:1-${lastVerse}`; 
     } else {
-        // Standard behavior for everything else
         query = `${book}+${chapter}`;
     }
 
-    // encodeURIComponent handles spaces safely (e.g. "3 John 1:1-15")
     fetch(`https://bible-api.com/${encodeURIComponent(query)}?translation=${version}`)
       .then(res => res.json())
       .then(data => { setVerses(data.verses || []); setSelectedVerses([]); setLoading(false); })
@@ -252,7 +297,35 @@ function BibleReader({ theme }) {
 
       <div style={{ maxWidth: '700px', margin: '30px auto', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ marginBottom: '25px' }}> <ControlBar /> </div>
-        <div style={{ borderTop: '1px solid #eee', paddingTop: '20px', paddingBottom: '20px' }}>
+        
+        {/* ⚡ SHARE WITH THE BODY INPUT */}
+        <div style={{ marginTop: '30px' }}>
+          {user && !hasShared ? (
+            <div style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
+                <textarea placeholder={`What is the Spirit saying through ${book} ${chapter}?`} value={reflection} onChange={(e) => setReflection(e.target.value)} style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>Share with the Body</button>
+                  <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                </div>
+            </div>
+          ) : hasShared ? (
+            <div style={{ padding: '20px', backgroundColor: theme === 'dark' ? '#0f2f21' : '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: theme === 'dark' ? '#81e6d9' : '#276749' }}>
+              <p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body for this chapter!</p>
+            </div>
+          ) : null}
+        </div>
+
+        {/* ⚡ MEMBER CARDS SECTION */}
+        <section className="directory" style={{ marginTop: '40px' }}>
+          <h2 style={{ textAlign: 'center', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
+            {chapterReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : chapterReflections.map((post, i) => (
+              <MemberCard key={i} user={{ displayName: post.userName, photoURL: post.userPhoto }} thought={post.text} />
+            ))}
+          </div>
+        </section>
+
+        <div style={{ borderTop: '1px solid #eee', marginTop: '40px', paddingTop: '20px' }}>
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px 25px', backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#111' : '#f9f9f9'), border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #333' : '1px solid #eee'), borderRadius: '30px', transition: 'all 0.3s ease' }}>
                 <input type="checkbox" checked={isChapterRead} onChange={toggleChapterRead} style={{ width: '20px', height: '20px', accentColor: '#276749', cursor: 'pointer' }} />
                 <span style={{ fontWeight: 'bold', color: isChapterRead ? '#276749' : (theme === 'dark' ? '#888' : '#555'), fontSize: '1rem' }}>{isChapterRead ? "✓ Tracked as Read" : "Track Read for Daily Bible Plan"}</span>
