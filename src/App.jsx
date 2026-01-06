@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import BibleReader from './BibleReader'; // Ensure this matches your filename
+import BibleReader from './BibleReader'; 
 import MemberCard from './MemberCard';
+import Login from './Login'; // ⚡ Import the new component
 import { auth, db } from "./firebase";
-import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth"; // Removed signInWithPopup etc since Login.jsx handles it
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore";
 import './App.css';
@@ -19,12 +20,8 @@ function App() {
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [communityReflections, setCommunityReflections] = useState([]);
-  
-  // ⚡ FONT SIZE STATE FOR FRONT PORCH
   const [fontSize, setFontSize] = useState(1.1);
 
-  const provider = new GoogleAuthProvider();
-  const login = () => signInWithPopup(auth, provider);
   const logout = () => signOut(auth);
 
   const months = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];
@@ -33,7 +30,6 @@ function App() {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  // 🔍 Font Size Handlers
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
 
@@ -70,23 +66,33 @@ function App() {
       .catch(() => { setDevotional(`<div style="text-align: center; padding: 20px;"><p>Edits in Progress for ${targetDate.toLocaleDateString()}</p></div>`); });
   }, [dayOffset]);
 
+  // ⚡ SAFETY CHECK: Prevents white screen if DB fails
   useEffect(() => {
+    if (!db) {
+      console.error("Database not initialized! Check firebase.js and .env");
+      return;
+    }
+
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
-    const q = query(collection(db, "reflections"), where("date", "==", dateKey));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const fetchedReflections = [];
-      querySnapshot.forEach((doc) => { fetchedReflections.push(doc.data()); });
-      setCommunityReflections(fetchedReflections);
-      if (user) {
-        const myPost = fetchedReflections.find(r => r.userId === user.uid);
-        if (myPost) { setHasShared(true); setReflection(myPost.text); }
-      }
-    });
-    return () => unsubscribe();
+    try {
+      const q = query(collection(db, "reflections"), where("date", "==", dateKey));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const fetchedReflections = [];
+        querySnapshot.forEach((doc) => { fetchedReflections.push(doc.data()); });
+        setCommunityReflections(fetchedReflections);
+        if (user) {
+          const myPost = fetchedReflections.find(r => r.userId === user.uid);
+          if (myPost) { setHasShared(true); setReflection(myPost.text); }
+        }
+      });
+      return () => unsubscribe();
+    } catch (error) {
+      console.error("Error connecting to Firestore:", error);
+    }
   }, [currentDate, user]);
 
   const saveReflection = async () => {
-    if (!reflection.trim()) return;
+    if (!reflection.trim() || !user || !db) return; 
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
     try {
       await setDoc(doc(db, "reflections", `${user.uid}_${dateKey}`), {
@@ -114,7 +120,7 @@ function App() {
     setDayOffset(diffDays);
   };
 
-  if (loading) return <div className="app-container"><h3>Loading...</h3></div>;
+  if (loading) return <div className="app-container"><h3>Loading User Data...</h3></div>;
 
   const secretSelectStyle = {
     border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '1.25rem',
@@ -149,7 +155,7 @@ function App() {
       
       <main style={{ flex: 1 }}>
         {activeTab === 'bible' ? (
-          <BibleReader theme={theme} />
+          BibleReader ? <BibleReader theme={theme} /> : <p>Error loading Bible Reader</p>
         ) : (
           <>
             <section className="devotional-porch" style={{ textAlign: 'center', padding: '0 20px 20px 20px' }}>
@@ -163,14 +169,11 @@ function App() {
                     </select><span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: theme === 'dark' ? '#f0f0f0' : '#2c3e50' }}>, {currentDate.getFullYear()}</span>
                 </div>
                 
-                {/* 🔘 NAVIGATION BUTTONS WITH FONT CONTROLS */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
                   <button onClick={handleShare} className="nav-btn" style={{ backgroundColor: '#e3f2fd', color: '#1976d2', border: '1px solid #bbdefb' }}>Share</button>
                   <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn">← Prior</button>
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn">Next →</button>
-                  
-                  {/* ⚡ MIRRORED FONT CONTROLS FROM BIBLE APP */}
                   <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
                   <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
                 </div>
@@ -187,7 +190,7 @@ function App() {
                   padding: '25px', 
                   borderRadius: '12px', 
                   boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-                  transition: 'font-size 0.2s ease' // Smooth scaling
+                  transition: 'font-size 0.2s ease'
                 }} 
                 dangerouslySetInnerHTML={{ __html: devotional }} 
               />
@@ -220,7 +223,8 @@ function App() {
             ) : (
               <section className="welcome" style={{ textAlign: 'center', marginTop: '40px' }}>
                 <p>Ready to join the local Body?</p>
-                <button onClick={login} className="login-btn">Login to Join the Directory</button>
+                {/* ⚡ UPDATED: Shows Login Component instead of just button */}
+                <Login theme={theme} />
               </section>
             )}
           </>
