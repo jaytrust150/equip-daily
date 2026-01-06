@@ -4,7 +4,7 @@ import BibleTracker from './BibleTracker';
 import MemberCard from './MemberCard'; 
 import Login from './Login'; 
 import { auth, db } from "./firebase";
-import confetti from 'canvas-confetti'; // ⚡ NEW: Import Confetti
+import confetti from 'canvas-confetti'; 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { 
   doc, 
@@ -84,19 +84,18 @@ function BibleReader({ theme }) {
   }, [book, chapter, readChapters]);
 
   // --- ⚡ UPDATED SAVING LOGIC WITH CONFETTI ⚡ ---
-  // Now wrapped in useCallback so we can use it inside handleTrackerNavigation
   const toggleChapterRead = useCallback(async (e) => {
-    // 1. Determine if we are checking or unchecking
-    // If triggered by event (checkbox), use checked status. If triggered by function call (grid click), toggle current state.
-    const isNowChecked = (e && e.target && e.target.type === 'checkbox') ? e.target.checked : !isChapterRead;
-    
-    // 2. Guest Check
+    // 1. Guest Check (Strict Gatekeeper for the Checkbox)
     if (!user) { 
         if(e && e.preventDefault) e.preventDefault(); 
         alert("Please log in to track your progress and unlock the Living Bookshelf."); 
         document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
         return; 
     }
+    
+    // 2. Determine state
+    // If triggered by event (checkbox), use checked status. If triggered by function call, toggle current state.
+    const isNowChecked = (e && e.target && e.target.type === 'checkbox') ? e.target.checked : !isChapterRead;
     
     // 3. 🎆 FIRE CONFETTI if marking as read! 🎆
     if (isNowChecked) {
@@ -127,6 +126,23 @@ function BibleReader({ theme }) {
     }
   }, [user, book, chapter, isChapterRead]);
 
+  // --- ⚡ UPDATED NAV LOGIC (The Fix) ⚡ ---
+  const handleTrackerNavigation = useCallback((newBook, newChapter) => {
+      // 1. ALWAYS Navigate (Priority #1 - Frictionless)
+      setBook(newBook); 
+      setChapter(newChapter);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // 2. "Click Same Chapter to Toggle" Logic
+      // ONLY trigger this if the user is logged in. 
+      // If they are NOT logged in, we do absolutely nothing here (ignore the toggle attempt).
+      if (user) {
+         if (newBook === book && newChapter === parseInt(chapter)) {
+             toggleChapterRead(); 
+         }
+      }
+  }, [book, chapter, user, toggleChapterRead]);
+
   const saveReflection = async () => {
     if (!reflection.trim() || !user) return;
     const chapterKey = `${book} ${chapter}`;
@@ -143,27 +159,11 @@ function BibleReader({ theme }) {
     } catch (e) { console.error("Error saving reflection:", e); }
   };
 
-  // --- ⚡ UPDATED NAV LOGIC ⚡ ---
-  const handleTrackerNavigation = useCallback((newBook, newChapter) => {
-      // IF clicking the exact chapter we are already on...
-      if (newBook === book && newChapter === parseInt(chapter)) {
-          // ...Then treat it as a "Mark as Read" toggle!
-          toggleChapterRead();
-      } else {
-          // Otherwise, navigate normally
-          setBook(newBook); 
-          setChapter(newChapter);
-      }
-  }, [book, chapter, toggleChapterRead]);
-
   // --- Bible Data Fetching ---
   useEffect(() => {
     setLoading(true);
-    const readerElement = document.getElementById("bible-reader-top");
-    if (readerElement) {
-        readerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
+    // Removed the scrollIntoView here since we handle it in navigation now to prevent jumpiness on load
+    
     const singleChapterConfig = { "Obadiah": 21, "Philemon": 25, "2 John": 13, "3 John": 14, "Jude": 25 };
     
     let query;
@@ -210,6 +210,7 @@ function BibleReader({ theme }) {
     const currentBookIndex = bibleData.findIndex(b => b.name === book);
     if (parseInt(chapter) < bibleData[currentBookIndex].chapters) { setChapter(parseInt(chapter) + 1); } 
     else if (currentBookIndex < bibleData.length - 1) { setBook(bibleData[currentBookIndex + 1].name); setChapter(1); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrev = () => {
@@ -218,6 +219,7 @@ function BibleReader({ theme }) {
         const currentBookIndex = bibleData.findIndex(b => b.name === book);
         if (currentBookIndex > 0) { setBook(bibleData[currentBookIndex - 1].name); setChapter(bibleData[currentBookIndex - 1].chapters); }
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getChapterCount = () => {
@@ -319,7 +321,6 @@ function BibleReader({ theme }) {
         .verse-box.dark { background-color: #000; color: #ccc; border: 1px solid #333; }
         .verse-box.dark:hover { background-color: #333; } 
         .verse-box.dark.selected { background-color: #1e3a5f; border: 1px solid #4a90e2; }
-        /* Ensuring nav buttons look standard */
         .nav-btn { background-color: ${theme === 'dark' ? '#333' : '#f0f0f0'}; color: ${theme === 'dark' ? '#fff' : '#333'}; border: ${theme === 'dark' ? '1px solid #444' : '1px solid #ccc'}; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-weight: bold; }
         .nav-btn:hover { opacity: 0.9; }
         .nav-toggle-btn { padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; border: 1px solid #eee; background-color: #fff; color: #555; transition: all 0.2s ease; }
