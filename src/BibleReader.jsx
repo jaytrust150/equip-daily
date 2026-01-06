@@ -39,7 +39,10 @@ function BibleReader({ theme }) {
 
   // --- 1. Fetch User Progress ---
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+        setReadChapters([]); // Reset if not logged in
+        return;
+    }
     const docRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
@@ -201,17 +204,7 @@ function BibleReader({ theme }) {
   };
 
   const ControlBar = () => (
-    <div style={{ 
-        position: 'relative', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        gap: '10px',              // Adds space between the two groups
-        flexWrap: 'wrap',         // ⚡ ALLOWS WRAPPING ON MOBILE
-        padding: '10px 0',        // Adds breathing room
-        minHeight: '40px'         // Changed height to minHeight so it grows
-    }}>
-        {/* Group 1: Selectors (Book, Chapter, Version) */}
+    <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0', minHeight: '40px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>
                 {bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}
@@ -229,8 +222,6 @@ function BibleReader({ theme }) {
                 <option value="bbe" style={{color: '#333'}}>BBE</option>
             </select>
         </div>
-
-        {/* Group 2: Action Buttons */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <button onClick={handleShare} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Share</button>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
@@ -244,16 +235,17 @@ function BibleReader({ theme }) {
     </div>
   );
 
-  // ⚡ MEMOIZED TRACKER: Renders ONLY if we selected OT or NT
+  // ⚡ FIX: Removed "user" check so GUESTS can see the list too
   const MemoizedTracker = useMemo(() => {
       if (topNavMode === 'OT' || topNavMode === 'NT') {
-          return user ? <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} sectionFilter={topNavMode} /> : null;
+          return <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} sectionFilter={topNavMode} />;
       }
       return null;
   }, [user, readChapters, handleTrackerNavigation, topNavMode]);
 
+  // ⚡ FIX: Removed "user" check here too
   const MemoizedFullTracker = useMemo(() => {
-      return user ? <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} /> : null;
+      return <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} />;
   }, [user, readChapters, handleTrackerNavigation]);
 
   return (
@@ -276,7 +268,6 @@ function BibleReader({ theme }) {
         
         {/* ⚡ NAVIGATION LOGIC START */}
         <div style={{ marginBottom: '15px' }}>
-            {/* 1. Main Browse Button (Shows if Menu is Closed) */}
             {topNavMode === null && (
                 <button 
                     onClick={() => setTopNavMode('MENU')} 
@@ -292,16 +283,13 @@ function BibleReader({ theme }) {
                 </button>
             )}
 
-            {/* 2. The Menu (Shows if Menu, OT, or NT is active) */}
             {topNavMode !== null && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        
-                        {/* ⚡ UPDATE: Clicking active button returns to 'MENU' (keeps buttons, hides list) */}
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                         <button 
                             onClick={() => setTopNavMode(topNavMode === 'OT' ? 'MENU' : 'OT')} 
                             className={`nav-toggle-btn ${topNavMode === 'OT' ? 'active' : ''}`}
-                            style={{ flex: 1, backgroundColor: topNavMode === 'OT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'OT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
+                            style={{ flex: '1 1 140px', backgroundColor: topNavMode === 'OT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'OT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
                         >
                             {topNavMode === 'OT' ? 'Close Old Testament' : 'Old Testament'}
                         </button>
@@ -309,13 +297,12 @@ function BibleReader({ theme }) {
                         <button 
                             onClick={() => setTopNavMode(topNavMode === 'NT' ? 'MENU' : 'NT')} 
                             className={`nav-toggle-btn ${topNavMode === 'NT' ? 'active' : ''}`}
-                            style={{ flex: 1, backgroundColor: topNavMode === 'NT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'NT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
+                            style={{ flex: '1 1 140px', backgroundColor: topNavMode === 'NT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'NT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
                         >
                             {topNavMode === 'NT' ? 'Close New Testament' : 'New Testament'}
                         </button>
                     </div>
 
-                    {/* ⚡ Added "Close Menu" so you can fully collapse if you want to */}
                     <button 
                         onClick={() => setTopNavMode(null)}
                         style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', alignSelf: 'center', textDecoration: 'underline' }}
@@ -326,7 +313,6 @@ function BibleReader({ theme }) {
             )}
         </div>
         
-        {/* The List (Only shows if topNavMode is OT or NT) */}
         {MemoizedTracker && ( <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}> {MemoizedTracker} </div> )}
 
         <ControlBar />
