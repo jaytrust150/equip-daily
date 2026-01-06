@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { bibleData } from './bibleData'; 
 import BibleTracker from './BibleTracker'; 
-import MemberCard from './MemberCard'; // ⚡ Critical Import
+import MemberCard from './MemberCard'; 
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, setDoc, onSnapshot, collection, query, where, serverTimestamp } from "firebase/firestore";
+import { 
+  doc, 
+  setDoc, 
+  arrayUnion, 
+  arrayRemove, 
+  onSnapshot, 
+  collection, 
+  query, 
+  where, 
+  serverTimestamp 
+} from "firebase/firestore";
 
 function BibleReader({ theme }) {
   const [user] = useAuthState(auth);
@@ -18,15 +28,16 @@ function BibleReader({ theme }) {
   const [readChapters, setReadChapters] = useState([]); 
   const [isChapterRead, setIsChapterRead] = useState(false);
   const [copyBtnText, setCopyBtnText] = useState("Copy"); 
+  
+  // ⚡ NAV STATE: null = Closed, 'MENU' = Show Buttons, 'OT'/'NT' = Show List
   const [topNavMode, setTopNavMode] = useState(null);
+  
   const [fontSize, setFontSize] = useState(1.1); 
-
-  // ⚡ REFLECTION STATE
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [chapterReflections, setChapterReflections] = useState([]);
 
-  // 1. Fetch User Progress
+  // --- 1. Fetch User Progress ---
   useEffect(() => {
     if (!user) return;
     const docRef = doc(db, "users", user.uid);
@@ -38,18 +49,16 @@ function BibleReader({ theme }) {
     return () => unsubscribe();
   }, [user]);
 
-  // 2. Fetch Reflections for Current Chapter
+  // --- 2. Fetch Reflections ---
   useEffect(() => {
     const chapterKey = `${book} ${chapter}`;
-    // Find all reflections that match this specific chapter
     const q = query(collection(db, "reflections"), where("chapter", "==", chapterKey));
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const fetched = [];
       querySnapshot.forEach((doc) => fetched.push(doc.data()));
-      setChapterReflections(fetched);
+      setChapterReflections(fetched || []);
       
-      // If I have already shared, hide the box and show my text
       if (user) {
         const myPost = fetched.find(r => r.userId === user.uid);
         if (myPost) {
@@ -69,17 +78,29 @@ function BibleReader({ theme }) {
     setIsChapterRead(readChapters.includes(chapterKey));
   }, [book, chapter, readChapters]);
 
+  // --- Saving Logic ---
   const toggleChapterRead = async (e) => {
-    if (!user) { alert("Please log in!"); return; }
+    if (!user) { alert("Please log in to track progress!"); return; }
+    
     const chapterKey = `${book} ${chapter}`;
-    const newStatus = e.target.checked;
-    setIsChapterRead(newStatus);
-    let updatedList = newStatus ? [...new Set([...readChapters, chapterKey])] : readChapters.filter(key => key !== chapterKey);
-    setReadChapters(updatedList); 
-    try { await setDoc(doc(db, "users", user.uid), { readChapters: updatedList }, { merge: true }); } catch (err) { console.error("Error saving:", err); }
+    const isNowChecked = e.target.checked;
+    const userRef = doc(db, "users", user.uid);
+
+    setIsChapterRead(isNowChecked);
+    setReadChapters(prev => 
+      isNowChecked ? [...prev, chapterKey] : prev.filter(k => k !== chapterKey)
+    );
+
+    try {
+      await setDoc(userRef, {
+        readChapters: isNowChecked ? arrayUnion(chapterKey) : arrayRemove(chapterKey)
+      }, { merge: true });
+    } catch (err) {
+      console.error("Error saving progress:", err);
+      setIsChapterRead(!isNowChecked);
+    }
   };
 
-  // 3. Save Reflection Function
   const saveReflection = async () => {
     if (!reflection.trim() || !user) return;
     const chapterKey = `${book} ${chapter}`;
@@ -99,29 +120,22 @@ function BibleReader({ theme }) {
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
       setBook(newBook); 
       setChapter(newChapter);
+      setTopNavMode(null); // Close everything when a chapter is picked
   }, []);
 
-  // 📖 MAIN FETCH LOGIC
+  // --- Bible Data Fetching ---
   useEffect(() => {
     setLoading(true);
-    
     const readerElement = document.getElementById("bible-reader-top");
     if (readerElement) {
         readerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    const singleChapterConfig = {
-        "Obadiah": 21,
-        "Philemon": 25,
-        "2 John": 13,
-        "3 John": 14,
-        "Jude": 25
-    };
+    const singleChapterConfig = { "Obadiah": 21, "Philemon": 25, "2 John": 13, "3 John": 14, "Jude": 25 };
     
     let query;
     if (singleChapterConfig[book]) {
-        const lastVerse = singleChapterConfig[book];
-        query = `${book} 1:1-${lastVerse}`; 
+        query = `${book} 1:1-${singleChapterConfig[book]}`; 
     } else {
         query = `${book}+${chapter}`;
     }
@@ -141,24 +155,12 @@ function BibleReader({ theme }) {
     const textBlock = selectedVerses.map(num => {
       const verseObj = verses.find(v => v.verse === num); return verseObj ? verseObj.text.trim() : "";
     }).join(' ');
-    const sorted = [...selectedVerses].sort((a, b) => a - b);
-    let refString = "";
-    if (sorted.length > 0) {
-      let ranges = []; let start = sorted[0]; let end = sorted[0];
-      for (let i = 1; i < sorted.length; i++) {
-          if (sorted[i] === end + 1) end = sorted[i]; 
-          else { ranges.push(start === end ? `${start}` : `${start}-${end}`); start = sorted[i]; end = sorted[i]; }
-      }
-      ranges.push(start === end ? `${start}` : `${start}-${end}`);
-      refString = ranges.join(', ');
-    }
-    return `"${textBlock}" (${book} ${chapter}:${refString} ${version.toUpperCase()})`;
+    return `"${textBlock}" (${book} ${chapter} ${version.toUpperCase()})`;
   };
 
   const handleShare = async () => {
-    let shareData = {};
-    if (selectedVerses.length > 0) { const formatted = formatCitation(); shareData = { title: 'Scripture', text: formatted }; } 
-    else { shareData = { title: 'Equip Daily', text: `Reading ${book} ${chapter}`, url: window.location.href }; }
+    let shareData = { title: 'Equip Daily', text: `Reading ${book} ${chapter}`, url: window.location.href };
+    if (selectedVerses.length > 0) { shareData.text = formatCitation(); }
     if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
     else { alert("Sharing is not supported. Use Copy!"); }
   };
@@ -170,37 +172,28 @@ function BibleReader({ theme }) {
 
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
-
+  
   const handleNext = () => {
     const currentBookIndex = bibleData.findIndex(b => b.name === book);
-    const currentBookData = bibleData[currentBookIndex];
-    if (parseInt(chapter) < currentBookData.chapters) {
-        setChapter(parseInt(chapter) + 1);
-    } else if (currentBookIndex < bibleData.length - 1) {
-        const nextBook = bibleData[currentBookIndex + 1];
-        setBook(nextBook.name);
-        setChapter(1);
-    }
+    if (parseInt(chapter) < bibleData[currentBookIndex].chapters) { setChapter(parseInt(chapter) + 1); } 
+    else if (currentBookIndex < bibleData.length - 1) { setBook(bibleData[currentBookIndex + 1].name); setChapter(1); }
   };
 
   const handlePrev = () => {
-    if (parseInt(chapter) > 1) {
-        setChapter(parseInt(chapter) - 1);
-    } else {
+    if (parseInt(chapter) > 1) { setChapter(parseInt(chapter) - 1); } 
+    else { 
         const currentBookIndex = bibleData.findIndex(b => b.name === book);
-        if (currentBookIndex > 0) {
-            const prevBook = bibleData[currentBookIndex - 1];
-            setBook(prevBook.name);
-            setChapter(prevBook.chapters); 
-        }
+        if (currentBookIndex > 0) { setBook(bibleData[currentBookIndex - 1].name); setChapter(bibleData[currentBookIndex - 1].chapters); }
     }
   };
 
   const getChapterCount = () => {
+      if (!bibleData) return 50; 
       const currentBook = bibleData.find(b => b.name === book);
       return currentBook ? currentBook.chapters : 50; 
   };
 
+  // --- UI Components ---
   const compactSelectStyle = {
     border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.75rem', 
     color: theme === 'dark' ? '#aaa' : '#2c3e50', cursor: 'pointer', appearance: 'none', WebkitAppearance: 'none', 
@@ -211,7 +204,7 @@ function BibleReader({ theme }) {
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '40px' }}>
         <div style={{ position: 'absolute', left: 0, display: 'flex', alignItems: 'baseline', gap: '3px' }}>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>
-                {bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}
+                {bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}
             </select>
             <span style={{ fontSize: '0.75rem', color: '#555' }}>|</span>
             <select value={chapter} onChange={(e) => setChapter(e.target.value)} style={{ ...compactSelectStyle, width: 'auto' }}>
@@ -239,8 +232,12 @@ function BibleReader({ theme }) {
     </div>
   );
 
+  // ⚡ MEMOIZED TRACKER: Renders ONLY if we selected OT or NT
   const MemoizedTracker = useMemo(() => {
-      return user ? <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} sectionFilter={topNavMode} /> : null;
+      if (topNavMode === 'OT' || topNavMode === 'NT') {
+          return user ? <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} sectionFilter={topNavMode} /> : null;
+      }
+      return null;
   }, [user, readChapters, handleTrackerNavigation, topNavMode]);
 
   const MemoizedFullTracker = useMemo(() => {
@@ -258,19 +255,67 @@ function BibleReader({ theme }) {
         .verse-box.dark { background-color: #000; color: #ccc; border: 1px solid #333; }
         .verse-box.dark:hover { background-color: #333; } 
         .verse-box.dark.selected { background-color: #1e3a5f; border: 1px solid #4a90e2; }
+        /* Nav Button Styles */
+        .nav-toggle-btn { padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; border: 1px solid #eee; background-color: #fff; color: #555; transition: all 0.2s ease; }
+        .nav-toggle-btn.active { background-color: #e3f2fd; color: #1976d2; border: 1px solid #2196F3; }
       `}</style>
 
       <div style={{ marginBottom: '20px', padding: '0 20px' }}>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-            <button onClick={() => setTopNavMode(topNavMode === 'OT' ? null : 'OT')} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', backgroundColor: topNavMode === 'OT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : 'white'), fontWeight: 'bold', color: topNavMode === 'OT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555'), cursor: 'pointer' }}>
-                {topNavMode === 'OT' ? 'Hide Books' : 'Old Testament'}
-            </button>
-            <button onClick={() => setTopNavMode(topNavMode === 'NT' ? null : 'NT')} style={{ flex: 1, padding: '12px', borderRadius: '10px', border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', backgroundColor: topNavMode === 'NT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : 'white'), fontWeight: 'bold', color: topNavMode === 'NT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555'), cursor: 'pointer' }}>
-                {topNavMode === 'NT' ? 'Hide Books' : 'New Testament'}
-            </button>
+        
+        {/* ⚡ NAVIGATION LOGIC START */}
+        <div style={{ marginBottom: '15px' }}>
+            {/* 1. Main Browse Button (Shows if Menu is Closed) */}
+            {topNavMode === null && (
+                <button 
+                    onClick={() => setTopNavMode('MENU')} 
+                    style={{ 
+                        width: '100%', padding: '12px', borderRadius: '10px', 
+                        border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', 
+                        backgroundColor: theme === 'dark' ? '#111' : 'white', 
+                        fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer',
+                        color: theme === 'dark' ? '#ccc' : '#555',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                    }}>
+                    📖 Browse Bible Books
+                </button>
+            )}
+
+            {/* 2. The Menu (Shows if Menu, OT, or NT is active) */}
+            {topNavMode !== null && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        
+                        {/* ⚡ UPDATE: Clicking active button returns to 'MENU' (keeps buttons, hides list) */}
+                        <button 
+                            onClick={() => setTopNavMode(topNavMode === 'OT' ? 'MENU' : 'OT')} 
+                            className={`nav-toggle-btn ${topNavMode === 'OT' ? 'active' : ''}`}
+                            style={{ flex: 1, backgroundColor: topNavMode === 'OT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'OT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
+                        >
+                            {topNavMode === 'OT' ? 'Close Old Testament' : 'Old Testament'}
+                        </button>
+
+                        <button 
+                            onClick={() => setTopNavMode(topNavMode === 'NT' ? 'MENU' : 'NT')} 
+                            className={`nav-toggle-btn ${topNavMode === 'NT' ? 'active' : ''}`}
+                            style={{ flex: 1, backgroundColor: topNavMode === 'NT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'NT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
+                        >
+                            {topNavMode === 'NT' ? 'Close New Testament' : 'New Testament'}
+                        </button>
+                    </div>
+
+                    {/* ⚡ Added "Close Menu" so you can fully collapse if you want to */}
+                    <button 
+                        onClick={() => setTopNavMode(null)}
+                        style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', alignSelf: 'center', textDecoration: 'underline' }}
+                    >
+                        Collapse Menu
+                    </button>
+                </div>
+            )}
         </div>
         
-        {topNavMode && ( <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}> {MemoizedTracker} </div> )}
+        {/* The List (Only shows if topNavMode is OT or NT) */}
+        {MemoizedTracker && ( <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}> {MemoizedTracker} </div> )}
 
         <ControlBar />
       </div>
@@ -298,7 +343,6 @@ function BibleReader({ theme }) {
       <div style={{ maxWidth: '700px', margin: '30px auto', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ marginBottom: '25px' }}> <ControlBar /> </div>
         
-        {/* ⚡ SHARE WITH THE BODY INPUT */}
         <div style={{ marginTop: '30px' }}>
           {user && !hasShared ? (
             <div style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
@@ -315,7 +359,6 @@ function BibleReader({ theme }) {
           ) : null}
         </div>
 
-        {/* ⚡ MEMBER CARDS SECTION */}
         <section className="directory" style={{ marginTop: '40px' }}>
           <h2 style={{ textAlign: 'center', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
@@ -331,6 +374,7 @@ function BibleReader({ theme }) {
                 <span style={{ fontWeight: 'bold', color: isChapterRead ? '#276749' : (theme === 'dark' ? '#888' : '#555'), fontSize: '1rem' }}>{isChapterRead ? "✓ Tracked as Read" : "Track Read for Daily Bible Plan"}</span>
             </label>
         </div>
+        
         {MemoizedFullTracker}
       </div>
     </div>

@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import BibleReader from './BibleReader'; // Ensure this matches your filename
 import MemberCard from './MemberCard';
-import BibleReader from './BibleReader';
-import './App.css';
 import { auth, db } from "./firebase";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore"; 
+import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore";
+import './App.css';
 
 function App() {
   const [user, loading] = useAuthState(auth);
@@ -44,7 +44,7 @@ function App() {
     backgroundColor: theme === 'dark' ? '#222222' : '#ffffff',
     color: theme === 'dark' ? '#f0f0f0' : '#333',
     transition: 'all 0.3s ease',
-    '--devotional-font-size': `${fontSize}rem` // CSS Variable for performance
+    '--devotional-font-size': `${fontSize}rem` 
   };
 
   const buttonStyle = {
