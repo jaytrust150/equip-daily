@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { bibleData } from './bibleData'; 
 import BibleTracker from './BibleTracker'; 
 import MemberCard from './MemberCard'; 
+import Login from './Login'; 
 import { auth, db } from "./firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { 
@@ -29,7 +30,7 @@ function BibleReader({ theme }) {
   const [isChapterRead, setIsChapterRead] = useState(false);
   const [copyBtnText, setCopyBtnText] = useState("Copy"); 
   
-  // ⚡ NAV STATE: null = Closed, 'MENU' = Show Buttons, 'OT'/'NT' = Show List
+  // NAV STATE
   const [topNavMode, setTopNavMode] = useState(null);
   
   const [fontSize, setFontSize] = useState(1.1); 
@@ -40,7 +41,7 @@ function BibleReader({ theme }) {
   // --- 1. Fetch User Progress ---
   useEffect(() => {
     if (!user) {
-        setReadChapters([]); // Reset if not logged in
+        setReadChapters([]); // Guests see empty tracker
         return;
     }
     const docRef = doc(db, "users", user.uid);
@@ -81,10 +82,18 @@ function BibleReader({ theme }) {
     setIsChapterRead(readChapters.includes(chapterKey));
   }, [book, chapter, readChapters]);
 
-  // --- Saving Logic ---
+  // --- ⚡ UPDATED SAVING LOGIC ---
   const toggleChapterRead = async (e) => {
-    if (!user) { alert("Please log in to track progress!"); return; }
+    // 1. IF GUEST: Stop them and show the "Old Error Message"
+    if (!user) { 
+        e.preventDefault(); // Stop the box from checking
+        alert("Please log in to track your progress and unlock the Living Bookshelf."); 
+        // Optional: Smooth scroll to the login form at the bottom
+        document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
+        return; 
+    }
     
+    // 2. IF MEMBER: Proceed as normal
     const chapterKey = `${book} ${chapter}`;
     const isNowChecked = e.target.checked;
     const userRef = doc(db, "users", user.uid);
@@ -123,7 +132,7 @@ function BibleReader({ theme }) {
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
       setBook(newBook); 
       setChapter(newChapter);
-      setTopNavMode(null); // Close everything when a chapter is picked
+      setTopNavMode(null); 
   }, []);
 
   // --- Bible Data Fetching ---
@@ -235,18 +244,12 @@ function BibleReader({ theme }) {
     </div>
   );
 
-  // ⚡ FIX: Removed "user" check so GUESTS can see the list too
   const MemoizedTracker = useMemo(() => {
       if (topNavMode === 'OT' || topNavMode === 'NT') {
           return <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} sectionFilter={topNavMode} />;
       }
       return null;
   }, [user, readChapters, handleTrackerNavigation, topNavMode]);
-
-  // ⚡ FIX: Removed "user" check here too
-  const MemoizedFullTracker = useMemo(() => {
-      return <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} />;
-  }, [user, readChapters, handleTrackerNavigation]);
 
   return (
     <div id="bible-reader-top" className="container" style={{ maxWidth: '100%', padding: '0', boxShadow: 'none', '--verse-font-size': `${fontSize}rem` }}>
@@ -259,26 +262,15 @@ function BibleReader({ theme }) {
         .verse-box.dark { background-color: #000; color: #ccc; border: 1px solid #333; }
         .verse-box.dark:hover { background-color: #333; } 
         .verse-box.dark.selected { background-color: #1e3a5f; border: 1px solid #4a90e2; }
-        /* Nav Button Styles */
         .nav-toggle-btn { padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; border: 1px solid #eee; background-color: #fff; color: #555; transition: all 0.2s ease; }
         .nav-toggle-btn.active { background-color: #e3f2fd; color: #1976d2; border: 1px solid #2196F3; }
       `}</style>
 
       <div style={{ marginBottom: '20px', padding: '0 20px' }}>
-        
-        {/* ⚡ NAVIGATION LOGIC START */}
+        {/* TOP NAV: Open to Everyone */}
         <div style={{ marginBottom: '15px' }}>
             {topNavMode === null && (
-                <button 
-                    onClick={() => setTopNavMode('MENU')} 
-                    style={{ 
-                        width: '100%', padding: '12px', borderRadius: '10px', 
-                        border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', 
-                        backgroundColor: theme === 'dark' ? '#111' : 'white', 
-                        fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer',
-                        color: theme === 'dark' ? '#ccc' : '#555',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                    }}>
+                <button onClick={() => setTopNavMode('MENU')} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', backgroundColor: theme === 'dark' ? '#111' : 'white', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                     📖 Browse Bible Books
                 </button>
             )}
@@ -286,38 +278,23 @@ function BibleReader({ theme }) {
             {topNavMode !== null && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        <button 
-                            onClick={() => setTopNavMode(topNavMode === 'OT' ? 'MENU' : 'OT')} 
-                            className={`nav-toggle-btn ${topNavMode === 'OT' ? 'active' : ''}`}
-                            style={{ flex: '1 1 140px', backgroundColor: topNavMode === 'OT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'OT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
-                        >
+                        <button onClick={() => setTopNavMode(topNavMode === 'OT' ? 'MENU' : 'OT')} className={`nav-toggle-btn ${topNavMode === 'OT' ? 'active' : ''}`} style={{ flex: '1 1 140px', backgroundColor: topNavMode === 'OT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'OT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}>
                             {topNavMode === 'OT' ? 'Close Old Testament' : 'Old Testament'}
                         </button>
-
-                        <button 
-                            onClick={() => setTopNavMode(topNavMode === 'NT' ? 'MENU' : 'NT')} 
-                            className={`nav-toggle-btn ${topNavMode === 'NT' ? 'active' : ''}`}
-                            style={{ flex: '1 1 140px', backgroundColor: topNavMode === 'NT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'NT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}
-                        >
+                        <button onClick={() => setTopNavMode(topNavMode === 'NT' ? 'MENU' : 'NT')} className={`nav-toggle-btn ${topNavMode === 'NT' ? 'active' : ''}`} style={{ flex: '1 1 140px', backgroundColor: topNavMode === 'NT' ? (theme === 'dark' ? '#1e3a5f' : '#e3f2fd') : (theme === 'dark' ? '#111' : '#fff'), color: topNavMode === 'NT' ? (theme === 'dark' ? '#fff' : '#1976d2') : (theme === 'dark' ? '#ccc' : '#555') }}>
                             {topNavMode === 'NT' ? 'Close New Testament' : 'New Testament'}
                         </button>
                     </div>
-
-                    <button 
-                        onClick={() => setTopNavMode(null)}
-                        style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', alignSelf: 'center', textDecoration: 'underline' }}
-                    >
-                        Collapse Menu
-                    </button>
+                    <button onClick={() => setTopNavMode(null)} style={{ background: 'none', border: 'none', color: '#888', fontSize: '0.8rem', cursor: 'pointer', alignSelf: 'center', textDecoration: 'underline' }}>Collapse Menu</button>
                 </div>
             )}
         </div>
         
         {MemoizedTracker && ( <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}> {MemoizedTracker} </div> )}
-
         <ControlBar />
       </div>
 
+      {/* VERSE DISPLAY */}
       <div id="answerDisplay" style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.2s ease' }}>
         {verses.length === 0 && loading ? (
              <p style={{ textAlign: 'center' }}>Loading the Word...</p>
@@ -326,7 +303,6 @@ function BibleReader({ theme }) {
                 const isSelected = selectedVerses.includes(v.verse);
                 const themeClass = theme === 'dark' ? 'dark' : 'light';
                 const selectedClass = isSelected ? 'selected' : '';
-
                 return (
                 <div key={index} className={`verse-box ${themeClass} ${selectedClass}`} onClick={() => toggleVerse(v.verse)}>
                     <input type="checkbox" checked={isSelected} onChange={() => {}} style={{ cursor: 'pointer', marginTop: '4px' }} />
@@ -341,6 +317,7 @@ function BibleReader({ theme }) {
       <div style={{ maxWidth: '700px', margin: '30px auto', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ marginBottom: '25px' }}> <ControlBar /> </div>
         
+        {/* REFLECTION SECTION */}
         <div style={{ marginTop: '30px' }}>
           {user && !hasShared ? (
             <div style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
@@ -366,14 +343,32 @@ function BibleReader({ theme }) {
           </div>
         </section>
 
+        {/* --- ⚡ TRACKER & LOGIN SECTION --- */}
         <div style={{ borderTop: '1px solid #eee', marginTop: '40px', paddingTop: '20px' }}>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px 25px', backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#111' : '#f9f9f9'), border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #333' : '1px solid #eee'), borderRadius: '30px', transition: 'all 0.3s ease' }}>
+             
+             {/* 1. BUTTON: Visible to all, but logic in handleToggle blocks guests */}
+             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '12px 25px', backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#111' : '#f9f9f9'), border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #333' : '1px solid #eee'), borderRadius: '30px', transition: 'all 0.3s ease' }}>
                 <input type="checkbox" checked={isChapterRead} onChange={toggleChapterRead} style={{ width: '20px', height: '20px', accentColor: '#276749', cursor: 'pointer' }} />
                 <span style={{ fontWeight: 'bold', color: isChapterRead ? '#276749' : (theme === 'dark' ? '#888' : '#555'), fontSize: '1rem' }}>{isChapterRead ? "✓ Tracked as Read" : "Track Read for Daily Bible Plan"}</span>
-            </label>
+             </label>
+             
+             {/* 2. GRID: Visible to all (Looks cool!) */}
+             <div style={{ marginTop: '20px' }}>
+                <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} />
+             </div>
+
+             {/* 3. LOGIN: Visible only to Guests (Bottom of page) */}
+             {!user && (
+               <div id="login-section" style={{ textAlign: 'center', background: theme === 'dark' ? '#222' : '#f9f9f9', padding: '30px', borderRadius: '12px', marginTop: '40px' }}>
+                  <h3 style={{ marginBottom: '10px', color: theme === 'dark' ? '#fff' : '#333' }}>Save Your Progress</h3>
+                  <p style={{ color: '#666', marginBottom: '20px' }}>
+                     Join the Body to activate the tracker above and save your history permanently.
+                  </p>
+                  <Login theme={theme} />
+               </div>
+             )}
         </div>
         
-        {MemoizedFullTracker}
       </div>
     </div>
   );

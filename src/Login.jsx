@@ -5,14 +5,15 @@ import {
   createUserWithEmailAndPassword, 
   signInWithPopup, 
   GoogleAuthProvider,
+  FacebookAuthProvider,
   updateProfile,
   RecaptchaVerifier,
   signInWithPhoneNumber
 } from 'firebase/auth';
 
 function Login({ theme }) {
-  // Modes: 'email' | 'phone'
-  const [authMode, setAuthMode] = useState('email'); 
+  // Modes: 'menu' | 'email' | 'phone'
+  const [authMode, setAuthMode] = useState('menu'); 
   const [isSignUp, setIsSignUp] = useState(false);
   
   // Email State
@@ -55,6 +56,20 @@ function Login({ theme }) {
     catch (err) { console.error(err); setError("Google Login Failed"); }
   };
 
+  const handleFacebookLogin = async () => {
+    const provider = new FacebookAuthProvider();
+    try { 
+      await signInWithPopup(auth, provider); 
+    } catch (err) { 
+      console.error(err); 
+      if (err.code === 'auth/account-exists-with-different-credential') {
+        setError("This email is already associated with another account.");
+      } else {
+        setError("Facebook Login Failed. Check console."); 
+      }
+    }
+  };
+
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     setError('');
@@ -69,7 +84,6 @@ function Login({ theme }) {
     } catch (err) { setError(err.message.replace('Firebase: ', '').replace('auth/', '')); }
   };
 
-  // 2. Send SMS Code
   const handleSendCode = async (e) => {
     e.preventDefault();
     setError('');
@@ -95,7 +109,6 @@ function Login({ theme }) {
     }
   };
 
-  // 3. Verify SMS Code
   const handleVerifyCode = async (e) => {
     e.preventDefault();
     setError('');
@@ -103,8 +116,6 @@ function Login({ theme }) {
       const result = await verificationId.confirm(otp);
       const user = result.user;
       
-      // ⚡ Only update name if they don't have one (New User)
-      // If they are an existing user, we ignore what they typed and keep their old name.
       if (name && !user.displayName) {
         await updateProfile(user, { displayName: name });
         window.location.reload();
@@ -122,17 +133,56 @@ function Login({ theme }) {
     boxShadow: '0 4px 15px rgba(0,0,0,0.1)', textAlign: 'center'
   };
   const inputStyle = { width: '100%', padding: '12px', margin: '10px 0', borderRadius: '8px', border: '1px solid #ccc', fontSize: '1rem', boxSizing: 'border-box' };
-  const btnStyle = { width: '100%', padding: '12px', margin: '10px 0', background: '#276749', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' };
+  const btnStyle = { width: '100%', padding: '12px', margin: '8px 0', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem' };
+  const linkBtnStyle = { background: 'none', border: 'none', color: '#666', marginTop: '10px', cursor: 'pointer', textDecoration: 'underline' };
+
+  // Helper to go back to menu and clear errors
+  const goBack = () => {
+    setAuthMode('menu');
+    setError('');
+  }
 
   return (
     <div style={containerStyle}>
-      <h2 style={{ color: theme === 'dark' ? '#fff' : '#333' }}>
-        {authMode === 'email' ? (isSignUp ? "Join the Body" : "Welcome Back") : "Phone Login"}
+      {/* HEADER */}
+      <h2 style={{ color: theme === 'dark' ? '#fff' : '#333', marginBottom: '20px' }}>
+        {authMode === 'menu' ? "Welcome" :
+         authMode === 'email' ? (isSignUp ? "Join the Body" : "Welcome Back") :
+         "Phone Login"}
       </h2>
 
-      {error && <p style={{ color: 'red', fontSize: '0.9rem' }}>{error}</p>}
+      {error && <p style={{ color: 'red', fontSize: '0.9rem', marginBottom: '10px' }}>{error}</p>}
 
-      {/* 📧 EMAIL FORM */}
+      {/* --- 1. MAIN MENU (BUTTONS ONLY) --- */}
+      {authMode === 'menu' && (
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          
+          <button onClick={() => setAuthMode('email')} style={{ ...btnStyle, background: '#333' }}>
+            ✉️ Sign in with Email
+          </button>
+
+          <button onClick={handleGoogleLogin} style={{ ...btnStyle, background: '#4285F4' }}>
+            Sign in with Google
+          </button>
+
+          <button onClick={handleFacebookLogin} style={{ ...btnStyle, background: '#1877F2' }}>
+            Sign in with Facebook
+          </button>
+          
+          <button onClick={() => setAuthMode('phone')} style={{ ...btnStyle, background: '#333' }}>
+            📱 Continue with Phone
+          </button>
+
+          <p style={{ marginTop: '20px', fontSize: '0.9rem', color: theme === 'dark' ? '#ccc' : '#666' }}>
+            New to Equip Daily? <br/>
+            <button onClick={() => { setIsSignUp(true); setAuthMode('email'); }} style={{ ...linkBtnStyle, color: '#276749', fontWeight: 'bold' }}>
+              Create an Account
+            </button>
+          </p>
+        </div>
+      )}
+
+      {/* --- 2. EMAIL FORM --- */}
       {authMode === 'email' && (
         <form onSubmit={handleEmailAuth}>
           {isSignUp && (
@@ -140,69 +190,46 @@ function Login({ theme }) {
           )}
           <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} />
           <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
-          <button type="submit" style={btnStyle}>{isSignUp ? "Sign Up" : "Login"}</button>
+          
+          <button type="submit" style={{ ...btnStyle, background: '#276749' }}>
+            {isSignUp ? "Sign Up" : "Login"}
+          </button>
+
+          <div style={{marginTop: '10px'}}>
+            <button type="button" onClick={goBack} style={linkBtnStyle}>
+              ← Choose another method
+            </button>
+          </div>
+
+          <p style={{ marginTop: '15px', fontSize: '0.9rem', color: theme === 'dark' ? '#ccc' : '#666' }}>
+            {isSignUp ? "Already have an account? " : "New to Equip Daily? "}
+            <button type="button" onClick={() => setIsSignUp(!isSignUp)} style={{ ...linkBtnStyle, color: '#276749', fontWeight: 'bold', textDecoration: 'none' }}>
+              {isSignUp ? "Login" : "Join Now"}
+            </button>
+          </p>
         </form>
       )}
 
-      {/* 📱 PHONE FORM */}
+      {/* --- 3. PHONE FORM --- */}
       {authMode === 'phone' && (
         <>
           {!codeSent ? (
             <form onSubmit={handleSendCode}>
-               {/* ⚡ UPDATED: Name is now REQUIRED for Phone too */}
-               <input 
-                 type="text" 
-                 placeholder="Your Name" 
-                 value={name} 
-                 onChange={(e) => setName(e.target.value)} 
-                 required 
-                 style={inputStyle} 
-               />
-               
+               <input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} />
                <input type="tel" placeholder="Mobile Number (e.g. 555-0123)" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required style={inputStyle} />
-               
                <div id="recaptcha-container"></div> 
-               
-               <button type="submit" style={btnStyle}>Send Code</button>
+               <button type="submit" style={{ ...btnStyle, background: '#276749' }}>Send Code</button>
+               <button type="button" onClick={goBack} style={linkBtnStyle}>← Cancel</button>
             </form>
           ) : (
             <form onSubmit={handleVerifyCode}>
               <p style={{marginBottom: '10px'}}>Sent code to {phoneNumber}</p>
               <input type="text" placeholder="Enter 6-digit Code" value={otp} onChange={(e) => setOtp(e.target.value)} required style={inputStyle} />
-              <button type="submit" style={btnStyle}>Verify & Login</button>
-              <button onClick={() => setCodeSent(false)} style={{background: 'none', border: 'none', color: '#666', marginTop: '10px', cursor: 'pointer'}}>Wrong Number?</button>
+              <button type="submit" style={{ ...btnStyle, background: '#276749' }}>Verify & Login</button>
+              <button type="button" onClick={() => setCodeSent(false)} style={linkBtnStyle}>Wrong Number?</button>
             </form>
           )}
         </>
-      )}
-
-      <div style={{ margin: '20px 0', borderTop: '1px solid #eee', position: 'relative' }}>
-        <span style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: theme === 'dark' ? '#333' : '#fff', padding: '0 10px', color: '#888', fontSize: '0.8rem' }}>OR</span>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        <button onClick={handleGoogleLogin} style={{ ...btnStyle, background: '#4285F4', margin: 0 }}>
-            Sign in with Google
-        </button>
-        
-        {authMode === 'email' ? (
-             <button onClick={() => setAuthMode('phone')} style={{ ...btnStyle, background: '#333', margin: 0 }}>
-                📱 Continue with Phone
-             </button>
-        ) : (
-             <button onClick={() => setAuthMode('email')} style={{ ...btnStyle, background: '#333', margin: 0 }}>
-                ✉️ Continue with Email
-             </button>
-        )}
-      </div>
-
-      {authMode === 'email' && (
-        <p style={{ marginTop: '20px', fontSize: '0.9rem', color: theme === 'dark' ? '#ccc' : '#666' }}>
-            {isSignUp ? "Already have an account? " : "New to Equip Daily? "}
-            <button onClick={() => setIsSignUp(!isSignUp)} style={{ background: 'none', border: 'none', color: '#276749', fontWeight: 'bold', cursor: 'pointer', textDecoration: 'underline' }}>
-            {isSignUp ? "Login" : "Join Now"}
-            </button>
-        </p>
       )}
     </div>
   );
