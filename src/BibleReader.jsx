@@ -152,10 +152,15 @@ function BibleReader({ theme }) {
 
   // --- HIGHLIGHT LOGIC ---
   
-  // 1. The Manual Button Handler (Bulk Action)
+  // 1. The Manual Button Handler (Updated with Tip)
   const handleHighlightButton = async () => {
     if (!user) { alert("Please log in to highlight verses."); return; }
-    if (selectedVerses.length === 0) { alert("Select verses to highlight first!"); return; }
+    
+    // 💡 UPDATED WARNING HERE
+    if (selectedVerses.length === 0) { 
+        alert("Select verses to highlight first!\n\n💡 Tip: You can also double-click any verse to highlight it instantly."); 
+        return; 
+    }
 
     const userRef = doc(db, "users", user.uid);
     const selectedKeys = selectedVerses.map(v => `${book} ${chapter}:${v}`);
@@ -171,12 +176,9 @@ function BibleReader({ theme }) {
     } catch (e) { console.error("Error updating highlights:", e); }
   };
 
-  // 2. ⚡ NEW: Double Click Handler (Instant Action)
+  // 2. Double Click Handler
   const handleVerseDoubleClick = async (verseNum) => {
-      if (!user) { 
-        // Optional: Trigger login warning nicely
-        return; 
-      }
+      if (!user) { return; }
 
       const verseKey = `${book} ${chapter}:${verseNum}`;
       const isCurrentlyHighlighted = highlights.includes(verseKey);
@@ -188,7 +190,6 @@ function BibleReader({ theme }) {
           } else {
               await updateDoc(userRef, { highlights: arrayUnion(verseKey) });
           }
-          // Clear selection to avoid confusion if they single-clicked first
           setSelectedVerses(prev => prev.filter(v => v !== verseNum));
       } catch (e) {
           console.error("Highlight toggle error:", e);
@@ -414,7 +415,7 @@ function BibleReader({ theme }) {
   return (
     <div id="bible-reader-top" className="container" style={{ maxWidth: '100%', padding: '0', boxShadow: 'none', '--verse-font-size': `${fontSize}rem` }}>
       <style>{`
-        .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: background-color 0.2s ease; user-select: none; /* Helps with double click on mobile not zooming */ }
+        .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: background-color 0.2s ease; user-select: none; }
         .verse-text { font-size: var(--verse-font-size); line-height: 1.6; transition: font-size 0.2s ease; }
         .verse-box.light { background-color: #fff; color: #333; border: 1px solid #eee; }
         .verse-box.light:hover { background-color: #f1f1f1; } 
@@ -476,7 +477,7 @@ function BibleReader({ theme }) {
                     className={`verse-box ${themeClass} ${selectedClass}`} 
                     style={highlightStyle}
                     onClick={() => toggleVerse(v.verse)}
-                    onDoubleClick={() => handleVerseDoubleClick(v.verse)} // ⚡ Added Double Click
+                    onDoubleClick={() => handleVerseDoubleClick(v.verse)} 
                 >
                     <input type="checkbox" checked={isSelected} onChange={() => {}} style={{ cursor: 'pointer', marginTop: '4px' }} />
                     <span style={{ fontWeight: 'bold', marginRight: '5px', fontSize: '0.8rem', color: theme === 'dark' ? '#888' : '#999' }}>{v.verse}</span>
