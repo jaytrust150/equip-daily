@@ -20,6 +20,9 @@ import {
   serverTimestamp 
 } from "firebase/firestore";
 
+// 🖍 THE VIBRANT YELLOW
+const HIGHLIGHT_COLOR = '#ffeb3b'; 
+
 function BibleReader({ theme }) {
   const [user] = useAuthState(auth);
   const [book, setBook] = useState('Genesis');
@@ -59,7 +62,10 @@ function BibleReader({ theme }) {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setReadChapters(data.readChapters || []);
-        setHighlights(data.highlights || []); 
+        
+        const rawHighlights = data.highlights || [];
+        const cleanHighlights = rawHighlights.map(h => h.split('|')[0]);
+        setHighlights(cleanHighlights); 
       }
     });
     return () => unsubscribe();
@@ -152,11 +158,10 @@ function BibleReader({ theme }) {
 
   // --- HIGHLIGHT LOGIC ---
   
-  // 1. The Manual Button Handler (Updated with Tip)
+  // 1. Manual Button Handler
   const handleHighlightButton = async () => {
     if (!user) { alert("Please log in to highlight verses."); return; }
     
-    // 💡 UPDATED WARNING HERE
     if (selectedVerses.length === 0) { 
         alert("Select verses to highlight first!\n\n💡 Tip: You can also double-click any verse to highlight it instantly."); 
         return; 
@@ -178,7 +183,7 @@ function BibleReader({ theme }) {
 
   // 2. Double Click Handler
   const handleVerseDoubleClick = async (verseNum) => {
-      if (!user) { return; }
+      if (!user) return;
 
       const verseKey = `${book} ${chapter}:${verseNum}`;
       const isCurrentlyHighlighted = highlights.includes(verseKey);
@@ -349,19 +354,28 @@ function BibleReader({ theme }) {
                 {copyBtnText}
             </button>
             
+            {/* 🖍 UPDATED HIGHLIGHT BUTTON */}
             <button 
                 onClick={handleHighlightButton} 
                 className="nav-btn" 
                 style={{ 
-                    backgroundColor: theme === 'dark' ? '#5f370e' : '#fefcbf', 
-                    color: theme === 'dark' ? '#fbd38d' : '#744210', 
-                    border: '1px solid',
-                    borderColor: theme === 'dark' ? '#744210' : '#d69e2e',
+                    // 1. DYNAMIC BACKGROUND
+                    backgroundColor: selectedVerses.length > 0 ? HIGHLIGHT_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
+                    
+                    // 2. DYNAMIC TEXT (White when active, Standard when inactive)
+                    color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
+                    
+                    // 3. REMOVE BORDER WHEN ACTIVE
+                    border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'),
+                    
+                    // 4. Subtle shadow for white text on yellow background
+                    textShadow: selectedVerses.length > 0 ? '0px 1px 2px rgba(0,0,0,0.3)' : 'none',
+
                     padding: '5px 10px', 
                     fontSize: '0.85rem' 
                 }}
             >
-                🖍
+                Highlight
             </button>
 
             <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
@@ -467,8 +481,9 @@ function BibleReader({ theme }) {
                 const themeClass = theme === 'dark' ? 'dark' : 'light';
                 const selectedClass = isSelected ? 'selected' : '';
                 
+                // 🎨 DYNAMIC HIGHLIGHT STYLE
                 const highlightStyle = isHighlighted 
-                    ? { backgroundColor: theme === 'dark' ? '#443308' : '#fffacd', border: theme === 'dark' ? '1px solid #744210' : '1px solid #fefcbf' }
+                    ? { backgroundColor: HIGHLIGHT_COLOR, border: `1px solid #fdd835`, color: '#333' }
                     : {};
 
                 return (
@@ -480,7 +495,7 @@ function BibleReader({ theme }) {
                     onDoubleClick={() => handleVerseDoubleClick(v.verse)} 
                 >
                     <input type="checkbox" checked={isSelected} onChange={() => {}} style={{ cursor: 'pointer', marginTop: '4px' }} />
-                    <span style={{ fontWeight: 'bold', marginRight: '5px', fontSize: '0.8rem', color: theme === 'dark' ? '#888' : '#999' }}>{v.verse}</span>
+                    <span style={{ fontWeight: 'bold', marginRight: '5px', fontSize: '0.8rem', color: isHighlighted ? '#444' : (theme === 'dark' ? '#888' : '#999') }}>{v.verse}</span>
                     <span className="verse-text">{v.text}</span>
                 </div>
                 );
