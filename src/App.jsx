@@ -5,7 +5,17 @@ import Login from './Login';
 import { auth, db } from "./firebase";
 import { signOut } from "firebase/auth"; 
 import { useAuthState } from "react-firebase-hooks/auth";
-import { doc, setDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore";
+import { 
+  doc, 
+  setDoc, 
+  updateDoc, // NEW
+  deleteDoc, // NEW
+  serverTimestamp, 
+  collection, 
+  query, 
+  where, 
+  onSnapshot 
+} from "firebase/firestore";
 import './App.css';
 
 function App() {
@@ -17,9 +27,11 @@ function App() {
   const [dayOffset, setDayOffset] = useState(0); 
   const [currentDate, setCurrentDate] = useState(new Date());
   
+  // --- REFLECTION / EDITING STATE ---
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [communityReflections, setCommunityReflections] = useState([]);
+  const [editingId, setEditingId] = useState(null); // NEW: Tracks editing state
   const [fontSize, setFontSize] = useState(1.1);
 
   const logout = () => signOut(auth);
@@ -43,7 +55,6 @@ function App() {
     '--devotional-font-size': `${fontSize}rem` 
   };
 
-  // Header Button Style (Matches BibleReader Compact Style)
   const buttonStyle = {
     background: theme === 'dark' ? '#333' : '#f0f0f0',
     color: theme === 'dark' ? '#fff' : '#333',
@@ -56,7 +67,6 @@ function App() {
     boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
   };
 
-  // Devotional Nav Button Style (Matches BibleReader ControlBar)
   const navBtnStyle = {
     padding: '5px 10px', 
     fontSize: '0.85rem'
@@ -70,45 +80,99 @@ function App() {
     const day = targetDate.getDate();
     const fileName = `${month}.${day}-devotional.txt`;
 
+    // Reset editing state when date changes
+    setEditingId(null);
+
     fetch(`/${fileName}`)
       .then(res => { if (!res.ok) throw new Error("File not found"); return res.text(); })
       .then(text => { setDevotional(text); setHasShared(false); setReflection(""); })
       .catch(() => { setDevotional(`<div style="text-align: center; padding: 20px;"><p>Edits in Progress for ${targetDate.toLocaleDateString()}</p></div>`); });
   }, [dayOffset]);
 
+  // --- FETCH REFLECTIONS (Updated for IDs) ---
   useEffect(() => {
-    if (!db) {
-      console.error("Database not initialized! Check firebase.js and .env");
-      return;
-    }
+    if (!db) return;
 
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
     try {
       const q = query(collection(db, "reflections"), where("date", "==", dateKey));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const fetchedReflections = [];
-        querySnapshot.forEach((doc) => { fetchedReflections.push(doc.data()); });
+        querySnapshot.forEach((doc) => { 
+            // Capture ID for editing/deleting
+            fetchedReflections.push({ id: doc.id, ...doc.data() }); 
+        });
         setCommunityReflections(fetchedReflections);
+        
         if (user) {
           const myPost = fetchedReflections.find(r => r.userId === user.uid);
-          if (myPost) { setHasShared(true); setReflection(myPost.text); }
+          if (myPost) { 
+              setHasShared(true); 
+              // Only overwrite text if we aren't currently editing
+              if (!editingId) setReflection(myPost.text); 
+          } else {
+              setHasShared(false);
+              if (!editingId) setReflection("");
+          }
         }
       });
       return () => unsubscribe();
     } catch (error) {
       console.error("Error connecting to Firestore:", error);
     }
-  }, [currentDate, user]);
+  }, [currentDate, user, editingId]);
+
+  // --- ⚡ ACTIONS: Save, Edit, Delete ⚡ ---
 
   const saveReflection = async () => {
     if (!reflection.trim() || !user || !db) return; 
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
+    
     try {
-      await setDoc(doc(db, "reflections", `${user.uid}_${dateKey}`), {
-        userId: user.uid, userName: user.displayName, userPhoto: user.photoURL,
-        text: reflection, date: dateKey, timestamp: serverTimestamp(), location: "Sebastian"
-      });
+      if (editingId) {
+         // UPDATE EXISTING
+         const refDoc = doc(db, "reflections", editingId);
+         await updateDoc(refDoc, {
+             text: reflection,
+             timestamp: serverTimestamp(),
+             isEdited: true
+         });
+         setEditingId(null);
+         setReflection("");
+      } else {
+         // CREATE NEW
+         await setDoc(doc(db, "reflections", `${user.uid}_${dateKey}`), {
+           userId: user.uid, userName: user.displayName, userPhoto: user.photoURL,
+           text: reflection, date: dateKey, timestamp: serverTimestamp(), location: "Sebastian"
+         });
+      }
     } catch (e) { console.error("Error saving reflection: ", e); }
+  };
+
+  const handleEditClick = (post) => {
+      setEditingId(post.id);
+      setReflection(post.text);
+      // Smooth scroll to input
+      document.getElementById('devotional-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleCancelEdit = () => {
+      setEditingId(null);
+      setReflection("");
+  };
+
+  const handleDeleteClick = async (id) => {
+      if (window.confirm("Are you sure you want to delete this reflection?")) {
+          try {
+              await deleteDoc(doc(db, "reflections", id));
+              if (editingId === id) {
+                  setEditingId(null);
+                  setReflection("");
+              }
+          } catch (e) {
+              console.error("Error deleting:", e);
+          }
+      }
   };
 
   const handleShare = async () => {
@@ -141,7 +205,6 @@ function App() {
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
         
-        {/* ⚡ FIXED: Daily/Bible Toggle Button (No manual color override) */}
         <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
            <button 
              onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} 
@@ -211,16 +274,28 @@ function App() {
               />
               
               <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
-                {user && !hasShared ? (
-                  <div style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px' }}>
-                      <textarea placeholder="What is the Spirit saying to you today?" value={reflection} onChange={(e) => setReflection(e.target.value)} style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
+                {user && (!hasShared || editingId) ? (
+                  <div id="devotional-input" style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
+                      <textarea 
+                        placeholder="What is the Spirit saying to you today?" 
+                        value={reflection} 
+                        onChange={(e) => setReflection(e.target.value)} 
+                        style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} 
+                      />
                       <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>Share with the Body</button>
-                        <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                        <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>
+                            {editingId ? "Update Reflection" : "Share with the Body"}
+                        </button>
+                        {editingId && (
+                           <button onClick={handleCancelEdit} className="secondary-btn" style={{backgroundColor: '#e53e3e', color: 'white', border: 'none'}}>Cancel</button>
+                        )}
+                        {!editingId && (
+                           <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                        )}
                       </div>
                   </div>
-                ) : hasShared ? (
-                  <div style={{ padding: '20px', backgroundColor: '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: '#276749' }}>
+                ) : hasShared && !editingId ? (
+                  <div style={{ padding: '20px', backgroundColor: theme === 'dark' ? '#0f2f21' : '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: theme === 'dark' ? '#81e6d9' : '#276749' }}>
                     <p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body!</p>
                   </div>
                 ) : null}
@@ -232,7 +307,30 @@ function App() {
               <section className="directory" style={{ marginTop: '40px' }}>
                 <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {communityReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : communityReflections.map((post) => <MemberCard key={post.userId} user={{ displayName: post.userName, photoURL: post.userPhoto }} thought={post.text} />)}
+                  {communityReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : communityReflections.map((post) => (
+                    <div key={post.id || post.userId} style={{ position: 'relative' }}>
+                        <MemberCard user={{ displayName: post.userName, photoURL: post.userPhoto }} thought={post.text} />
+                        
+                         {/* EDIT / DELETE BUTTONS FOR OWNER */}
+                         {user && user.uid === post.userId && (
+                            <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
+                                <button 
+                                  onClick={() => handleEditClick(post)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#888' : '#666', textDecoration: 'underline' }}
+                                >
+                                  Edit
+                                </button>
+                                <span style={{color: '#ccc'}}>|</span>
+                                <button 
+                                  onClick={() => handleDeleteClick(post.id)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: '#e53e3e', textDecoration: 'underline' }}
+                                >
+                                  Delete
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                  ))}
                 </div>
               </section>
             ) : (

@@ -8,7 +8,9 @@ import confetti from 'canvas-confetti';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { 
   doc, 
-  setDoc, 
+  setDoc,
+  deleteDoc, 
+  updateDoc,
   arrayUnion, 
   arrayRemove, 
   onSnapshot, 
@@ -31,24 +33,33 @@ function BibleReader({ theme }) {
   const [isChapterRead, setIsChapterRead] = useState(false);
   const [copyBtnText, setCopyBtnText] = useState("Copy"); 
   
+  // Highlight State
+  const [highlights, setHighlights] = useState([]);
+
   // NAV STATE
   const [topNavMode, setTopNavMode] = useState(null);
   
   const [fontSize, setFontSize] = useState(1.1); 
+  
+  // REFLECTION STATE
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [chapterReflections, setChapterReflections] = useState([]);
+  const [editingId, setEditingId] = useState(null); 
 
-  // --- 1. Fetch User Progress ---
+  // --- 1. Fetch User Progress & Highlights ---
   useEffect(() => {
     if (!user) {
         setReadChapters([]); 
+        setHighlights([]); 
         return;
     }
     const docRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
-        setReadChapters(docSnap.data().readChapters || []);
+        const data = docSnap.data();
+        setReadChapters(data.readChapters || []);
+        setHighlights(data.highlights || []); 
       }
     });
     return () => unsubscribe();
@@ -61,53 +72,50 @@ function BibleReader({ theme }) {
     
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const fetched = [];
-      querySnapshot.forEach((doc) => fetched.push(doc.data()));
+      querySnapshot.forEach((doc) => {
+          fetched.push({ id: doc.id, ...doc.data() });
+      });
       setChapterReflections(fetched || []);
       
       if (user) {
         const myPost = fetched.find(r => r.userId === user.uid);
         if (myPost) {
           setHasShared(true);
-          setReflection(myPost.text);
+          if (!editingId) setReflection(myPost.text); 
         } else {
           setHasShared(false);
-          setReflection("");
+          if (!editingId) setReflection("");
         }
       }
     });
     return () => unsubscribe();
-  }, [book, chapter, user]);
+  }, [book, chapter, user, editingId]);
 
   useEffect(() => {
     const chapterKey = `${book} ${chapter}`;
     setIsChapterRead(readChapters.includes(chapterKey));
   }, [book, chapter, readChapters]);
 
-  // --- ⚡ UPDATED SAVING LOGIC WITH CONFETTI ⚡ ---
+  // --- TRACKING LOGIC ---
   const toggleChapterRead = useCallback(async (e) => {
-    // 1. Guest Check (Strict Gatekeeper for the Checkbox)
     if (!user) { 
         if(e && e.preventDefault) e.preventDefault(); 
-        alert("Please log in to track your progress and unlock the Living Bookshelf."); 
+        alert("Please log in to track your progress."); 
         document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
         return; 
     }
     
-    // 2. Determine state
-    // If triggered by event (checkbox), use checked status. If triggered by function call, toggle current state.
     const isNowChecked = (e && e.target && e.target.type === 'checkbox') ? e.target.checked : !isChapterRead;
     
-    // 3. 🎆 FIRE CONFETTI if marking as read! 🎆
     if (isNowChecked) {
         confetti({
             particleCount: 150,
             spread: 70,
             origin: { y: 0.6 },
-            colors: ['#276749', '#38b2ac', '#ffffff', '#FFD700'] // Theme greens + Gold
+            colors: ['#276749', '#38b2ac', '#ffffff', '#FFD700']
         });
     }
 
-    // 4. Save to Firebase
     const chapterKey = `${book} ${chapter}`;
     const userRef = doc(db, "users", user.uid);
 
@@ -126,16 +134,15 @@ function BibleReader({ theme }) {
     }
   }, [user, book, chapter, isChapterRead]);
 
-  // --- ⚡ UPDATED NAV LOGIC (The Fix) ⚡ ---
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
-      // 1. ALWAYS Navigate (Priority #1 - Frictionless)
       setBook(newBook); 
       setChapter(newChapter);
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      
+      setEditingId(null);
+      setReflection("");
+      setSelectedVerses([]); 
 
-      // 2. "Click Same Chapter to Toggle" Logic
-      // ONLY trigger this if the user is logged in. 
-      // If they are NOT logged in, we do absolutely nothing here (ignore the toggle attempt).
       if (user) {
          if (newBook === book && newChapter === parseInt(chapter)) {
              toggleChapterRead(); 
@@ -143,29 +150,107 @@ function BibleReader({ theme }) {
       }
   }, [book, chapter, user, toggleChapterRead]);
 
+  // --- HIGHLIGHT LOGIC ---
+  
+  // 1. The Manual Button Handler (Bulk Action)
+  const handleHighlightButton = async () => {
+    if (!user) { alert("Please log in to highlight verses."); return; }
+    if (selectedVerses.length === 0) { alert("Select verses to highlight first!"); return; }
+
+    const userRef = doc(db, "users", user.uid);
+    const selectedKeys = selectedVerses.map(v => `${book} ${chapter}:${v}`);
+    const allSelectedAreHighlighted = selectedKeys.every(k => highlights.includes(k));
+
+    try {
+        if (allSelectedAreHighlighted) {
+            await updateDoc(userRef, { highlights: arrayRemove(...selectedKeys) });
+        } else {
+            await updateDoc(userRef, { highlights: arrayUnion(...selectedKeys) });
+        }
+        setSelectedVerses([]); 
+    } catch (e) { console.error("Error updating highlights:", e); }
+  };
+
+  // 2. ⚡ NEW: Double Click Handler (Instant Action)
+  const handleVerseDoubleClick = async (verseNum) => {
+      if (!user) { 
+        // Optional: Trigger login warning nicely
+        return; 
+      }
+
+      const verseKey = `${book} ${chapter}:${verseNum}`;
+      const isCurrentlyHighlighted = highlights.includes(verseKey);
+      const userRef = doc(db, "users", user.uid);
+
+      try {
+          if (isCurrentlyHighlighted) {
+              await updateDoc(userRef, { highlights: arrayRemove(verseKey) });
+          } else {
+              await updateDoc(userRef, { highlights: arrayUnion(verseKey) });
+          }
+          // Clear selection to avoid confusion if they single-clicked first
+          setSelectedVerses(prev => prev.filter(v => v !== verseNum));
+      } catch (e) {
+          console.error("Highlight toggle error:", e);
+      }
+  };
+
+  // --- REFLECTION ACTIONS ---
   const saveReflection = async () => {
     if (!reflection.trim() || !user) return;
     const chapterKey = `${book} ${chapter}`;
     try {
-      await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), {
-        userId: user.uid,
-        userName: user.displayName,
-        userPhoto: user.photoURL,
-        text: reflection,
-        chapter: chapterKey, 
-        timestamp: serverTimestamp(),
-        location: "Sebastian"
-      });
+      if (editingId) {
+        const refDoc = doc(db, "reflections", editingId);
+        await updateDoc(refDoc, {
+            text: reflection,
+            timestamp: serverTimestamp(),
+            isEdited: true 
+        });
+        setEditingId(null); 
+        setReflection("");
+      } else {
+        const docId = `${user.uid}_${chapterKey}`; 
+        await setDoc(doc(db, "reflections", docId), {
+            userId: user.uid,
+            userName: user.displayName,
+            userPhoto: user.photoURL,
+            text: reflection,
+            chapter: chapterKey, 
+            timestamp: serverTimestamp(),
+            location: "Sebastian" 
+        });
+      }
     } catch (e) { console.error("Error saving reflection:", e); }
+  };
+
+  const handleEditClick = (post) => {
+      setEditingId(post.id);
+      setReflection(post.text);
+      document.getElementById('reflection-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleCancelEdit = () => {
+      setEditingId(null);
+      setReflection("");
+  };
+
+  const handleDeleteClick = async (id) => {
+      if (window.confirm("Are you sure you want to delete this reflection?")) {
+          try {
+              await deleteDoc(doc(db, "reflections", id));
+              if (editingId === id) {
+                  setEditingId(null);
+                  setReflection("");
+              }
+          } catch (e) { console.error("Error deleting:", e); }
+      }
   };
 
   // --- Bible Data Fetching ---
   useEffect(() => {
     setLoading(true);
-    // Removed the scrollIntoView here since we handle it in navigation now to prevent jumpiness on load
-    
     const singleChapterConfig = { "Obadiah": 21, "Philemon": 25, "2 John": 13, "3 John": 14, "Jude": 25 };
-    
     let query;
     if (singleChapterConfig[book]) {
         query = `${book} 1:1-${singleChapterConfig[book]}`; 
@@ -258,13 +343,29 @@ function BibleReader({ theme }) {
             <button onClick={handleShare} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Share</button>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
+            
             <button onClick={handleCopy} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? '#ff9900' : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>
                 {copyBtnText}
             </button>
+            
+            <button 
+                onClick={handleHighlightButton} 
+                className="nav-btn" 
+                style={{ 
+                    backgroundColor: theme === 'dark' ? '#5f370e' : '#fefcbf', 
+                    color: theme === 'dark' ? '#fbd38d' : '#744210', 
+                    border: '1px solid',
+                    borderColor: theme === 'dark' ? '#744210' : '#d69e2e',
+                    padding: '5px 10px', 
+                    fontSize: '0.85rem' 
+                }}
+            >
+                🖍
+            </button>
+
             <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
             <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
 
-            {/* TRACKER BUTTON */}
             <label 
                 style={{ 
                     display: 'inline-flex', 
@@ -313,7 +414,7 @@ function BibleReader({ theme }) {
   return (
     <div id="bible-reader-top" className="container" style={{ maxWidth: '100%', padding: '0', boxShadow: 'none', '--verse-font-size': `${fontSize}rem` }}>
       <style>{`
-        .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: background-color 0.2s ease; }
+        .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: background-color 0.2s ease; user-select: none; /* Helps with double click on mobile not zooming */ }
         .verse-text { font-size: var(--verse-font-size); line-height: 1.6; transition: font-size 0.2s ease; }
         .verse-box.light { background-color: #fff; color: #333; border: 1px solid #eee; }
         .verse-box.light:hover { background-color: #f1f1f1; } 
@@ -328,7 +429,6 @@ function BibleReader({ theme }) {
       `}</style>
 
       <div style={{ marginBottom: '20px', padding: '0 20px' }}>
-        {/* TOP NAV: Open to Everyone */}
         <div style={{ marginBottom: '15px' }}>
             {topNavMode === null && (
                 <button onClick={() => setTopNavMode('MENU')} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', backgroundColor: theme === 'dark' ? '#111' : 'white', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
@@ -355,17 +455,29 @@ function BibleReader({ theme }) {
         <ControlBar />
       </div>
 
-      {/* VERSE DISPLAY */}
       <div id="answerDisplay" style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.2s ease' }}>
         {verses.length === 0 && loading ? (
              <p style={{ textAlign: 'center' }}>Loading the Word...</p>
         ) : (
             verses.map((v, index) => {
+                const verseKey = `${book} ${chapter}:${v.verse}`;
+                const isHighlighted = highlights.includes(verseKey);
                 const isSelected = selectedVerses.includes(v.verse);
                 const themeClass = theme === 'dark' ? 'dark' : 'light';
                 const selectedClass = isSelected ? 'selected' : '';
+                
+                const highlightStyle = isHighlighted 
+                    ? { backgroundColor: theme === 'dark' ? '#443308' : '#fffacd', border: theme === 'dark' ? '1px solid #744210' : '1px solid #fefcbf' }
+                    : {};
+
                 return (
-                <div key={index} className={`verse-box ${themeClass} ${selectedClass}`} onClick={() => toggleVerse(v.verse)}>
+                <div 
+                    key={index} 
+                    className={`verse-box ${themeClass} ${selectedClass}`} 
+                    style={highlightStyle}
+                    onClick={() => toggleVerse(v.verse)}
+                    onDoubleClick={() => handleVerseDoubleClick(v.verse)} // ⚡ Added Double Click
+                >
                     <input type="checkbox" checked={isSelected} onChange={() => {}} style={{ cursor: 'pointer', marginTop: '4px' }} />
                     <span style={{ fontWeight: 'bold', marginRight: '5px', fontSize: '0.8rem', color: theme === 'dark' ? '#888' : '#999' }}>{v.verse}</span>
                     <span className="verse-text">{v.text}</span>
@@ -380,15 +492,27 @@ function BibleReader({ theme }) {
         
         {/* REFLECTION SECTION */}
         <div style={{ marginTop: '30px' }}>
-          {user && !hasShared ? (
-            <div style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
-                <textarea placeholder={`What is the Spirit saying through ${book} ${chapter}?`} value={reflection} onChange={(e) => setReflection(e.target.value)} style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
+          {user && (!hasShared || editingId) ? (
+            <div id="reflection-input" style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
+                <textarea 
+                  placeholder={`What is the Spirit saying through ${book} ${chapter}?`} 
+                  value={reflection} 
+                  onChange={(e) => setReflection(e.target.value)} 
+                  style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} 
+                />
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                  <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>Share with the Body</button>
-                  <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                  <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>
+                      {editingId ? "Update Reflection" : "Share with the Body"}
+                  </button>
+                  {editingId && (
+                     <button onClick={handleCancelEdit} className="secondary-btn" style={{backgroundColor: '#e53e3e', color: 'white', border: 'none'}}>Cancel</button>
+                  )}
+                  {!editingId && (
+                    <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>
+                  )}
                 </div>
             </div>
-          ) : hasShared ? (
+          ) : (hasShared && !editingId) ? (
             <div style={{ padding: '20px', backgroundColor: theme === 'dark' ? '#0f2f21' : '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: theme === 'dark' ? '#81e6d9' : '#276749' }}>
               <p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body for this chapter!</p>
             </div>
@@ -399,20 +523,36 @@ function BibleReader({ theme }) {
           <h2 style={{ textAlign: 'center', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
             {chapterReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : chapterReflections.map((post, i) => (
-              <MemberCard key={i} user={{ displayName: post.userName, photoURL: post.userPhoto }} thought={post.text} />
+              <div key={post.id || i} style={{ position: 'relative' }}>
+                  <MemberCard user={{ displayName: post.userName, photoURL: post.userPhoto }} thought={post.text} />
+                  
+                  {user && user.uid === post.userId && (
+                      <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
+                          <button 
+                            onClick={() => handleEditClick(post)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#888' : '#666', textDecoration: 'underline' }}
+                          >
+                            Edit
+                          </button>
+                          <span style={{color: '#ccc'}}>|</span>
+                          <button 
+                            onClick={() => handleDeleteClick(post.id)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: '#e53e3e', textDecoration: 'underline' }}
+                          >
+                            Delete
+                          </button>
+                      </div>
+                  )}
+              </div>
             ))}
           </div>
         </section>
 
-        {/* --- TRACKER & LOGIN SECTION --- */}
         <div style={{ borderTop: '1px solid #eee', marginTop: '40px', paddingTop: '20px' }}>
-             
-             {/* 2. GRID: Visible to all (Looks cool!) */}
              <div style={{ marginTop: '20px' }}>
                 <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} />
              </div>
 
-             {/* 3. LOGIN: Visible only to Guests (Bottom of page) */}
              {!user && (
                <div id="login-section" style={{ textAlign: 'center', background: theme === 'dark' ? '#222' : '#f9f9f9', padding: '30px', borderRadius: '12px', marginTop: '40px' }}>
                   <h3 style={{ marginBottom: '10px', color: theme === 'dark' ? '#fff' : '#333' }}>Save Your Progress</h3>
