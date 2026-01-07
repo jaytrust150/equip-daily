@@ -234,35 +234,39 @@ function BibleReader({ theme }) {
       setIsNoteMode(true);
   };
 
-  // --- 🔗 SHARE LOGIC (UPDATED) ---
+  // --- 🔗 SHARE & COPY LOGIC ---
   const handleShareItem = async (text) => {
-      // General share for reflections
       const shareData = { title: 'Equip Daily', text: text, url: window.location.href };
       if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
       else { try { await navigator.clipboard.writeText(text); alert("Text copied to clipboard!"); } catch (err) {} }
   };
 
-  // 🚀 NEW: Smart Note Sharing (Includes Verses)
-  const handleShareNote = async (note) => {
-      // 1. Reconstruct Verse Text
+  // Helper to build note text
+  const buildNoteShareText = (note) => {
       const noteVerseText = note.verses.map(vNum => {
           const vObj = verses.find(v => v.verse === vNum);
           return vObj ? vObj.text : "";
       }).join(' ');
-      
-      // 2. Format Citation (e.g., Genesis 1:1-2)
       const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
       
-      // 3. Build Message
-      const fullShareText = `"${noteVerseText}" ${citation}\n\nMy Note: ${note.text}`;
-      
-      // 4. Share
+      // 🚀 UPDATED FORMAT: Removed "My Note:" label
+      return `"${noteVerseText}" ${citation}\n\n${note.text}`;
+  };
+
+  const handleShareNote = async (note) => {
+      const fullShareText = buildNoteShareText(note);
       const shareData = { title: 'Equip Daily Note', text: fullShareText, url: window.location.href };
-      
-      if (navigator.share) { 
-          try { await navigator.share(shareData); } catch (err) {} 
-      } else { 
-          try { await navigator.clipboard.writeText(fullShareText); alert("Note & Verses copied to clipboard!"); } catch (err) {} 
+      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
+      else { try { await navigator.clipboard.writeText(fullShareText); alert("Note & Verses copied to clipboard!"); } catch (err) {} }
+  };
+
+  const handleCopyNote = async (note) => {
+      const fullShareText = buildNoteShareText(note);
+      try { 
+          await navigator.clipboard.writeText(fullShareText); 
+          alert("Note & Verses copied to clipboard!"); 
+      } catch (err) { 
+          console.error("Failed to copy", err); 
       }
   };
 
@@ -304,11 +308,13 @@ function BibleReader({ theme }) {
     const textBlock = selectedVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
     return `"${textBlock}" (${book} ${chapter} ${version.toUpperCase()})`;
   };
+  
   const handleShare = async () => {
     let shareData = { title: 'Equip Daily', text: `Reading ${book} ${chapter}`, url: window.location.href };
     if (selectedVerses.length > 0) shareData.text = formatCitation();
     if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { alert("Use Copy!"); }
   };
+  
   const handleCopy = async () => {
     if (selectedVerses.length === 0) { alert("Select verses first!"); return; }
     try { await navigator.clipboard.writeText(formatCitation()); setCopyBtnText("Copied!"); setTimeout(() => setCopyBtnText("Copy"), 2000); } catch (err) {}
@@ -340,7 +346,6 @@ function BibleReader({ theme }) {
             <select value={version} onChange={(e) => setVersion(e.target.value)} style={{ fontSize: '0.65rem', color: theme === 'dark' ? '#888' : '#999', marginLeft: '2px', border: 'none', background: 'transparent', cursor: 'pointer' }}><option value="web" style={{color: '#333'}}>WEB</option><option value="kjv" style={{color: '#333'}}>KJV</option><option value="asv" style={{color: '#333'}}>ASV</option><option value="bbe" style={{color: '#333'}}>BBE</option></select>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={handleShare} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Share</button>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
             
@@ -350,7 +355,6 @@ function BibleReader({ theme }) {
             
             <button onClick={handleNoteButtonClick} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>Note</button>
             
-            {/* 👁️ TOGGLE VISIBILITY BUTTON */}
             {userNotes.length > 0 && (
                 <button 
                     onClick={() => setShowNotes(!showNotes)} 
@@ -394,7 +398,6 @@ function BibleReader({ theme }) {
         .nav-btn:hover { opacity: 0.9; }
         .nav-toggle-btn { padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; border: 1px solid #eee; background-color: #fff; color: #555; transition: all 0.2s ease; }
         .nav-toggle-btn.active { background-color: #e3f2fd; color: #1976d2; border: 1px solid #2196F3; }
-        
         .inline-editor-container { animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; transform-origin: top; overflow: hidden; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px) scaleY(0.95); max-height: 0; } to { opacity: 1; transform: translateY(0) scaleY(1); max-height: 300px; } }
       `}</style>
@@ -473,13 +476,16 @@ function BibleReader({ theme }) {
                         return (
                             <div key={note.id} style={{ marginLeft: '30px', marginRight: '10px', marginBottom: '15px', backgroundColor: theme === 'dark' ? '#1e3a5f' : '#e3f2fd', borderLeft: `4px solid ${NOTE_BUTTON_COLOR}`, padding: '10px 15px', borderRadius: '4px', fontSize: '0.9rem', color: theme === 'dark' ? '#fff' : '#333', position: 'relative' }}>
                                 <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{note.text}</p>
-                                {/* 🔗 NOTES TOOLBAR (SHARE) */}
+                                {/* 🔗 NOTES TOOLBAR (Edit | Delete | Copy | Share) */}
                                 <div style={{ marginTop: '8px', display: 'flex', gap: '10px', fontSize: '0.75rem' }}>
                                     <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', padding: 0 }}>Edit</button>
                                     <span style={{color: '#ccc'}}>|</span>
                                     <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e53e3e', fontWeight: 'bold', padding: 0 }}>Delete</button>
                                     <span style={{color: '#ccc'}}>|</span>
-                                    {/* 🚀 CALLING NEW SHARE FUNCTION */}
+                                    {/* 📋 NEW COPY BUTTON */}
+                                    <button onClick={() => handleCopyNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Copy</button>
+                                    <span style={{color: '#ccc'}}>|</span>
+                                    {/* 🚀 SHARE BUTTON */}
                                     <button onClick={() => handleShareNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Share</button>
                                 </div>
                             </div>
