@@ -5,17 +5,7 @@ import Login from './Login';
 import { auth, db } from "./firebase";
 import { signOut } from "firebase/auth"; 
 import { useAuthState } from "react-firebase-hooks/auth";
-import { 
-  doc, 
-  setDoc, 
-  updateDoc, // NEW
-  deleteDoc, // NEW
-  serverTimestamp, 
-  collection, 
-  query, 
-  where, 
-  onSnapshot 
-} from "firebase/firestore";
+import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, where, onSnapshot } from "firebase/firestore";
 import './App.css';
 
 function App() {
@@ -31,7 +21,7 @@ function App() {
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [communityReflections, setCommunityReflections] = useState([]);
-  const [editingId, setEditingId] = useState(null); // NEW: Tracks editing state
+  const [editingId, setEditingId] = useState(null); 
   const [fontSize, setFontSize] = useState(1.1);
 
   const logout = () => signOut(auth);
@@ -78,10 +68,10 @@ function App() {
     setCurrentDate(targetDate);
     const month = targetDate.getMonth() + 1;
     const day = targetDate.getDate();
+    // Adjust logic if you have specific file naming (e.g. padding zeros)
     const fileName = `${month}.${day}-devotional.txt`;
 
-    // Reset editing state when date changes
-    setEditingId(null);
+    setEditingId(null); // Reset edit state when changing days
 
     fetch(`/${fileName}`)
       .then(res => { if (!res.ok) throw new Error("File not found"); return res.text(); })
@@ -89,17 +79,15 @@ function App() {
       .catch(() => { setDevotional(`<div style="text-align: center; padding: 20px;"><p>Edits in Progress for ${targetDate.toLocaleDateString()}</p></div>`); });
   }, [dayOffset]);
 
-  // --- FETCH REFLECTIONS (Updated for IDs) ---
+  // --- FETCH REFLECTIONS ---
   useEffect(() => {
     if (!db) return;
 
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
-    try {
-      const q = query(collection(db, "reflections"), where("date", "==", dateKey));
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const q = query(collection(db, "reflections"), where("date", "==", dateKey));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const fetchedReflections = [];
         querySnapshot.forEach((doc) => { 
-            // Capture ID for editing/deleting
             fetchedReflections.push({ id: doc.id, ...doc.data() }); 
         });
         setCommunityReflections(fetchedReflections);
@@ -108,21 +96,17 @@ function App() {
           const myPost = fetchedReflections.find(r => r.userId === user.uid);
           if (myPost) { 
               setHasShared(true); 
-              // Only overwrite text if we aren't currently editing
               if (!editingId) setReflection(myPost.text); 
           } else {
               setHasShared(false);
               if (!editingId) setReflection("");
           }
         }
-      });
-      return () => unsubscribe();
-    } catch (error) {
-      console.error("Error connecting to Firestore:", error);
-    }
+    });
+    return () => unsubscribe();
   }, [currentDate, user, editingId]);
 
-  // --- ⚡ ACTIONS: Save, Edit, Delete ⚡ ---
+  // --- ACTIONS: Save, Edit, Delete, Share ---
 
   const saveReflection = async () => {
     if (!reflection.trim() || !user || !db) return; 
@@ -152,7 +136,6 @@ function App() {
   const handleEditClick = (post) => {
       setEditingId(post.id);
       setReflection(post.text);
-      // Smooth scroll to input
       document.getElementById('devotional-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -175,10 +158,11 @@ function App() {
       }
   };
 
-  const handleShare = async () => {
-    const shareData = { title: 'Equip Daily', text: `Reading the devotional for ${currentDate.toDateString()}.`, url: window.location.href };
-    if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
-    else { try { await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`); alert("Copied!"); } catch (err) {} }
+  // 🔗 NEW: Handle Sharing Individual Reflection
+  const handleShareItem = async (text) => {
+      const shareData = { title: 'Equip Daily', text: text, url: window.location.href };
+      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
+      else { try { await navigator.clipboard.writeText(text); alert("Text copied to clipboard!"); } catch (err) {} }
   };
 
   const handleMonthChange = (e) => {
@@ -248,7 +232,7 @@ function App() {
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
-                  <button onClick={handleShare} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: '#e3f2fd', color: '#1976d2', border: '1px solid #bbdefb' }}>Share</button>
+                  {/* 🗑 REMOVED GLOBAL SHARE BUTTON FROM HERE */}
                   <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn" style={navBtnStyle}>← Prior</button>
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
@@ -311,7 +295,7 @@ function App() {
                     <div key={post.id || post.userId} style={{ position: 'relative' }}>
                         <MemberCard user={{ displayName: post.userName, photoURL: post.userPhoto }} thought={post.text} />
                         
-                         {/* EDIT / DELETE BUTTONS FOR OWNER */}
+                         {/* 🔗 ADDED SHARE BUTTON TO CARDS HERE */}
                          {user && user.uid === post.userId && (
                             <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '5px' }}>
                                 <button 
@@ -326,6 +310,13 @@ function App() {
                                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: '#e53e3e', textDecoration: 'underline' }}
                                 >
                                   Delete
+                                </button>
+                                <span style={{color: '#ccc'}}>|</span>
+                                <button 
+                                  onClick={() => handleShareItem(post.text)}
+                                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#888' : '#666', textDecoration: 'underline' }}
+                                >
+                                  Share
                                 </button>
                             </div>
                         )}
