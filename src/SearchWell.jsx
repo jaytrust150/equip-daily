@@ -60,7 +60,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
             book_name: BOOK_ID_MAP[item.book] || "Verse", 
             chapter: item.chapter,
             verse: item.verse,
-            text: item.text // This contains <mark> tags which we render below
+            text: item.text 
         })).slice(0, 50);
 
         setResults(formattedResults);
@@ -74,12 +74,42 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
 
   // 🚀 JUMP HANDLER
   const handleResultClick = (r) => {
-    if (r.isRef) return; // References (full blocks) don't jump
-    
-    // Check if parent passed the jump function
-    if (onJumpToVerse) {
-        onJumpToVerse(r.book_name, r.chapter);
-        onClose(); 
+    if (!onJumpToVerse) {
+        console.error("Navigation function not connected!");
+        return;
+    }
+
+    // Helper: Only close if we are on a small screen (mobile)
+    const closeIfMobile = () => {
+        if (window.innerWidth <= 768) {
+            onClose();
+        }
+    };
+
+    // CASE 1: Keyword Search Result
+    if (!r.isRef) {
+      onJumpToVerse(r.book_name, r.chapter);
+      closeIfMobile();
+      return;
+    }
+
+    // CASE 2: Reference Lookup
+    if (r.isRef) {
+      const match = r.book_name.match(/^(.+)\s(\d+):/);
+      
+      if (match) {
+        const book = match[1].trim();   
+        const chapter = match[2];       
+        onJumpToVerse(book, chapter);
+        closeIfMobile();
+      } else {
+        // Fallback
+        const chapterMatch = r.book_name.match(/^(.+)\s(\d+)$/);
+        if (chapterMatch) {
+            onJumpToVerse(chapterMatch[1].trim(), chapterMatch[2]);
+            closeIfMobile();
+        }
+      }
     }
   };
 
@@ -149,16 +179,15 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                     padding: '12px', borderRadius: '8px', 
                     backgroundColor: theme === 'dark' ? '#333' : '#f8f9fa', 
                     borderLeft: '3px solid #2196F3',
-                    cursor: r.isRef ? 'default' : 'pointer', // Show pointer if it's clickable!
+                    cursor: 'pointer', 
                     transition: 'transform 0.1s'
                 }}
-                onMouseOver={(e) => !r.isRef && (e.currentTarget.style.transform = 'scale(1.02)')}
-                onMouseOut={(e) => !r.isRef && (e.currentTarget.style.transform = 'scale(1)')}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
             >
               <strong style={{ display: 'block', fontSize: '0.85rem', color: '#2196F3', marginBottom: '4px' }}>
                 {r.book_name} {r.chapter ? `${r.chapter}:${r.verse}` : ''}
               </strong>
-              {/* 🛠️ FIX: Using dangerouslySetInnerHTML to render <mark> tags properly */}
               <span 
                 style={{ fontSize: '0.9rem', lineHeight: '1.5', color: theme === 'dark' ? '#ddd' : '#333' }} 
                 dangerouslySetInnerHTML={{ __html: r.text }} 

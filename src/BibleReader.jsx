@@ -1,69 +1,58 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { bibleData } from './bibleData'; 
-import BibleTracker from './BibleTracker'; 
+import { bibleData } from './bibleData';
+import BibleTracker from './BibleTracker';
 import MemberCard from './MemberCard'; 
 import Login from './Login'; 
 import { auth, db } from "./firebase";
-import confetti from 'canvas-confetti'; 
+import confetti from 'canvas-confetti';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { 
-  doc, 
-  setDoc,
-  deleteDoc, 
-  updateDoc,
-  arrayUnion, 
-  arrayRemove, 
-  onSnapshot, 
-  collection, 
-  query, 
-  where, 
-  serverTimestamp,
-  addDoc 
+  doc, setDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove, 
+  onSnapshot, collection, query, where, serverTimestamp, addDoc 
 } from "firebase/firestore";
 
 // 🎨 COLORS
-const HIGHLIGHT_COLOR = '#ffeb3b'; 
-const NOTE_BUTTON_COLOR = '#2196F3'; // Material Blue
+const HIGHLIGHT_COLOR = '#ffeb3b';
+const NOTE_BUTTON_COLOR = '#2196F3'; 
 
-function BibleReader({ theme }) {
+// 🚀 MODIFIED: Now accepts props from App.js
+function BibleReader({ theme, book, setBook, chapter, setChapter }) {
   const [user] = useAuthState(auth);
-  const [book, setBook] = useState('Genesis');
-  const [chapter, setChapter] = useState(1);
+  
+  // ⚠️ LOCAL STATE REMOVED: We use the 'book' and 'chapter' props now!
+  
   const [version, setVersion] = useState('web');
   const [verses, setVerses] = useState([]);
   const [selectedVerses, setSelectedVerses] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  const [readChapters, setReadChapters] = useState([]); 
+  const [readChapters, setReadChapters] = useState([]);
   const [isChapterRead, setIsChapterRead] = useState(false);
-  const [copyBtnText, setCopyBtnText] = useState("Copy"); 
-  
+  const [copyBtnText, setCopyBtnText] = useState("Copy");
   const [highlights, setHighlights] = useState([]);
-  
+
   // 📝 NOTE STATE
-  const [userNotes, setUserNotes] = useState([]); 
-  const [showNotes, setShowNotes] = useState(true); // Toggle View
-  // Editor State (Inline)
+  const [userNotes, setUserNotes] = useState([]);
+  const [showNotes, setShowNotes] = useState(true);
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
-  const [editingNoteId, setEditingNoteId] = useState(null); 
-  const editorRef = useRef(null); 
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const editorRef = useRef(null);
 
   // NAV STATE
   const [topNavMode, setTopNavMode] = useState(null);
-  const [fontSize, setFontSize] = useState(1.1); 
-  
+  const [fontSize, setFontSize] = useState(1.1);
+
   // REFLECTION STATE
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [chapterReflections, setChapterReflections] = useState([]);
-  const [editingId, setEditingId] = useState(null); 
+  const [editingId, setEditingId] = useState(null);
 
   // --- 1. Fetch User Progress & Highlights ---
   useEffect(() => {
     if (!user) {
         setReadChapters([]); 
-        setHighlights([]); 
+        setHighlights([]);
         return;
     }
     const docRef = doc(db, "users", user.uid);
@@ -71,9 +60,7 @@ function BibleReader({ theme }) {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setReadChapters(data.readChapters || []);
-        
         const rawHighlights = data.highlights || [];
-        // Safety check to ensure we only split strings
         const cleanHighlights = rawHighlights
             .filter(h => typeof h === 'string')
             .map(h => h.split('|')[0]);
@@ -93,7 +80,7 @@ function BibleReader({ theme }) {
       setChapterReflections(fetched || []);
       if (user) {
         const myPost = fetched.find(r => r.userId === user.uid);
-        if (myPost) { setHasShared(true); if (!editingId) setReflection(myPost.text); } 
+        if (myPost) { setHasShared(true); if (!editingId) setReflection(myPost.text); }
         else { setHasShared(false); if (!editingId) setReflection(""); }
       }
     });
@@ -103,14 +90,12 @@ function BibleReader({ theme }) {
   // --- 📝 3. FETCH USER NOTES ---
   useEffect(() => {
     if (!user) { setUserNotes([]); return; }
-    
     const q = query(
         collection(db, "notes"), 
         where("userId", "==", user.uid),
         where("book", "==", book),
         where("chapter", "==", parseInt(chapter))
     );
-
     const unsubscribe = onSnapshot(q, (snapshot) => {
         const fetchedNotes = [];
         snapshot.forEach(doc => fetchedNotes.push({ id: doc.id, ...doc.data() }));
@@ -126,9 +111,9 @@ function BibleReader({ theme }) {
 
   // --- TRACKING ---
   const toggleChapterRead = useCallback(async (e) => {
-    if (!user) { 
-        if(e && e.preventDefault) e.preventDefault(); 
-        alert("Please log in to track your progress."); 
+    if (!user) {
+        if (e && e.preventDefault) e.preventDefault(); 
+        alert("Please log in to track your progress.");
         document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' });
         return; 
     }
@@ -140,17 +125,26 @@ function BibleReader({ theme }) {
     const userRef = doc(db, "users", user.uid);
     setIsChapterRead(isNowChecked);
     setReadChapters(prev => isNowChecked ? [...prev, chapterKey] : prev.filter(k => k !== chapterKey));
-    try { await setDoc(userRef, { readChapters: isNowChecked ? arrayUnion(chapterKey) : arrayRemove(chapterKey) }, { merge: true }); } 
-    catch (err) { console.error("Error saving progress:", err); setIsChapterRead(!isNowChecked); }
+    try {
+        await setDoc(userRef, { readChapters: isNowChecked ? arrayUnion(chapterKey) : arrayRemove(chapterKey) }, { merge: true });
+    } catch (err) {
+        console.error("Error saving progress:", err);
+        setIsChapterRead(!isNowChecked);
+    }
   }, [user, book, chapter, isChapterRead]);
 
+  // 🚀 NAVIGATE HANDLER (Uses Props!)
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
-      setBook(newBook); setChapter(newChapter); window.scrollTo({ top: 0, behavior: 'smooth' });
-      setEditingId(null); setReflection(""); setSelectedVerses([]); 
+      setBook(newBook);
+      setChapter(newChapter);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setEditingId(null);
+      setReflection("");
+      setSelectedVerses([]);
       if (user && newBook === book && newChapter === parseInt(chapter)) { toggleChapterRead(); }
-  }, [book, chapter, user, toggleChapterRead]);
+  }, [book, chapter, user, toggleChapterRead, setBook, setChapter]);
 
-  // --- 🖍 HIGHLIGHT ---
+  // --- 🖍 HIGHLIGHT & NOTES ---
   const handleHighlightButton = async () => {
     if (!user) { alert("Please log in to highlight."); return; }
     if (selectedVerses.length === 0) { 
@@ -179,95 +173,34 @@ function BibleReader({ theme }) {
       } catch (e) { console.error("Highlight toggle error:", e); }
   };
 
-  // --- 📝 NOTE ACTIONS ---
   const handleNoteButtonClick = () => {
       if (!user) { alert("Please log in to add notes."); return; }
       if (selectedVerses.length === 0) { alert("Select verses to attach a note to!"); return; }
-      
-      setCurrentNoteText("");
-      setEditingNoteId(null);
-      setIsNoteMode(true);
-      
-      setTimeout(() => {
-          if (editorRef.current) {
-              editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              editorRef.current.focus();
-          }
-      }, 100);
+      setCurrentNoteText(""); setEditingNoteId(null); setIsNoteMode(true);
+      setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
   };
-
-  const cancelNote = () => {
-      setIsNoteMode(false);
-      setEditingNoteId(null);
-      setCurrentNoteText("");
-  };
-
   const saveNote = async () => {
       if (!currentNoteText.trim()) return;
       try {
-          if (editingNoteId) {
-              const noteRef = doc(db, "notes", editingNoteId);
-              await updateDoc(noteRef, { text: currentNoteText, timestamp: serverTimestamp() });
-          } else {
-              await addDoc(collection(db, "notes"), {
-                  userId: user.uid, book: book, chapter: parseInt(chapter),
-                  verses: selectedVerses.sort((a,b) => a-b),
-                  text: currentNoteText, timestamp: serverTimestamp(), color: 'blue' 
-              });
-          }
-          setIsNoteMode(false);
-          setEditingNoteId(null);
-          setSelectedVerses([]); 
+          if (editingNoteId) { await updateDoc(doc(db, "notes", editingNoteId), { text: currentNoteText, timestamp: serverTimestamp() }); } 
+          else { await addDoc(collection(db, "notes"), { userId: user.uid, book: book, chapter: parseInt(chapter), verses: selectedVerses.sort((a,b) => a-b), text: currentNoteText, timestamp: serverTimestamp(), color: 'blue' }); }
+          setIsNoteMode(false); setEditingNoteId(null); setSelectedVerses([]); 
       } catch (e) { console.error("Error saving note:", e); }
   };
-
-  const deleteNote = async (noteId) => {
-      if (window.confirm("Are you sure you want to delete this note?")) {
-          try { await deleteDoc(doc(db, "notes", noteId)); } 
-          catch (e) { console.error("Error deleting note:", e); }
-      }
-  };
-
-  const startEditingNote = (note) => {
-      setCurrentNoteText(note.text);
-      setEditingNoteId(note.id);
-      setIsNoteMode(true);
-  };
-
-  // --- 🔗 SHARE & COPY LOGIC ---
-  const handleShareItem = async (text) => {
-      const shareData = { title: 'Equip Daily', text: text, url: window.location.href };
-      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
-      else { try { await navigator.clipboard.writeText(text); alert("Text copied to clipboard!"); } catch (err) {} }
-  };
-
-  // Helper to build note text
-  const buildNoteShareText = (note) => {
-      const noteVerseText = note.verses.map(vNum => {
-          const vObj = verses.find(v => v.verse === vNum);
-          return vObj ? vObj.text : "";
-      }).join(' ');
-      const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
-      
-      // 🚀 UPDATED FORMAT: Removed "My Note:" label
-      return `"${noteVerseText}" ${citation}\n\n${note.text}`;
-  };
+  const deleteNote = async (noteId) => { if (window.confirm("Are you sure?")) { try { await deleteDoc(doc(db, "notes", noteId)); } catch (e) { console.error(e); } } };
+  const startEditingNote = (note) => { setCurrentNoteText(note.text); setEditingNoteId(note.id); setIsNoteMode(true); };
 
   const handleShareNote = async (note) => {
-      const fullShareText = buildNoteShareText(note);
+      const noteVerseText = note.verses.map(vNum => { const v = verses.find(v => v.verse === vNum); return v ? v.text : ""; }).join(' ');
+      const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
+      const fullShareText = `"${noteVerseText}" ${citation}\n\n${note.text}`;
       const shareData = { title: 'Equip Daily Note', text: fullShareText, url: window.location.href };
-      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } 
-      else { try { await navigator.clipboard.writeText(fullShareText); alert("Note & Verses copied to clipboard!"); } catch (err) {} }
+      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { try { await navigator.clipboard.writeText(fullShareText); alert("Note copied!"); } catch (err) {} }
   };
-
   const handleCopyNote = async (note) => {
-      const fullShareText = buildNoteShareText(note);
-      try { 
-          await navigator.clipboard.writeText(fullShareText); 
-          alert("Note & Verses copied to clipboard!"); 
-      } catch (err) { 
-          console.error("Failed to copy", err); 
-      }
+      const noteVerseText = note.verses.map(vNum => { const v = verses.find(v => v.verse === vNum); return v ? v.text : ""; }).join(' ');
+      const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
+      try { await navigator.clipboard.writeText(`"${noteVerseText}" ${citation}\n\n${note.text}`); alert("Note copied!"); } catch (err) {}
   };
 
   // --- REFLECTION ACTIONS ---
@@ -275,20 +208,14 @@ function BibleReader({ theme }) {
     if (!reflection.trim() || !user) return;
     const chapterKey = `${book} ${chapter}`;
     try {
-      if (editingId) {
-        await updateDoc(doc(db, "reflections", editingId), { text: reflection, timestamp: serverTimestamp(), isEdited: true });
-        setEditingId(null); setReflection("");
-      } else {
-        await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), {
-            userId: user.uid, userName: user.displayName, userPhoto: user.photoURL,
-            text: reflection, chapter: chapterKey, timestamp: serverTimestamp(), location: "Sebastian" 
-        });
-      }
+      if (editingId) { await updateDoc(doc(db, "reflections", editingId), { text: reflection, timestamp: serverTimestamp(), isEdited: true }); setEditingId(null); setReflection(""); } 
+      else { await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), { userId: user.uid, userName: user.displayName, userPhoto: user.photoURL, text: reflection, chapter: chapterKey, timestamp: serverTimestamp(), location: "Sebastian" }); }
     } catch (e) { console.error("Error saving reflection:", e); }
   };
   const handleEditClick = (post) => { setEditingId(post.id); setReflection(post.text); document.getElementById('reflection-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
   const handleCancelEdit = () => { setEditingId(null); setReflection(""); };
   const handleDeleteClick = async (id) => { if (window.confirm("Delete reflection?")) { try { await deleteDoc(doc(db, "reflections", id)); if (editingId === id) handleCancelEdit(); } catch (e) { console.error(e); } } };
+  const handleShareItem = async (text) => { const shareData = { title: 'Equip Daily', text: text, url: window.location.href }; if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { try { await navigator.clipboard.writeText(text); alert("Text copied!"); } catch (err) {} } };
 
   // --- DATA FETCHING ---
   useEffect(() => {
@@ -300,43 +227,23 @@ function BibleReader({ theme }) {
       .catch(err => { console.error(err); setLoading(false); });
   }, [book, chapter, version]);
 
-  const toggleVerse = (verseNum) => {
-    if (selectedVerses.includes(verseNum)) setSelectedVerses(selectedVerses.filter(v => v !== verseNum));
-    else setSelectedVerses([...selectedVerses, verseNum].sort((a, b) => a - b)); 
-  };
-  const formatCitation = () => {
-    const textBlock = selectedVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
-    return `"${textBlock}" (${book} ${chapter} ${version.toUpperCase()})`;
-  };
-  
-  const handleShare = async () => {
-    let shareData = { title: 'Equip Daily', text: `Reading ${book} ${chapter}`, url: window.location.href };
-    if (selectedVerses.length > 0) shareData.text = formatCitation();
-    if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { alert("Use Copy!"); }
-  };
-  
+  const toggleVerse = (verseNum) => { if (selectedVerses.includes(verseNum)) setSelectedVerses(selectedVerses.filter(v => v !== verseNum)); else setSelectedVerses([...selectedVerses, verseNum].sort((a, b) => a - b)); };
   const handleCopy = async () => {
     if (selectedVerses.length === 0) { alert("Select verses first!"); return; }
-    try { await navigator.clipboard.writeText(formatCitation()); setCopyBtnText("Copied!"); setTimeout(() => setCopyBtnText("Copy"), 2000); } catch (err) {}
+    try { 
+        const textBlock = selectedVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
+        const citation = `${book} ${chapter}:${selectedVerses[0]}${selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''} (${version.toUpperCase()})`;
+        await navigator.clipboard.writeText(`"${textBlock}" ${citation}`); setCopyBtnText("Copied!"); setTimeout(() => setCopyBtnText("Copy"), 2000); 
+    } catch (err) {}
   };
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
-  const handleNext = () => {
-    const idx = bibleData.findIndex(b => b.name === book);
-    if (parseInt(chapter) < bibleData[idx].chapters) setChapter(parseInt(chapter) + 1); 
-    else if (idx < bibleData.length - 1) { setBook(bibleData[idx + 1].name); setChapter(1); }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  const handlePrev = () => {
-    if (parseInt(chapter) > 1) setChapter(parseInt(chapter) - 1); 
-    else { const idx = bibleData.findIndex(b => b.name === book); if (idx > 0) { setBook(bibleData[idx - 1].name); setChapter(bibleData[idx - 1].chapters); } }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  const handleNext = () => { const idx = bibleData.findIndex(b => b.name === book); if (parseInt(chapter) < bibleData[idx].chapters) setChapter(parseInt(chapter) + 1); else if (idx < bibleData.length - 1) { setBook(bibleData[idx + 1].name); setChapter(1); } window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const handlePrev = () => { if (parseInt(chapter) > 1) setChapter(parseInt(chapter) - 1); else { const idx = bibleData.findIndex(b => b.name === book); if (idx > 0) { setBook(bibleData[idx - 1].name); setChapter(bibleData[idx - 1].chapters); } } window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const getChapterCount = () => { const b = bibleData.find(d => d.name === book); return b ? b.chapters : 50; };
 
   // --- UI Components ---
   const compactSelectStyle = { border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.75rem', color: theme === 'dark' ? '#aaa' : '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit', maxWidth: '70px' };
-
   const ControlBar = () => (
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0', minHeight: '40px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
@@ -348,26 +255,12 @@ function BibleReader({ theme }) {
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
-            
             <button onClick={handleCopy} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? '#ff9900' : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>{copyBtnText}</button>
-            
             <button onClick={handleHighlightButton} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? HIGHLIGHT_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), textShadow: selectedVerses.length > 0 ? '0px 1px 2px rgba(0,0,0,0.3)' : 'none', padding: '5px 10px', fontSize: '0.85rem' }}>Highlight</button>
-            
             <button onClick={handleNoteButtonClick} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>Note</button>
-            
-            {userNotes.length > 0 && (
-                <button 
-                    onClick={() => setShowNotes(!showNotes)} 
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', marginLeft: '5px', color: theme === 'dark' ? '#888' : '#555' }} 
-                    title={showNotes ? "Hide Notes" : "Show Notes"}
-                >
-                    {showNotes ? "👁️" : "🙈"}
-                </button>
-            )}
-
+            {userNotes.length > 0 && ( <button onClick={() => setShowNotes(!showNotes)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', marginLeft: '5px', color: theme === 'dark' ? '#888' : '#555' }} title={showNotes ? "Hide Notes" : "Show Notes"}> {showNotes ? "👁️" : "🙈"} </button> )}
             <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
             <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
-
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '5px 12px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.3s ease', marginLeft: '5px', backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#333' : '#f0f0f0'), border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'), color: isChapterRead ? '#276749' : (theme === 'dark' ? '#fff' : '#333'), boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
                 <input type="checkbox" checked={isChapterRead} onChange={toggleChapterRead} style={{ width: '16px', height: '16px', accentColor: '#276749', cursor: 'pointer', backgroundColor: 'white' }} />
                 <span style={{ whiteSpace: 'nowrap' }}>Track Read for Daily Bible Plan</span>
@@ -384,7 +277,6 @@ function BibleReader({ theme }) {
   return (
     <div id="bible-reader-top" className="container" style={{ maxWidth: '100%', padding: '0', boxShadow: 'none', '--verse-font-size': `${fontSize}rem` }}>
       <style>{`
-        /* 🫧 BUBBLE LAYOUT */
         .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: all 0.2s ease; user-select: none; position: relative; }
         .verse-text { font-size: var(--verse-font-size); line-height: 1.6; transition: font-size 0.2s ease; }
         .verse-box.light { background-color: #fff; color: #333; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -393,7 +285,6 @@ function BibleReader({ theme }) {
         .verse-box.dark { background-color: #000; color: #ccc; border: 1px solid #333; }
         .verse-box.dark:hover { background-color: #333; } 
         .verse-box.dark.selected { background-color: #1e3a5f; border: 1px solid #4a90e2; }
-        
         .nav-btn { background-color: ${theme === 'dark' ? '#333' : '#f0f0f0'}; color: ${theme === 'dark' ? '#fff' : '#333'}; border: ${theme === 'dark' ? '1px solid #444' : '1px solid #ccc'}; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; font-weight: bold; }
         .nav-btn:hover { opacity: 0.9; }
         .nav-toggle-btn { padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; border: 1px solid #eee; background-color: #fff; color: #555; transition: all 0.2s ease; }
@@ -429,7 +320,6 @@ function BibleReader({ theme }) {
                 const selectedClass = isSelected ? 'selected' : '';
                 const highlightStyle = isHighlighted ? { backgroundColor: HIGHLIGHT_COLOR, border: `1px solid #fdd835`, color: '#333' } : {};
                 
-                // 🛡️ SAFETY SHIELD + FILTER NOTES
                 const attachedNotes = showNotes ? userNotes.filter(n => {
                     if (!n.verses || !Array.isArray(n.verses) || n.verses.length === 0) return false;
                     const lastVerse = n.verses[n.verses.length - 1]; 
@@ -476,16 +366,13 @@ function BibleReader({ theme }) {
                         return (
                             <div key={note.id} style={{ marginLeft: '30px', marginRight: '10px', marginBottom: '15px', backgroundColor: theme === 'dark' ? '#1e3a5f' : '#e3f2fd', borderLeft: `4px solid ${NOTE_BUTTON_COLOR}`, padding: '10px 15px', borderRadius: '4px', fontSize: '0.9rem', color: theme === 'dark' ? '#fff' : '#333', position: 'relative' }}>
                                 <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{note.text}</p>
-                                {/* 🔗 NOTES TOOLBAR (Edit | Delete | Copy | Share) */}
                                 <div style={{ marginTop: '8px', display: 'flex', gap: '10px', fontSize: '0.75rem' }}>
                                     <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', padding: 0 }}>Edit</button>
                                     <span style={{color: '#ccc'}}>|</span>
                                     <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e53e3e', fontWeight: 'bold', padding: 0 }}>Delete</button>
                                     <span style={{color: '#ccc'}}>|</span>
-                                    {/* 📋 NEW COPY BUTTON */}
                                     <button onClick={() => handleCopyNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Copy</button>
                                     <span style={{color: '#ccc'}}>|</span>
-                                    {/* 🚀 SHARE BUTTON */}
                                     <button onClick={() => handleShareNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Share</button>
                                 </div>
                             </div>
@@ -499,6 +386,8 @@ function BibleReader({ theme }) {
 
       <div style={{ maxWidth: '700px', margin: '30px auto', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ marginBottom: '25px' }}> <ControlBar /> </div>
+        
+        {/* ✨ REFLECTIONS & LOGIN SECTION (Restored!) */}
         <div style={{ marginTop: '30px' }}>
           {user && (!hasShared || editingId) ? (
             <div id="reflection-input" style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
@@ -511,6 +400,7 @@ function BibleReader({ theme }) {
             </div>
           ) : (hasShared && !editingId) ? <div style={{ padding: '20px', backgroundColor: theme === 'dark' ? '#0f2f21' : '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: theme === 'dark' ? '#81e6d9' : '#276749' }}><p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body for this chapter!</p></div> : null}
         </div>
+        
         <section className="directory" style={{ marginTop: '40px' }}>
           <h2 style={{ textAlign: 'center', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
@@ -528,6 +418,7 @@ function BibleReader({ theme }) {
             ))}
           </div>
         </section>
+
         <div style={{ borderTop: '1px solid #eee', marginTop: '40px', paddingTop: '20px' }}>
              <div style={{ marginTop: '20px' }}><BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} /></div>
              {!user && <div id="login-section" style={{ textAlign: 'center', background: theme === 'dark' ? '#222' : '#f9f9f9', padding: '30px', borderRadius: '12px', marginTop: '40px' }}><h3 style={{ marginBottom: '10px', color: theme === 'dark' ? '#fff' : '#333' }}>Save Your Progress</h3><p style={{ color: '#666', marginBottom: '20px' }}>Join the Body to activate the tracker above and save your history permanently.</p><Login theme={theme} /></div>}
