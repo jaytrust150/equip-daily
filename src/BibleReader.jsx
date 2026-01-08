@@ -15,12 +15,12 @@ import {
 const HIGHLIGHT_COLOR = '#ffeb3b';
 const NOTE_BUTTON_COLOR = '#2196F3'; 
 
-// 🚀 MODIFIED: Now accepts props from App.js
-function BibleReader({ theme, book, setBook, chapter, setChapter }) {
+function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch }) {
   const [user] = useAuthState(auth);
   
-  // ⚠️ LOCAL STATE REMOVED: We use the 'book' and 'chapter' props now!
-  
+  // 🔍 Local State for the new Search Bar
+  const [searchInput, setSearchInput] = useState("");
+
   const [version, setVersion] = useState('web');
   const [verses, setVerses] = useState([]);
   const [selectedVerses, setSelectedVerses] = useState([]);
@@ -133,7 +133,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter }) {
     }
   }, [user, book, chapter, isChapterRead]);
 
-  // 🚀 NAVIGATE HANDLER (Uses Props!)
   const handleTrackerNavigation = useCallback((newBook, newChapter) => {
       setBook(newBook);
       setChapter(newChapter);
@@ -143,6 +142,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter }) {
       setSelectedVerses([]);
       if (user && newBook === book && newChapter === parseInt(chapter)) { toggleChapterRead(); }
   }, [book, chapter, user, toggleChapterRead, setBook, setChapter]);
+
+  // --- 🔍 HANDLE SEARCH SUBMIT ---
+  const handleSearchSubmit = (e) => {
+      e.preventDefault();
+      if(onSearch && searchInput.trim()) {
+          onSearch(searchInput);
+      }
+  };
 
   // --- 🖍 HIGHLIGHT & NOTES ---
   const handleHighlightButton = async () => {
@@ -244,13 +251,49 @@ function BibleReader({ theme, book, setBook, chapter, setChapter }) {
 
   // --- UI Components ---
   const compactSelectStyle = { border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.75rem', color: theme === 'dark' ? '#aaa' : '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit', maxWidth: '70px' };
-  const ControlBar = () => (
+  
+  // ⚡ FIX: Render as a pure function/variable, NOT a component!
+  const renderControlBar = () => (
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0', minHeight: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>{bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}</select>
             <span style={{ fontSize: '0.75rem', color: '#555' }}>|</span>
             <select value={chapter} onChange={(e) => setChapter(e.target.value)} style={{ ...compactSelectStyle, width: 'auto' }}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>)}</select>
             <select value={version} onChange={(e) => setVersion(e.target.value)} style={{ fontSize: '0.65rem', color: theme === 'dark' ? '#888' : '#999', marginLeft: '2px', border: 'none', background: 'transparent', cursor: 'pointer' }}><option value="web" style={{color: '#333'}}>WEB</option><option value="kjv" style={{color: '#333'}}>KJV</option><option value="asv" style={{color: '#333'}}>ASV</option><option value="bbe" style={{color: '#333'}}>BBE</option></select>
+            
+            {/* 🔍 SEARCH PILL */}
+            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px' }}>
+                <input 
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    placeholder="Bible Search & Concordance" 
+                    style={{ 
+                        padding: '6px 10px 6px 15px', 
+                        borderRadius: '20px 0 0 20px', 
+                        border: '1px solid #2196F3', 
+                        borderRight: 'none', 
+                        fontSize: '0.8rem', 
+                        width: '210px',
+                        outline: 'none',
+                        backgroundColor: theme === 'dark' ? '#222' : '#fff', 
+                        color: theme === 'dark' ? '#fff' : '#333',
+                        fontFamily: 'inherit'
+                    }}
+                />
+                <button type="submit" style={{ 
+                    padding: '6px 15px 6px 10px', 
+                    borderRadius: '0 20px 20px 0', 
+                    border: '1px solid #2196F3', 
+                    borderLeft: 'none',
+                    backgroundColor: '#2196F3', 
+                    color: 'white', 
+                    fontSize: '0.85rem', 
+                    cursor: 'pointer', 
+                    fontWeight: 'bold' 
+                }}>
+                    🔍
+                </button>
+            </form>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
@@ -308,7 +351,9 @@ function BibleReader({ theme, book, setBook, chapter, setChapter }) {
         </div>
         
         {MemoizedTracker && ( <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}> {MemoizedTracker} </div> )}
-        <ControlBar />
+        
+        {/* ⚡ CALL IT AS A FUNCTION, NOT A COMPONENT */}
+        {renderControlBar()}
       </div>
 
       <div id="answerDisplay" style={{ maxWidth: '700px', margin: '0 auto', padding: '0 20px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.2s ease' }}>
@@ -385,7 +430,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter }) {
       </div>
 
       <div style={{ maxWidth: '700px', margin: '30px auto', padding: '0 20px', textAlign: 'center' }}>
-        <div style={{ marginBottom: '25px' }}> <ControlBar /> </div>
+        <div style={{ marginBottom: '25px' }}> 
+            {/* ⚡ CALL IT AGAIN AT THE BOTTOM */}
+            {renderControlBar()} 
+        </div>
         
         {/* ✨ REFLECTIONS & LOGIN SECTION (Restored!) */}
         <div style={{ marginTop: '30px' }}>

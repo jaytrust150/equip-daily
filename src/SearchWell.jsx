@@ -19,7 +19,6 @@ const BOOK_ID_MAP = {
 
 function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [query, setQuery] = useState("");
-  // 🔄 CHANGED: Results is now a list of GROUPS { groupName: "Genesis", verses: [] }
   const [groupedResults, setGroupedResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -45,9 +44,8 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         const data = await res.json();
 
         if (data.text) {
-          // Treat the Reference result as a single "Group"
           setGroupedResults([{
-            groupName: "Passage", // Or use data.reference
+            groupName: "Passage",
             verses: [{
               book_name: data.reference,
               isRef: true, 
@@ -60,23 +58,20 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         const res = await fetch(`https://bolls.life/find/WEB/?search=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         
-        // 1. Map to clean format
         const rawResults = Object.values(data).map(item => ({
             book_name: BOOK_ID_MAP[item.book] || "Verse", 
             chapter: item.chapter,
             verse: item.verse,
             text: item.text 
-        })).slice(0, 100); // Increased limit slightly since we are grouping
+        })).slice(0, 100);
 
-        // 2. ✨ GROUP BY BOOK
+        // Group by Book
         const groups = [];
         rawResults.forEach(item => {
-            // Check if the last group matches this book
             const lastGroup = groups[groups.length - 1];
             if (lastGroup && lastGroup.groupName === item.book_name) {
                 lastGroup.verses.push(item);
             } else {
-                // Start a new group
                 groups.push({ groupName: item.book_name, verses: [item] });
             }
         });
@@ -94,21 +89,18 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
 
-    // Helper: Only close if we are on a small screen (mobile)
     const closeIfMobile = () => {
         if (window.innerWidth <= 768) {
             onClose();
         }
     };
 
-    // CASE 1: Keyword Search Result
     if (!r.isRef) {
       onJumpToVerse(r.book_name, r.chapter);
       closeIfMobile();
       return;
     }
 
-    // CASE 2: Reference Lookup
     if (r.isRef) {
       const match = r.book_name.match(/^(.+)\s(\d+):/);
       
@@ -118,7 +110,6 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         onJumpToVerse(book, chapter);
         closeIfMobile();
       } else {
-        // Fallback
         const chapterMatch = r.book_name.match(/^(.+)\s(\d+)$/);
         if (chapterMatch) {
             onJumpToVerse(chapterMatch[1].trim(), chapterMatch[2]);
@@ -160,9 +151,22 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
           </h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: theme === 'dark' ? '#888' : '#555' }}>✕</button>
         </div>
-        {/* 👑 NEW PROVERB TITLE */}
-        <p style={{ fontSize: '0.75rem', fontStyle: 'italic', color: theme === 'dark' ? '#888' : '#666', marginTop: '8px', lineHeight: '1.4' }}>
-          "How much better to get wisdom than gold! To get understanding is to be chosen rather than silver." — Prov 16:16
+        
+        {/* 👑 CENTERED & MARGINED TITLE (Restored) */}
+        <p style={{ 
+            fontSize: '0.75rem',      
+            fontStyle: 'italic', 
+            textAlign: 'center',      // Back to Center!
+            color: theme === 'dark' ? '#aaa' : '#666', 
+            marginTop: '15px',        // More breathing room
+            marginBottom: '5px', 
+            lineHeight: '1.4',
+            maxWidth: '92%',          // Constrained width for that nice block look
+            marginLeft: 'auto',
+            marginRight: 'auto'
+        }}>
+          "How much better to get wisdom than gold! To get understanding is to be chosen rather than silver."
+          <span style={{ fontWeight: 'bold', fontStyle: 'normal', display: 'block', marginTop: '4px', opacity: 0.8, fontSize: '0.7rem' }}> — Prov 16:16</span>
         </p>
       </div>
 
@@ -179,6 +183,11 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
           />
           <button type="submit" style={{ background: '#2196F3', color: 'white', border: 'none', borderRadius: '8px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}>Go</button>
         </form>
+        
+        {/* 💡 ONE LINE TIP */}
+        <p style={{ fontSize: '0.68rem', color: theme === 'dark' ? '#777' : '#888', marginTop: '8px', textAlign: 'center', fontStyle: 'italic', marginBottom: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          💡 Tip: Click any result to jump to that chapter.
+        </p>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -187,10 +196,8 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         ) : groupedResults.length === 0 && query ? (
           <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>No results found.</p>
         ) : (
-          /* ✨ NEW GROUPED RENDERING */
           groupedResults.map((group, gIndex) => (
             <div key={gIndex} style={{ marginBottom: '10px' }}>
-              {/* Sticky Book Header */}
               <div style={{ 
                   position: 'sticky', top: 0, 
                   backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f0f4f8', 
@@ -201,7 +208,6 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                 {group.groupName}
               </div>
               
-              {/* Verses in this Book */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {group.verses.map((r, i) => (
                     <div 

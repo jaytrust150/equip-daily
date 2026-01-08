@@ -14,7 +14,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('devotional');
   const [theme, setTheme] = useState('light');
 
-  // --- 📖 BIBLE STATE (Lifted Up) ---
+  // --- 📖 BIBLE STATE ---
   const [bibleBook, setBibleBook] = useState('Genesis');
   const [bibleChapter, setBibleChapter] = useState(1);
 
@@ -46,11 +46,17 @@ function App() {
 
   // --- 🚀 NAVIGATION HELPER ---
   const jumpToVerse = (book, chapter) => {
-    console.log("Jumping to:", book, chapter); // Debug log
     setBibleBook(book);
     setBibleChapter(parseInt(chapter));
-    setActiveTab('bible'); // Switch tab automatically
+    setActiveTab('bible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // --- 🔍 SEARCH HELPER (Passed down to Reader) ---
+  const triggerSearch = (query) => {
+    if (!query) return;
+    setWellQuery(query);
+    setIsWellOpen(true);
   };
 
   // --- 🔗 HYPERLINK LOGIC ---
@@ -176,22 +182,11 @@ function App() {
         <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
            <button onClick={toggleTheme} style={buttonStyle}>{theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}</button>
         </div>
-        <h1>Equip Daily</h1>
         
-        {/* 🔍 BIBLE SEARCH BUTTON */}
-        <button onClick={() => setIsWellOpen(!isWellOpen)} 
-            style={{ 
-                marginTop: '5px', padding: '6px 15px', borderRadius: '20px', 
-                backgroundColor: isWellOpen ? '#2196F3' : 'transparent', 
-                color: isWellOpen ? 'white' : '#2196F3', 
-                border: '1px solid #2196F3', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' 
-            }}
-        >
-            🔍 Bible Search & Concordance
-        </button>
+        <h1>Equip Daily</h1>
+        <p style={{ marginTop: '5px', marginBottom: '20px', fontStyle: 'italic', opacity: 0.8 }}>For the equipping of the saints.</p>
 
-        <p style={{ marginTop: '8px' }}>For the equipping of the saints.</p>
-        <hr style={{ width: '50%', margin: '20px auto', borderColor: theme === 'dark' ? '#444' : '#eee' }} />
+        <hr style={{ width: '50%', margin: '0px auto 20px auto', borderColor: theme === 'dark' ? '#444' : '#eee' }} />
         {user && (<div className="user-profile" style={{ marginBottom: '5px' }}><p style={{ margin: '0', color: theme === 'dark' ? '#aaa' : '#555', fontStyle: 'italic' }}>Grace and peace, {user.displayName}</p></div>)}
       </header>
 
@@ -201,6 +196,7 @@ function App() {
             theme={theme} 
             book={bibleBook} setBook={setBibleBook} 
             chapter={bibleChapter} setChapter={setBibleChapter} 
+            onSearch={triggerSearch}
           />
         ) : (
           <>
@@ -211,12 +207,26 @@ function App() {
                   <select value={currentDate.getDate()} onChange={(e) => { const d = new Date(currentDate); d.setDate(parseInt(e.target.value)); setDayOffset(Math.round((d - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24))); }} style={{ ...secretSelectStyle, width: currentDate.getDate() > 9 ? '35px' : '20px', textAlign: 'right', paddingRight: '2px' }}>{[...Array(31)].map((_, i) => <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>)}</select>
                   <span style={{ fontWeight: 'bold', fontSize: '1.25rem', color: theme === 'dark' ? '#f0f0f0' : '#2c3e50' }}>, {currentDate.getFullYear()}</span>
                 </div>
+                
+                {/* 🎮 DEVOTIONAL TOOLBAR */}
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
                   <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn" style={navBtnStyle}>← Prior</button>
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
                   <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
                   <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
+                  
+                  {/* 🔍 THE PILL IS BACK! (Full Text) */}
+                  <button onClick={() => setIsWellOpen(!isWellOpen)} 
+                      style={{ 
+                          padding: '6px 15px', borderRadius: '20px', 
+                          backgroundColor: isWellOpen ? '#2196F3' : 'transparent', 
+                          color: isWellOpen ? 'white' : '#2196F3', 
+                          border: '1px solid #2196F3', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' 
+                      }}
+                  >
+                      🔍 Bible Search & Concordance
+                  </button>
                 </div>
               </div>
 
@@ -278,7 +288,7 @@ function App() {
         isOpen={isWellOpen} 
         onClose={() => setIsWellOpen(false)} 
         initialQuery={wellQuery}
-        onJumpToVerse={jumpToVerse} // <--- The crucial missing link!
+        onJumpToVerse={jumpToVerse} 
       />
     </div>
   );
