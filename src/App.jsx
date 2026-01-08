@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import BibleReader from './BibleReader';
 import MemberCard from './MemberCard';
 import Login from './Login';
-import SearchWell from './SearchWell';
+import SearchWell from './SearchWell'; // 1. Import The Well
 import { auth, db } from "./firebase";
 import { signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -13,10 +13,6 @@ function App() {
   const [user, loading] = useAuthState(auth);
   const [activeTab, setActiveTab] = useState('devotional');
   const [theme, setTheme] = useState('light');
-
-  // --- 📖 BIBLE STATE (Lifted Up) ---
-  const [bibleBook, setBibleBook] = useState('Genesis');
-  const [bibleChapter, setBibleChapter] = useState(1);
 
   // --- 💧 THE WELL STATE ---
   const [isWellOpen, setIsWellOpen] = useState(false);
@@ -44,18 +40,13 @@ function App() {
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
 
-  // --- 🚀 NAVIGATION HELPER ---
-  const jumpToVerse = (book, chapter) => {
-    setBibleBook(book);
-    setBibleChapter(parseInt(chapter));
-    setActiveTab('bible'); // Switch tab automatically
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   // --- 🔗 HYPERLINK LOGIC ---
+  // Turns "John 3:16" into a clickable/hoverable span
   const processDevotionalText = (text) => {
+    // Regex matches patterns like "John 3:16", "1 Peter 5:7", "Genesis 1:1-4"
     const verseRegex = /([1-3]?\s?[A-Z][a-z]+)\s(\d+):(\d+)(-\d+)?/g;
     return text.replace(verseRegex, (match) => {
+      // We add a special class 'verse-link' to listen for interactions later
       return `<span class="verse-link" style="color: #2196F3; cursor: pointer; text-decoration: underline; font-weight: bold;">${match}</span>`;
     });
   };
@@ -64,10 +55,15 @@ function App() {
     return processDevotionalText(devotional);
   }, [devotional]);
 
+  // Handle interactions with the injected HTML
   const handleDevotionalInteraction = (e) => {
+    // Check if we interacted with a verse link
     if (e.target.classList.contains('verse-link')) {
       const verseRef = e.target.innerText;
       setWellQuery(verseRef);
+      
+      // ✨ HOVER MAGIC: Open instantly on hover (Desktop) or Click (Mobile)
+      // We use both events. If it's a click, definitely open.
       if (e.type === 'click' || e.type === 'mouseover') {
          setIsWellOpen(true);
       }
@@ -82,16 +78,28 @@ function App() {
     
     const month = targetDate.getMonth() + 1;
     const day = targetDate.getDate();
+    // Adjust logic if you have specific file naming (e.g. padding zeros)
     const fileName = `${month}.${day}-devotional.txt`;
 
     setEditingId(null); 
 
+    // 🛠️ FIX: Removed spaces in the fetch string below
     fetch(`/${fileName}`)
-      .then(res => { if (!res.ok) throw new Error("File not found"); return res.text(); })
-      .then(text => { setDevotional(text); setHasShared(false); setReflection(""); })
-      .catch(() => { setDevotional(`<div style="text-align: center; padding: 20px;"><p>Edits in Progress for ${targetDate.toLocaleDateString()}</p></div>`); });
+      .then(res => { 
+        if (!res.ok) throw new Error("File not found"); 
+        return res.text(); 
+      })
+      .then(text => { 
+        setDevotional(text); 
+        setHasShared(false); 
+        setReflection(""); 
+      })
+      .catch(() => { 
+        setDevotional(`<div style="text-align: center; padding: 20px;"><p>Edits in Progress for ${targetDate.toLocaleDateString()}</p></div>`); 
+      });
   }, [dayOffset]);
 
+  // --- FETCH REFLECTIONS ---
   useEffect(() => {
     if (!db) return;
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
@@ -116,6 +124,7 @@ function App() {
     return () => unsubscribe();
   }, [currentDate, user, editingId]);
 
+  // --- ACTIONS ---
   const saveReflection = async () => {
     if (!reflection.trim() || !user || !db) return;
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
@@ -137,13 +146,19 @@ function App() {
       document.getElementById('devotional-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  const handleCancelEdit = () => { setEditingId(null); setReflection(""); };
+  const handleCancelEdit = () => {
+      setEditingId(null);
+      setReflection("");
+  };
 
   const handleDeleteClick = async (id) => {
       if (window.confirm("Are you sure you want to delete this reflection?")) {
           try {
               await deleteDoc(doc(db, "reflections", id));
-              if (editingId === id) { setEditingId(null); setReflection(""); }
+              if (editingId === id) {
+                  setEditingId(null);
+                  setReflection("");
+              }
           } catch (e) { console.error("Error deleting:", e); }
       }
   };
@@ -174,8 +189,15 @@ function App() {
            <button onClick={toggleTheme} style={buttonStyle}>{theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}</button>
         </div>
         <h1>Equip Daily</h1>
+        {/* 💧 THE WELL PILL (Toggle Button) */}
         <button onClick={() => setIsWellOpen(!isWellOpen)} 
-            style={{ marginTop: '5px', padding: '6px 15px', borderRadius: '20px', backgroundColor: isWellOpen ? '#2196F3' : 'transparent', color: isWellOpen ? 'white' : '#2196F3', border: '1px solid #2196F3', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>
+            style={{ 
+                marginTop: '5px', padding: '6px 15px', borderRadius: '20px', 
+                backgroundColor: isWellOpen ? '#2196F3' : 'transparent', 
+                color: isWellOpen ? 'white' : '#2196F3', 
+                border: '1px solid #2196F3', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' 
+            }}
+        >
             🔍 Search The Well
         </button>
         <p style={{ marginTop: '8px' }}>For the equipping of the saints.</p>
@@ -185,11 +207,7 @@ function App() {
 
       <main style={{ flex: 1 }}>
         {activeTab === 'bible' ? (
-          <BibleReader 
-            theme={theme} 
-            book={bibleBook} setBook={setBibleBook} 
-            chapter={bibleChapter} setChapter={setBibleChapter} 
-          />
+          BibleReader ? <BibleReader theme={theme} /> : <p>Error loading Bible Reader</p>
         ) : (
           <>
             <section className="devotional-porch" style={{ textAlign: 'center', padding: '0 20px 20px 20px' }}>
@@ -208,11 +226,22 @@ function App() {
                 </div>
               </div>
 
-              <div className="devotional-content" 
-                   onClick={handleDevotionalInteraction} 
-                   onMouseOver={handleDevotionalInteraction}
-                   style={{ fontSize: 'var(--devotional-font-size)', lineHeight: '1.7', textAlign: 'left', color: theme === 'dark' ? '#ccc' : '#333', backgroundColor: theme === 'dark' ? '#111' : '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'font-size 0.2s ease' }} 
-                   dangerouslySetInnerHTML={{ __html: processedDevotional }} 
+              {/* 📖 DEVOTIONAL CONTENT - Now with Hover Magic */}
+              <div 
+                className="devotional-content" 
+                onClick={handleDevotionalInteraction} 
+                onMouseOver={handleDevotionalInteraction} // ✨ Triggers "The Well" on hover
+                style={{ 
+                   fontSize: 'var(--devotional-font-size)', 
+                   lineHeight: '1.7',
+                   textAlign: 'left',
+                   color: theme === 'dark' ? '#ccc' : '#333',
+                   backgroundColor: theme === 'dark' ? '#111' : '#fff',
+                   padding: '25px', borderRadius: '12px',
+                   boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+                   transition: 'font-size 0.2s ease'
+                }}
+                dangerouslySetInnerHTML={{ __html: processedDevotional }} 
               />
 
               <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
@@ -260,12 +289,12 @@ function App() {
       
       {user && <footer style={{ textAlign: 'center', padding: '40px 20px', marginTop: '20px', borderTop: '1px solid #eee' }}><button onClick={logout} className="secondary-btn" style={{ fontSize: '0.8rem', opacity: 0.7 }}>Logout</button></footer>}
 
+      {/* 💧 RENDER THE WELL */}
       <SearchWell 
         theme={theme} 
         isOpen={isWellOpen} 
         onClose={() => setIsWellOpen(false)} 
-        initialQuery={wellQuery}
-        onJumpToVerse={jumpToVerse} 
+        initialQuery={wellQuery} 
       />
     </div>
   );
