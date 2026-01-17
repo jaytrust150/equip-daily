@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'Equip Daily',
-        short_name: 'EquipDaily',
+        short_name: 'Equip Daily',
         description: 'For the equipping of the saints.',
         theme_color: '#ffffff',
         background_color: '#ffffff',
