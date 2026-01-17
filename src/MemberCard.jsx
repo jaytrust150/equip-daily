@@ -1,6 +1,10 @@
 import React from 'react';
 
-function MemberCard({ user, thought, reactions, onSearch, onReact, currentUserId, isOwner, onEdit, onDelete, onShare }) {
+function MemberCard({ 
+  user, thought, reactions, location, // 📍 NEW: Location prop
+  onSearch, onReact, onProfileClick, // 👤 NEW: Click handler
+  currentUserId, isOwner, onEdit, onDelete, onShare 
+}) {
   
   // 🍎 THE FRUIT OF THE SPIRIT
   const fruits = [
@@ -44,13 +48,13 @@ function MemberCard({ user, thought, reactions, onSearch, onReact, currentUserId
 
   return (
     <div style={{ 
-      display: 'flex', flexDirection: 'column', gap: '15px', 
+      display: 'flex', flexDirection: 'column', gap: '10px', 
       padding: '15px', border: '1px solid #eee', borderRadius: '12px',
       backgroundColor: '#fff', maxWidth: '450px', margin: '0 auto',
       boxShadow: '0 2px 8px rgba(0,0,0,0.05)', position: 'relative'
     }}>
       
-      {/* 🛠 OWNER ACTIONS (Top Right, Inside Card) */}
+      {/* 🛠 OWNER ACTIONS */}
       {isOwner && (
         <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '8px', fontSize: '0.75rem' }}>
             <button onClick={onEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', textDecoration: 'underline', padding: 0 }}>Edit</button>
@@ -61,24 +65,47 @@ function MemberCard({ user, thought, reactions, onSearch, onReact, currentUserId
         </div>
       )}
 
-      {/* 👤 HEADER: Photo & Name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', paddingRight: isOwner ? '80px' : '0' }}>
+      {/* 👤 HEADER: Photo, Name & Location */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingRight: isOwner ? '80px' : '0' }}>
+        
+        {/* CLICKABLE PHOTO */}
         <img 
           src={user.photoURL} alt={user.displayName} 
-          style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }} 
+          onClick={onProfileClick} // 👈 Click to open profile
+          style={{ width: '45px', height: '45px', borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }} 
         />
+        
         <div style={{ textAlign: 'left' }}>
-          <h3 style={{ margin: '0 0 5px 0', fontSize: '1rem', color: '#333' }}>{user.displayName}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            {/* CLICKABLE NAME */}
+            <h3 
+                onClick={onProfileClick} // 👈 Click to open profile
+                style={{ margin: '0', fontSize: '0.95rem', color: '#333', cursor: 'pointer' }}
+            >
+                {user.displayName}
+            </h3>
+            
+            {/* 📍 LOCATION BADGE */}
+            {location && (
+                <span style={{ 
+                    fontSize: '0.65rem', backgroundColor: '#e3f2fd', color: '#1976d2', 
+                    padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' 
+                }}>
+                    {location} Body
+                </span>
+            )}
+          </div>
+
           {thought ? (
-            <p style={{ margin: 0, fontSize: '0.9rem', color: '#555', fontStyle: 'italic' }}>"{renderThought(thought)}"</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.9rem', color: '#555', fontStyle: 'italic', lineHeight: '1.4' }}>"{renderThought(thought)}"</p>
           ) : (
-            <p style={{ margin: 0, fontSize: '0.8rem', color: '#888' }}>Member of the Body</p>
+            <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#888' }}>Member of the Body</p>
           )}
         </div>
       </div>
 
       {/* 🍓 REACTION BAR */}
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '5px' }}>
+      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '5px' }}>
         {fruits.map((fruit) => {
           const count = reactions && reactions[fruit.id] ? reactions[fruit.id].length : 0;
           const hasReacted = reactions && reactions[fruit.id] && reactions[fruit.id].includes(currentUserId);
@@ -87,31 +114,24 @@ function MemberCard({ user, thought, reactions, onSearch, onReact, currentUserId
             <button 
               key={fruit.id}
               onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  e.preventDefault(); e.stopPropagation();
                   if (onReact) onReact(fruit.id);
               }}
               style={{
                 background: hasReacted ? '#e3f2fd' : 'transparent',
                 border: hasReacted ? '1px solid #2196F3' : '1px solid #eee',
-                borderRadius: '20px', padding: '4px 10px', fontSize: '0.75rem',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+                borderRadius: '12px', padding: '2px 8px', fontSize: '0.7rem',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
                 transition: 'all 0.2s', color: '#444'
               }}
               title={`Give ${fruit.label}`}
             >
-              <span style={{ fontSize: '1rem' }}>{fruit.icon}</span>
+              <span style={{ fontSize: '0.9rem' }}>{fruit.icon}</span>
               <span style={{ fontWeight: '500' }}>{fruit.label}</span>
-              {count > 0 && <span style={{ fontWeight: 'bold', color: '#2196F3', borderLeft: '1px solid #ccc', paddingLeft: '6px' }}>{count}</span>}
+              {count > 0 && <span style={{ fontWeight: 'bold', color: '#2196F3', borderLeft: '1px solid #ccc', paddingLeft: '4px' }}>{count}</span>}
             </button>
           );
         })}
-      </div>
-
-      {/* 📖 FOOTER */}
-      <div style={{ fontSize: '0.7rem', color: '#bbb', fontStyle: 'italic', lineHeight: '1.4', marginTop: '5px' }}>
-        "But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control." 
-        <span style={{ fontWeight: 'bold', marginLeft: '5px' }}>— Gal 5:22-23</span>
       </div>
     </div>
   );

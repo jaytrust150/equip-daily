@@ -14,8 +14,9 @@ import {
 // 🎨 COLORS
 const HIGHLIGHT_COLOR = '#ffeb3b';
 const NOTE_BUTTON_COLOR = '#2196F3'; 
+const CITY_NAME = "Sebastian"; // 📍 Default city for new posts
 
-function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch }) {
+function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick }) {
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   const [version, setVersion] = useState('web');
@@ -34,12 +35,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch }) {
   const editorRef = useRef(null);
   const [topNavMode, setTopNavMode] = useState(null);
   const [fontSize, setFontSize] = useState(1.1);
+  
+  // --- REFLECTION STATE ---
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [chapterReflections, setChapterReflections] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  // --- 🍓 FRUIT REACTION HANDLER (NEW!) ---
+  // --- 🍓 FRUIT REACTION HANDLER ---
   const handleReaction = async (postId, fruitId) => {
     if (!user) return;
     const postRef = doc(db, "reflections", postId);
@@ -174,7 +177,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch }) {
     const chapterKey = `${book} ${chapter}`;
     try {
       if (editingId) { await updateDoc(doc(db, "reflections", editingId), { text: reflection, timestamp: serverTimestamp(), isEdited: true }); setEditingId(null); setReflection(""); } 
-      else { await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), { userId: user.uid, userName: user.displayName, userPhoto: user.photoURL, text: reflection, chapter: chapterKey, timestamp: serverTimestamp(), location: "Sebastian", reactions: {} }); }
+      else { 
+        await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), { 
+          userId: user.uid, userName: user.displayName, userPhoto: user.photoURL, 
+          text: reflection, chapter: chapterKey, timestamp: serverTimestamp(), 
+          location: CITY_NAME, // 📍 Uses the same city constant as App.jsx
+          reactions: {} 
+        }); 
+      }
     } catch (e) { console.error("Error saving reflection:", e); }
   };
   const handleEditClick = (post) => { setEditingId(post.id); setReflection(post.text); document.getElementById('reflection-input')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
@@ -344,16 +354,25 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch }) {
         </div>
         
         <section className="directory" style={{ marginTop: '40px' }}>
-          <h2 style={{ textAlign: 'center', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
+          <h2 style={{ textAlign: 'center', marginBottom: '0px', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
+          
+          {/* 🍇 ADDED VERSE BANNER TO MIRROR APP.JSX */}
+          <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: '0.75rem', color: '#888', maxWidth: '90%', margin: '5px auto 25px auto', lineHeight: '1.4' }}>
+            "But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control." <span style={{fontWeight:'bold'}}>— Gal 5:22-23</span>
+          </p>
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
             {chapterReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : chapterReflections.map((post, i) => (
               <div key={post.id || i} style={{ position: 'relative' }}>
+                  {/* 🌟 MemberCard NOW UPDATED in Bible Reader too! */}
                   <MemberCard 
                       user={{ displayName: post.userName, photoURL: post.userPhoto }} 
                       thought={post.text} 
                       reactions={post.reactions}
+                      location={post.location} // 📍 Pass location
                       onReact={(fruitId) => handleReaction(post.id, fruitId)}
                       onSearch={onSearch}
+                      onProfileClick={() => onProfileClick && onProfileClick(post.userId)} // 👤 Pass click
                       currentUserId={user ? user.uid : null}
                       isOwner={user && user.uid === post.userId}
                       onEdit={() => handleEditClick(post)}

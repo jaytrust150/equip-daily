@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import BibleReader from './BibleReader';
 import MemberCard from './MemberCard';
+import MemberProfile from './MemberProfile'; 
 import Login from './Login';
 import SearchWell from './SearchWell'; 
 import { auth, db } from "./firebase";
@@ -9,9 +10,16 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, where, onSnapshot, arrayUnion, arrayRemove } from "firebase/firestore";
 import './App.css';
 
+// 📍 DEFAULT CITY (Will be overridden by Profile later)
+const CITY_NAME = "Sebastian";
+
 function App() {
   const [user, loading] = useAuthState(auth);
+  
+  // 🧭 NAV STATE
   const [activeTab, setActiveTab] = useState('devotional');
+  const [viewingProfileUid, setViewingProfileUid] = useState(null); // 👤 WHOSE profile?
+  
   const [theme, setTheme] = useState('light');
 
   // --- 📖 BIBLE STATE ---
@@ -43,6 +51,13 @@ function App() {
 
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
+
+  // --- 👤 PROFILE NAVIGATION HELPER ---
+  const goToProfile = (uid) => {
+      setViewingProfileUid(uid);
+      setActiveTab('profile');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const jumpToVerse = (book, chapter) => {
     setBibleBook(book);
@@ -129,8 +144,14 @@ function App() {
          setEditingId(null); setReflection("");
       } else {
          await setDoc(doc(db, "reflections", `${user.uid}_${dateKey}`), { 
-             userId: user.uid, userName: user.displayName, userPhoto: user.photoURL, 
-             text: reflection, date: dateKey, timestamp: serverTimestamp(), location: "Sebastian", reactions: {} 
+             userId: user.uid, 
+             userName: user.displayName, 
+             userPhoto: user.photoURL, 
+             text: reflection, 
+             date: dateKey, 
+             timestamp: serverTimestamp(), 
+             location: CITY_NAME, // This will be dynamic next step!
+             reactions: {} 
          });
       }
     } catch (e) { console.error("Error saving reflection:", e); }
@@ -163,10 +184,35 @@ function App() {
   return (
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
-        <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
-           <button onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} style={buttonStyle}>{activeTab === 'devotional' ? '📖 Bible' : '🙏 Daily'}</button>
+        
+        {/* 🧭 LEFT NAV: Daily | Bible | Profile */}
+        <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '8px' }}>
+           <button 
+             onClick={() => setActiveTab('devotional')} 
+             style={{...buttonStyle, opacity: activeTab === 'devotional' ? 1 : 0.6}}
+           >
+             🙏 Daily
+           </button>
+           <button 
+             onClick={() => setActiveTab('bible')} 
+             style={{...buttonStyle, opacity: activeTab === 'bible' ? 1 : 0.6}}
+           >
+             📖 Bible
+           </button>
+           {user && (
+             <button 
+               onClick={() => goToProfile(user.uid)} 
+               style={{...buttonStyle, opacity: activeTab === 'profile' ? 1 : 0.6}}
+             >
+               👤 Profile
+             </button>
+           )}
         </div>
-        <div style={{ position: 'absolute', top: '20px', right: '20px' }}><button onClick={toggleTheme} style={buttonStyle}>{theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}</button></div>
+
+        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+            <button onClick={toggleTheme} style={buttonStyle}>{theme === 'light' ? '🌙' : '☀️'}</button>
+        </div>
+        
         <h1>Equip Daily</h1>
         <p style={{ marginTop: '5px', marginBottom: '20px', fontStyle: 'italic', opacity: 0.8 }}>"For the equipping of the saints." - Eph 4:12</p>
         <hr style={{ width: '50%', margin: '0px auto 20px auto', borderColor: theme === 'dark' ? '#444' : '#eee' }} />
@@ -174,9 +220,20 @@ function App() {
       </header>
 
       <main style={{ flex: 1 }}>
-        {activeTab === 'bible' ? (
-          <BibleReader theme={theme} book={bibleBook} setBook={setBibleBook} chapter={bibleChapter} setChapter={setBibleChapter} onSearch={triggerSearch} />
+        
+        {/* 🔀 TAB SWITCHER */}
+        {activeTab === 'profile' ? (
+            <MemberProfile theme={theme} viewingUid={viewingProfileUid} onNavigate={setActiveTab} />
+        ) : activeTab === 'bible' ? (
+            <BibleReader 
+                theme={theme} 
+                book={bibleBook} setBook={setBibleBook} 
+                chapter={bibleChapter} setChapter={setBibleChapter} 
+                onSearch={triggerSearch} 
+                onProfileClick={goToProfile} // 👈 Pass this down!
+            />
         ) : (
+          /* --- DEVOTIONAL TAB --- */
           <>
             <section className="devotional-porch" style={{ textAlign: 'center', padding: '0 20px 20px 20px' }}>
               <div style={{ marginBottom: '30px', marginTop: '10px' }}>
@@ -209,22 +266,28 @@ function App() {
                   </div>
                 ) : hasShared && !editingId ? <div style={{ padding: '20px', backgroundColor: theme === 'dark' ? '#0f2f21' : '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: theme === 'dark' ? '#81e6d9' : '#276749' }}><p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body!</p></div> : null}
               </div>
-              <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '40px' }}>There are <strong>{communityReflections.length > 0 ? communityReflections.length - 1 : 0} others</strong> in Sebastian reading this today.</p>
+              <p style={{ color: '#666', fontSize: '0.85rem', marginTop: '40px' }}>There are <strong>{communityReflections.length > 0 ? communityReflections.length - 1 : 0} others</strong> in {CITY_NAME} reading this today.</p>
             </section>
 
             {user ? (
               <section className="directory" style={{ marginTop: '40px' }}>
-                <h2 style={{ textAlign: 'center' }}>Sebastian Body Directory</h2>
+                <h2 style={{ textAlign: 'center', marginBottom: '0px' }}>{CITY_NAME} Body Directory</h2>
+                
+                <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: '0.75rem', color: '#888', maxWidth: '90%', margin: '5px auto 25px auto', lineHeight: '1.4' }}>
+                  "But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control." <span style={{fontWeight:'bold'}}>— Gal 5:22-23</span>
+                </p>
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {communityReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : communityReflections.map((post) => (
-                    // 🌟 HERE IS THE FIX: Passing buttons and reactions INTO the card
                     <MemberCard 
                         key={post.id || post.userId}
                         user={{ displayName: post.userName, photoURL: post.userPhoto }} 
                         thought={post.text} 
                         reactions={post.reactions}
+                        location={post.location} // 📍 PASS LOCATION
                         onReact={(fruitId) => handleReaction(post.id, fruitId)}
                         onSearch={triggerSearch}
+                        onProfileClick={() => goToProfile(post.userId)} // 👤 PASS CLICK
                         currentUserId={user.uid}
                         isOwner={user && user.uid === post.userId}
                         onEdit={() => handleEditClick(post)}
