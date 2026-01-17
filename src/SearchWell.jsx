@@ -44,7 +44,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
     if (!searchTerm) return;
     setLoading(true);
     setGroupedResults([]);
-    setCollapsedGroups({}); // Reset collapsed state on new search
+    setCollapsedGroups({}); 
 
     const isReference = /\d/.test(searchTerm);
 
@@ -69,13 +69,23 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         const res = await fetch(`https://bolls.life/find/WEB/?search=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         
-        // 🌊 MASSIVE LIMIT: 10,000 ensures even "Lord" (7,000+) shows up fully!
-        const rawResults = Object.values(data).map(item => ({
-            book_name: BOOK_ID_MAP[item.book] || "Verse", 
-            chapter: item.chapter,
-            verse: item.verse,
-            text: item.text 
-        })).slice(0, 10000); 
+        // 🛡️ THE FIX: Filter & STRICT SORT
+        const rawResults = Object.values(data)
+            .filter(item => item.book && BOOK_ID_MAP[item.book]) // Only allow real books
+            .sort((a, b) => {
+                // 1. Sort by Book ID (Genesis=1 ... Rev=66)
+                if (a.book !== b.book) return a.book - b.book;
+                // 2. Sort by Chapter
+                if (a.chapter !== b.chapter) return a.chapter - b.chapter;
+                // 3. Sort by Verse
+                return a.verse - b.verse;
+            })
+            .map(item => ({
+                book_name: BOOK_ID_MAP[item.book], 
+                chapter: item.chapter,
+                verse: item.verse,
+                text: item.text 
+            }));
 
         // Group by Book
         const groups = [];
@@ -226,7 +236,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                 }}>
                   <span>
                     {group.groupName} 
-                    {/* ✨ SMART COUNT: Hides (1) if it's a Passage, shows (50) if it's a Keyword */}
+                    {/* ✨ SMART COUNT */}
                     {group.groupName !== "Passage" && (
                         <span style={{fontSize: '0.8rem', opacity: 0.7, color: theme === 'dark' ? '#aaa' : '#666', marginLeft: '5px'}}>
                             ({group.verses.length})
