@@ -150,7 +150,7 @@ function App() {
              text: reflection, 
              date: dateKey, 
              timestamp: serverTimestamp(), 
-             location: CITY_NAME, // This will be dynamic next step!
+             location: CITY_NAME,
              reactions: {} 
          });
       }
@@ -185,7 +185,7 @@ function App() {
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
         
-        {/* 🧭 LEFT NAV: Daily | Bible | Profile */}
+        {/* 🧭 LEFT NAV: Daily | Bible */}
         <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '8px' }}>
            <button 
              onClick={() => setActiveTab('devotional')} 
@@ -199,24 +199,56 @@ function App() {
            >
              📖 Bible
            </button>
-           {user && (
-             <button 
-               onClick={() => goToProfile(user.uid)} 
-               style={{...buttonStyle, opacity: activeTab === 'profile' ? 1 : 0.6}}
-             >
-               👤 Profile
-             </button>
-           )}
         </div>
 
-        <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        {/* 📺 RIGHT NAV: YouTube | Dark Mode */}
+        <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '8px' }}>
+            <a href="https://www.youtube.com/@EquipDaily" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                <button style={{ ...buttonStyle, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    {/* 🔴 RED YOUTUBE ICON SVG */}
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="red">
+                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                    </svg>
+                    Equip Daily
+                </button>
+            </a>
             <button onClick={toggleTheme} style={buttonStyle}>{theme === 'light' ? '🌙' : '☀️'}</button>
         </div>
         
         <h1>Equip Daily</h1>
         <p style={{ marginTop: '5px', marginBottom: '20px', fontStyle: 'italic', opacity: 0.8 }}>"For the equipping of the saints." - Eph 4:12</p>
         <hr style={{ width: '50%', margin: '0px auto 20px auto', borderColor: theme === 'dark' ? '#444' : '#eee' }} />
-        {user && (<div className="user-profile" style={{ marginBottom: '5px' }}><p style={{ margin: '0', color: theme === 'dark' ? '#aaa' : '#555', fontStyle: 'italic' }}>Grace and peace, {user.displayName}</p></div>)}
+        
+        {/* 👤 CLICKABLE NAME PROFILE TRIGGER */}
+        {user && (
+            <div className="user-profile" style={{ marginBottom: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.9rem', color: theme === 'dark' ? '#aaa' : '#555' }}>
+                <span style={{ fontStyle: 'italic' }}>Grace and peace,</span>
+                
+                {/* 🔽 THE NAME IS NOW THE BUTTON */}
+                <button 
+                    onClick={() => goToProfile(user.uid)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: 'inherit',
+                        fontWeight: 'bold',
+                        color: theme === 'dark' ? '#90caf9' : '#1565c0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        transition: 'background-color 0.2s'
+                    }}
+                    title="Go to Profile"
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                    👤 {user.displayName}
+                </button>
+            </div>
+        )}
       </header>
 
       <main style={{ flex: 1 }}>
@@ -230,7 +262,7 @@ function App() {
                 book={bibleBook} setBook={setBibleBook} 
                 chapter={bibleChapter} setChapter={setBibleChapter} 
                 onSearch={triggerSearch} 
-                onProfileClick={goToProfile} // 👈 Pass this down!
+                onProfileClick={goToProfile}
             />
         ) : (
           /* --- DEVOTIONAL TAB --- */
@@ -284,10 +316,10 @@ function App() {
                         user={{ displayName: post.userName, photoURL: post.userPhoto }} 
                         thought={post.text} 
                         reactions={post.reactions}
-                        location={post.location} // 📍 PASS LOCATION
+                        location={post.location} 
                         onReact={(fruitId) => handleReaction(post.id, fruitId)}
                         onSearch={triggerSearch}
-                        onProfileClick={() => goToProfile(post.userId)} // 👤 PASS CLICK
+                        onProfileClick={() => goToProfile(post.userId)} 
                         currentUserId={user.uid}
                         isOwner={user && user.uid === post.userId}
                         onEdit={() => handleEditClick(post)}
