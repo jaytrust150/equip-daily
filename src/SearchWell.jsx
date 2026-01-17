@@ -21,6 +21,9 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [query, setQuery] = useState("");
   const [groupedResults, setGroupedResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // 📂 NEW: State to track which books are collapsed
+  const [collapsedGroups, setCollapsedGroups] = useState({});
 
   // Auto-search if opened with a specific verse
   useEffect(() => {
@@ -30,10 +33,18 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
     }
   }, [initialQuery]);
 
+  const toggleGroup = (groupName) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
+
   const performSearch = async (searchTerm) => {
     if (!searchTerm) return;
     setLoading(true);
     setGroupedResults([]);
+    setCollapsedGroups({}); // Reset collapsed state on new search
 
     const isReference = /\d/.test(searchTerm);
 
@@ -152,16 +163,16 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: theme === 'dark' ? '#888' : '#555' }}>✕</button>
         </div>
         
-        {/* 👑 CENTERED & MARGINED TITLE (Restored) */}
+        {/* 👑 CENTERED & MARGINED TITLE */}
         <p style={{ 
             fontSize: '0.75rem',      
             fontStyle: 'italic', 
-            textAlign: 'center',      // Back to Center!
+            textAlign: 'center',
             color: theme === 'dark' ? '#aaa' : '#666', 
-            marginTop: '15px',        // More breathing room
+            marginTop: '15px',
             marginBottom: '5px', 
             lineHeight: '1.4',
-            maxWidth: '92%',          // Constrained width for that nice block look
+            maxWidth: '92%',
             marginLeft: 'auto',
             marginRight: 'auto'
         }}>
@@ -196,45 +207,56 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         ) : groupedResults.length === 0 && query ? (
           <p style={{ textAlign: 'center', color: '#888', marginTop: '20px' }}>No results found.</p>
         ) : (
-          groupedResults.map((group, gIndex) => (
-            <div key={gIndex} style={{ marginBottom: '10px' }}>
-              <div style={{ 
-                  position: 'sticky', top: 0, 
-                  backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f0f4f8', 
-                  padding: '8px 12px', borderRadius: '6px', marginBottom: '8px',
-                  fontWeight: 'bold', fontSize: '0.85rem', color: '#2196F3',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 5
-              }}>
-                {group.groupName}
+          groupedResults.map((group, gIndex) => {
+            const isCollapsed = collapsedGroups[group.groupName];
+            return (
+              <div key={gIndex} style={{ marginBottom: '5px' }}>
+                {/* 📂 CLICKABLE HEADER */}
+                <div 
+                  onClick={() => toggleGroup(group.groupName)}
+                  style={{ 
+                    position: 'sticky', top: 0, 
+                    backgroundColor: theme === 'dark' ? '#1e1e1e' : '#f0f4f8', 
+                    padding: '10px 12px', borderRadius: '6px', marginBottom: '8px',
+                    fontWeight: 'bold', fontSize: '0.9rem', color: '#2196F3',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 5,
+                    cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                }}>
+                  <span>{group.groupName} <span style={{fontSize: '0.8rem', opacity: 0.7, color: theme === 'dark' ? '#aaa' : '#666'}}>({group.verses.length})</span></span>
+                  <span style={{ fontSize: '0.8rem' }}>{isCollapsed ? '▶' : '▼'}</span>
+                </div>
+                
+                {/* 📜 VERSES LIST (Hidden if collapsed) */}
+                {!isCollapsed && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '5px' }}>
+                    {group.verses.map((r, i) => (
+                        <div 
+                            key={i} 
+                            onClick={() => handleResultClick(r)}
+                            style={{ 
+                                padding: '10px', borderRadius: '8px', 
+                                backgroundColor: theme === 'dark' ? '#333' : '#fff', 
+                                border: theme === 'dark' ? '1px solid #444' : '1px solid #eee',
+                                cursor: 'pointer', 
+                                transition: 'transform 0.1s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
+                            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                        <strong style={{ display: 'block', fontSize: '0.8rem', color: theme === 'dark' ? '#aaa' : '#555', marginBottom: '2px' }}>
+                            {r.book_name} {r.chapter ? `${r.chapter}:${r.verse}` : ''}
+                        </strong>
+                        <span 
+                            style={{ fontSize: '0.9rem', lineHeight: '1.4', color: theme === 'dark' ? '#ddd' : '#333' }} 
+                            dangerouslySetInnerHTML={{ __html: r.text }} 
+                        />
+                        </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {group.verses.map((r, i) => (
-                    <div 
-                        key={i} 
-                        onClick={() => handleResultClick(r)}
-                        style={{ 
-                            padding: '10px', borderRadius: '8px', 
-                            backgroundColor: theme === 'dark' ? '#333' : '#fff', 
-                            border: theme === 'dark' ? '1px solid #444' : '1px solid #eee',
-                            cursor: 'pointer', 
-                            transition: 'transform 0.1s'
-                        }}
-                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.01)'}
-                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                    >
-                    <strong style={{ display: 'block', fontSize: '0.8rem', color: theme === 'dark' ? '#aaa' : '#555', marginBottom: '2px' }}>
-                        {r.book_name} {r.chapter ? `${r.chapter}:${r.verse}` : ''}
-                    </strong>
-                    <span 
-                        style={{ fontSize: '0.9rem', lineHeight: '1.4', color: theme === 'dark' ? '#ddd' : '#333' }} 
-                        dangerouslySetInnerHTML={{ __html: r.text }} 
-                    />
-                    </div>
-                ))}
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
