@@ -185,19 +185,13 @@ function App() {
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
         
-        {/* 🧭 LEFT NAV: Daily | Bible */}
-        <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '8px' }}>
+        {/* 🧭 LEFT NAV: SINGLE TOGGLE BUTTON */}
+        <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
            <button 
-             onClick={() => setActiveTab('devotional')} 
-             style={{...buttonStyle, opacity: activeTab === 'devotional' ? 1 : 0.6}}
+             onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} 
+             style={buttonStyle}
            >
-             🙏 Daily
-           </button>
-           <button 
-             onClick={() => setActiveTab('bible')} 
-             style={{...buttonStyle, opacity: activeTab === 'bible' ? 1 : 0.6}}
-           >
-             📖 Bible
+             {activeTab === 'devotional' ? '📖 Bible' : '🙏 Daily Devotional'}
            </button>
         </div>
 
@@ -212,7 +206,9 @@ function App() {
                     Equip Daily
                 </button>
             </a>
-            <button onClick={toggleTheme} style={buttonStyle}>{theme === 'light' ? '🌙' : '☀️'}</button>
+            <button onClick={toggleTheme} style={buttonStyle}>
+                {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+            </button>
         </div>
         
         <h1>Equip Daily</h1>
