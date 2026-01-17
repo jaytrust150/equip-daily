@@ -22,7 +22,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [groupedResults, setGroupedResults] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // 📂 NEW: State to track which books are collapsed
+  // 📂 State to track which books are collapsed
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
   // Auto-search if opened with a specific verse
@@ -36,7 +36,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const toggleGroup = (groupName) => {
     setCollapsedGroups(prev => ({
       ...prev,
-      [groupName]: !prev[groupName]
+      [groupName]: !prev[groupName] // Toggle true/false
     }));
   };
 
@@ -69,12 +69,13 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         const res = await fetch(`https://bolls.life/find/WEB/?search=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         
+        // 🌊 MASSIVE LIMIT: 10,000 ensures even "Lord" (7,000+) shows up fully!
         const rawResults = Object.values(data).map(item => ({
             book_name: BOOK_ID_MAP[item.book] || "Verse", 
             chapter: item.chapter,
             verse: item.verse,
             text: item.text 
-        })).slice(0, 100);
+        })).slice(0, 10000); 
 
         // Group by Book
         const groups = [];
@@ -100,6 +101,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
 
+    // Auto-close on mobile when clicking a result
     const closeIfMobile = () => {
         if (window.innerWidth <= 768) {
             onClose();
@@ -222,7 +224,15 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                     boxShadow: '0 2px 4px rgba(0,0,0,0.05)', zIndex: 5,
                     cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                 }}>
-                  <span>{group.groupName} <span style={{fontSize: '0.8rem', opacity: 0.7, color: theme === 'dark' ? '#aaa' : '#666'}}>({group.verses.length})</span></span>
+                  <span>
+                    {group.groupName} 
+                    {/* ✨ SMART COUNT: Hides (1) if it's a Passage, shows (50) if it's a Keyword */}
+                    {group.groupName !== "Passage" && (
+                        <span style={{fontSize: '0.8rem', opacity: 0.7, color: theme === 'dark' ? '#aaa' : '#666', marginLeft: '5px'}}>
+                            ({group.verses.length})
+                        </span>
+                    )}
+                  </span>
                   <span style={{ fontSize: '0.8rem' }}>{isCollapsed ? '▶' : '▼'}</span>
                 </div>
                 
