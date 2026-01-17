@@ -184,7 +184,7 @@ function App() {
         </div>
         
         <h1>Equip Daily</h1>
-        <p style={{ marginTop: '5px', marginBottom: '20px', fontStyle: 'italic', opacity: 0.8 }}>For the equipping of the saints.</p>
+        <p style={{ marginTop: '5px', marginBottom: '20px', fontStyle: 'italic', opacity: 0.8 }}>For the equipping of the saints. - Eph 4:12</p>
 
         <hr style={{ width: '50%', margin: '0px auto 20px auto', borderColor: theme === 'dark' ? '#444' : '#eee' }} />
         {user && (<div className="user-profile" style={{ marginBottom: '5px' }}><p style={{ margin: '0', color: theme === 'dark' ? '#aaa' : '#555', fontStyle: 'italic' }}>Grace and peace, {user.displayName}</p></div>)}
