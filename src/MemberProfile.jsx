@@ -14,7 +14,8 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
   // --- PROFILE DATA ---
   const [profileData, setProfileData] = useState(null);
   const [location, setLocation] = useState("");
-  const [isHistoryPublic, setIsHistoryPublic] = useState(true); // Default to public
+  const [homeChurch, setHomeChurch] = useState(""); // ⛪ Church State
+  const [isHistoryPublic, setIsHistoryPublic] = useState(true); 
   
   // --- EDITING STATE ---
   const [isSaving, setIsSaving] = useState(false);
@@ -24,7 +25,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
   const [myReflections, setMyReflections] = useState([]);
   const [fruitStats, setFruitStats] = useState({ total: 0, breakdown: {} });
 
-  // 1. FETCH PROFILE INFO (Location & Privacy Settings)
+  // 1. FETCH PROFILE INFO
   useEffect(() => {
     if (!targetUid) return;
     const fetchProfile = async () => {
@@ -34,20 +35,19 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
         const data = docSnap.data();
         setProfileData(data);
         setLocation(data.location || "Sebastian");
-        // Load privacy setting (default to true if missing)
+        setHomeChurch(data.homeChurch || ""); // ⛪ Load Church
         setIsHistoryPublic(data.isHistoryPublic !== undefined ? data.isHistoryPublic : true);
       } else {
-        setLocation("Sebastian"); // Default
+        setLocation("Sebastian"); 
       }
     };
     fetchProfile();
   }, [targetUid]);
 
-  // 2. FETCH HISTORY & STATS (Only if Public OR It's Me)
+  // 2. FETCH HISTORY & STATS
   useEffect(() => {
     if (!targetUid) return;
     
-    // Privacy Check: If it's not me AND history is private, don't fetch.
     if (!isMyProfile && !isHistoryPublic) {
         setMyReflections([]);
         return; 
@@ -92,7 +92,8 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
       const userRef = doc(db, "users", currentUser.uid);
       await setDoc(userRef, { 
         location: location,
-        isHistoryPublic: isHistoryPublic, // Save the toggle
+        homeChurch: homeChurch, // ⛪ Save Church
+        isHistoryPublic: isHistoryPublic,
         displayName: currentUser.displayName,
         photoURL: currentUser.photoURL,
         email: currentUser.email
@@ -114,22 +115,31 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
 
   if (!targetUid) return <div style={{textAlign:'center', padding:'40px'}}>Loading...</div>;
 
-  // Use profile data from DB if available, otherwise fallback to Auth (if it's me)
   const displayPhoto = profileData?.photoURL || (isMyProfile ? currentUser.photoURL : "");
   const displayName = profileData?.displayName || (isMyProfile ? currentUser.displayName : "Member");
   const displayEmail = profileData?.email || (isMyProfile ? currentUser.email : "");
+  
+  // ⛪ VIEW MODE: Church Data
+  const displayChurch = isMyProfile ? homeChurch : (profileData?.homeChurch || "");
+  const displayLocation = isMyProfile ? location : (profileData?.location || "Sebastian");
 
   return (
     <div className="profile-container" style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', color: theme === 'dark' ? '#fff' : '#333' }}>
       
-      {/* 🔙 BACK BUTTON (If viewing someone else) */}
-      {!isMyProfile && (
-          <button onClick={() => onNavigate('devotional')} style={{ marginBottom: '15px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', color: '#2196F3', fontWeight: 'bold' }}>
-              ← Back to Directory
-          </button>
-      )}
+      {/* 🔙 BACK BUTTON */}
+      <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '15px' }}>
+        <button 
+            onClick={() => onNavigate('devotional')} 
+            style={{ 
+                background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', 
+                color: '#2196F3', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' 
+            }}
+        >
+            <span>←</span> {isMyProfile ? "Return to Devotional" : "Back to Directory"}
+        </button>
+      </div>
 
-      {/* 👤 TOP CARD: User Info */}
+      {/* 👤 TOP CARD */}
       <div style={{ 
         backgroundColor: theme === 'dark' ? '#222' : '#fff', padding: '25px', borderRadius: '12px', 
         border: theme === 'dark' ? '1px solid #444' : '1px solid #eee', marginBottom: '30px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
@@ -138,30 +148,37 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
         <h2 style={{ margin: '0 0 5px 0' }}>{displayName}</h2>
         <p style={{ margin: '0 0 20px 0', color: '#888', fontSize: '0.9rem' }}>{displayEmail}</p>
 
-        {/* 📍 LOCATION & SETTINGS (Editable ONLY if it's ME) */}
+        {/* ✏️ EDIT MODE (It's Me) */}
         {isMyProfile ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <label style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>My City:</label>
-                    <input 
-                        type="text" value={location} onChange={(e) => setLocation(e.target.value)} 
-                        placeholder="e.g. Sebastian"
-                        style={{ padding: '8px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', width: '150px', backgroundColor: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} 
-                    />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '0.9rem', width: '90px', textAlign: 'right' }}>My City:</span>
+                        <input 
+                            type="text" value={location} onChange={(e) => setLocation(e.target.value)} 
+                            placeholder="e.g. Sebastian"
+                            style={{ padding: '8px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', width: '180px', backgroundColor: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} 
+                        />
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '0.9rem', width: '90px', textAlign: 'right' }}>Home Church:</span>
+                        <input 
+                            type="text" value={homeChurch} onChange={(e) => setHomeChurch(e.target.value)} 
+                            placeholder="e.g. Coastal Church" 
+                            style={{ padding: '8px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', width: '180px', backgroundColor: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} 
+                        />
+                    </label>
                 </div>
 
-                {/* 🔒 PRIVACY TOGGLE */}
                 <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.9rem', color: theme === 'dark' ? '#ccc' : '#555' }}>
                     <input 
-                        type="checkbox" 
-                        checked={isHistoryPublic} 
-                        onChange={(e) => setIsHistoryPublic(e.target.checked)}
+                        type="checkbox" checked={isHistoryPublic} onChange={(e) => setIsHistoryPublic(e.target.checked)}
                         style={{ accentColor: '#2196F3', width: '16px', height: '16px' }}
                     />
                     Make my History Public?
                 </label>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '5px' }}>
                     <button onClick={handleSaveProfile} disabled={isSaving} style={{ backgroundColor: '#2196F3', color: 'white', border: 'none', padding: '8px 20px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
                         {isSaving ? "Saving..." : "Save Settings"}
                     </button>
@@ -169,16 +186,41 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
                 </div>
             </div>
         ) : (
-            // READ ONLY VIEW
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                <span style={{ backgroundColor: '#e3f2fd', color: '#1976d2', padding: '4px 10px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                    📍 {location} Body
+            // 👀 VIEW MODE (Viewing Others)
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'center' }}>
+                <span style={{ backgroundColor: '#e3f2fd', color: '#1976d2', padding: '4px 12px', borderRadius: '15px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                    📍 {displayLocation} Body
                 </span>
+                
+                {/* ⛪ CLICKABLE CHURCH MAP */}
+                {displayChurch && (
+                    <a 
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayChurch + " " + displayLocation)}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        style={{ textDecoration: 'none' }}
+                    >
+                        <span style={{ 
+                            backgroundColor: theme === 'dark' ? '#333' : '#fff3cd', 
+                            color: theme === 'dark' ? '#ffd700' : '#856404', 
+                            border: theme === 'dark' ? '1px solid #555' : '1px solid #ffeeba',
+                            padding: '4px 12px', borderRadius: '15px', 
+                            fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '5px',
+                            transition: 'transform 0.2s'
+                        }}
+                        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                            ⛪ {displayChurch} (Map)
+                        </span>
+                    </a>
+                )}
             </div>
         )}
       </div>
 
-      {/* 🍇 FRUIT BASKET STATS (Only if Public or Me) */}
+      {/* 🍇 FRUIT BASKET STATS */}
       {(isMyProfile || isHistoryPublic) && (
           <div style={{ marginBottom: '30px' }}>
             <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' }}>Spiritual Fruit Basket</h3>
@@ -201,7 +243,6 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
       {/* 📜 HISTORY LOG */}
       <div>
         <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '15px' }}>Reflection History</h3>
-        
         {(!isMyProfile && !isHistoryPublic) ? (
             <div style={{ textAlign: 'center', padding: '40px', backgroundColor: theme === 'dark' ? '#222' : '#f9f9f9', borderRadius: '12px', color: '#888' }}>
                 🔒 This member has kept their history private.
@@ -213,27 +254,15 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
             ) : (
                 myReflections.map((post) => (
                 <div key={post.id}>
-                    {/* 🔗 CLICKABLE HISTORY LINK (NEW FEATURE) */}
                     <div 
                         onClick={() => onJumpToHistory && onJumpToHistory(post)}
-                        style={{ 
-                            fontSize: '0.75rem', 
-                            color: '#2196F3', // Blue to indicate clicking
-                            marginBottom: '5px', 
-                            textAlign: 'right', 
-                            cursor: 'pointer',
-                            textDecoration: 'underline',
-                            fontWeight: 'bold'
-                        }}
+                        style={{ fontSize: '0.75rem', color: '#2196F3', marginBottom: '5px', textAlign: 'right', cursor: 'pointer', textDecoration: 'underline', fontWeight: 'bold' }}
                     >
                         {post.chapter ? `↪ Reflecting on ${post.chapter}` : `↪ Daily Devotional (${post.date})`}
                     </div>
-
                     <MemberCard 
                         user={{ displayName: post.userName, photoURL: post.userPhoto }} 
-                        thought={post.text} 
-                        reactions={post.reactions}
-                        location={post.location} 
+                        thought={post.text} reactions={post.reactions} location={post.location} 
                         currentUserId={currentUser ? currentUser.uid : null}
                     />
                 </div>
