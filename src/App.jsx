@@ -66,6 +66,38 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // --- 🕰️ HISTORY JUMP HELPER (NEW FEATURE) ---
+  const jumpToHistoryItem = (post) => {
+    // Case 1: It's a Daily Devotional (has a date like "10.24")
+    if (post.date) {
+        const [m, d] = post.date.split('.');
+        const targetDate = new Date();
+        targetDate.setMonth(parseInt(m) - 1);
+        targetDate.setDate(parseInt(d));
+        
+        // Calculate difference in days from today to set the offset
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        targetDate.setHours(0,0,0,0);
+        
+        const diffTime = targetDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        setDayOffset(diffDays);
+        setActiveTab('devotional');
+    }
+    // Case 2: It's a Bible Chapter
+    else if (post.chapter) {
+        const match = post.chapter.match(/^(.+)\s(\d+)$/);
+        if (match) {
+            setBibleBook(match[1]);
+            setBibleChapter(parseInt(match[2]));
+            setActiveTab('bible');
+        }
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const triggerSearch = (query) => {
     if (!query) return;
     setWellQuery(query);
@@ -251,7 +283,12 @@ function App() {
         
         {/* 🔀 TAB SWITCHER */}
         {activeTab === 'profile' ? (
-            <MemberProfile theme={theme} viewingUid={viewingProfileUid} onNavigate={setActiveTab} />
+            <MemberProfile 
+                theme={theme} 
+                viewingUid={viewingProfileUid} 
+                onNavigate={setActiveTab}
+                onJumpToHistory={jumpToHistoryItem} // 👈 PASSING THE JUMP FUNCTION
+            />
         ) : activeTab === 'bible' ? (
             <BibleReader 
                 theme={theme} 

@@ -4,7 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import MemberCard from './MemberCard';
 
-function MemberProfile({ theme, viewingUid, onNavigate }) {
+function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
   const [currentUser] = useAuthState(auth);
   
   // Decide WHOSE profile we are looking at (Mine vs. Others)
@@ -213,14 +213,27 @@ function MemberProfile({ theme, viewingUid, onNavigate }) {
             ) : (
                 myReflections.map((post) => (
                 <div key={post.id}>
-                    <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '5px', textAlign: 'right' }}>
-                        {post.chapter ? `Reflecting on ${post.chapter}` : `Daily Devotional (${post.date})`}
+                    {/* 🔗 CLICKABLE HISTORY LINK (NEW FEATURE) */}
+                    <div 
+                        onClick={() => onJumpToHistory && onJumpToHistory(post)}
+                        style={{ 
+                            fontSize: '0.75rem', 
+                            color: '#2196F3', // Blue to indicate clicking
+                            marginBottom: '5px', 
+                            textAlign: 'right', 
+                            cursor: 'pointer',
+                            textDecoration: 'underline',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        {post.chapter ? `↪ Reflecting on ${post.chapter}` : `↪ Daily Devotional (${post.date})`}
                     </div>
+
                     <MemberCard 
                         user={{ displayName: post.userName, photoURL: post.userPhoto }} 
                         thought={post.text} 
                         reactions={post.reactions}
-                        location={post.location} // Show location on history cards too
+                        location={post.location} 
                         currentUserId={currentUser ? currentUser.uid : null}
                     />
                 </div>
