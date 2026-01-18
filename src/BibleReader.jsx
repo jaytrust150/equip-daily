@@ -14,9 +14,9 @@ import {
 // 🎨 COLORS
 const HIGHLIGHT_COLOR = '#ffeb3b';
 const NOTE_BUTTON_COLOR = '#2196F3'; 
-const CITY_NAME = "Sebastian"; // 📍 Default city for new posts
+const CITY_NAME = "Sebastian"; // 📍 Default city
 
-function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick }) {
+function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick, historyStack, onGoBack }) {
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   const [version, setVersion] = useState('web');
@@ -181,7 +181,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         await setDoc(doc(db, "reflections", `${user.uid}_${chapterKey}`), { 
           userId: user.uid, userName: user.displayName, userPhoto: user.photoURL, 
           text: reflection, chapter: chapterKey, timestamp: serverTimestamp(), 
-          location: CITY_NAME, // 📍 Uses the same city constant as App.jsx
+          location: CITY_NAME, 
           reactions: {} 
         }); 
       }
@@ -279,6 +279,31 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
             )}
         </div>
         
+        {/* 🔙 RETURN BUTTON (Only if History Exists) */}
+        {historyStack && historyStack.length > 0 && (
+            <div style={{ textAlign: 'center', marginBottom: '15px' }}>
+                <button 
+                    onClick={onGoBack}
+                    style={{
+                        backgroundColor: theme === 'dark' ? '#1e3a5f' : '#e3f2fd',
+                        color: theme === 'dark' ? '#90caf9' : '#1976d2',
+                        border: theme === 'dark' ? '1px solid #333' : '1px solid #bbdefb',
+                        padding: '8px 16px',
+                        borderRadius: '20px',
+                        fontSize: '0.9rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: '5px',
+                        margin: '0 auto',
+                        boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+                    }}
+                >
+                    <span>↩</span> 
+                    Return to {historyStack[historyStack.length - 1].book} {historyStack[historyStack.length - 1].chapter}
+                </button>
+            </div>
+        )}
+
         {MemoizedTracker && ( <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', paddingBottom: '20px' }}> {MemoizedTracker} </div> )}
         {renderControlBar()}
       </div>
@@ -355,8 +380,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         
         <section className="directory" style={{ marginTop: '40px' }}>
           <h2 style={{ textAlign: 'center', marginBottom: '0px', color: theme === 'dark' ? '#fff' : '#333' }}>Reflections on {book} {chapter}</h2>
-          
-          {/* 🍇 ADDED VERSE BANNER TO MIRROR APP.JSX */}
           <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: '0.75rem', color: '#888', maxWidth: '90%', margin: '5px auto 25px auto', lineHeight: '1.4' }}>
             "But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control." <span style={{fontWeight:'bold'}}>— Gal 5:22-23</span>
           </p>
@@ -364,15 +387,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', textAlign: 'left' }}>
             {chapterReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : chapterReflections.map((post, i) => (
               <div key={post.id || i} style={{ position: 'relative' }}>
-                  {/* 🌟 MemberCard NOW UPDATED in Bible Reader too! */}
                   <MemberCard 
                       user={{ displayName: post.userName, photoURL: post.userPhoto }} 
                       thought={post.text} 
                       reactions={post.reactions}
-                      location={post.location} // 📍 Pass location
+                      location={post.location} 
                       onReact={(fruitId) => handleReaction(post.id, fruitId)}
                       onSearch={onSearch}
-                      onProfileClick={() => onProfileClick && onProfileClick(post.userId)} // 👤 Pass click
+                      onProfileClick={() => onProfileClick && onProfileClick(post.userId)}
                       currentUserId={user ? user.uid : null}
                       isOwner={user && user.uid === post.userId}
                       onEdit={() => handleEditClick(post)}

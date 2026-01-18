@@ -26,6 +26,7 @@ function App() {
   // --- 📖 BIBLE STATE ---
   const [bibleBook, setBibleBook] = useState('Genesis');
   const [bibleChapter, setBibleChapter] = useState(1);
+  const [bibleHistory, setBibleHistory] = useState([]); // 🕰️ NEW: Stores jump history
 
   // --- 💧 THE WELL STATE ---
   const [isWellOpen, setIsWellOpen] = useState(false);
@@ -61,14 +62,34 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // --- 🚀 SMART BIBLE JUMP ---
   const jumpToVerse = (book, chapter) => {
+    // 💾 SAVE LOCATION: Before jumping, remember where we were
+    setBibleHistory(prev => [...prev, { book: bibleBook, chapter: bibleChapter }]);
+    
+    // Perform Jump
     setBibleBook(book);
     setBibleChapter(parseInt(chapter));
     setActiveTab('bible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- 🕰️ HISTORY JUMP HELPER ---
+  // --- ↩️ POP HISTORY (RETURN BUTTON) ---
+  const goBackInBible = () => {
+    if (bibleHistory.length === 0) return;
+    
+    const lastLocation = bibleHistory[bibleHistory.length - 1];
+    
+    // Restore old location
+    setBibleBook(lastLocation.book);
+    setBibleChapter(lastLocation.chapter);
+    
+    // Remove from stack
+    setBibleHistory(prev => prev.slice(0, -1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // --- 🕰️ HISTORY JUMP HELPER (PROFILE) ---
   const jumpToHistoryItem = (post) => {
     if (post.date) {
         const [m, d] = post.date.split('.');
@@ -87,11 +108,10 @@ function App() {
         setActiveTab('devotional');
     }
     else if (post.chapter) {
+        // Use smart jump here too
         const match = post.chapter.match(/^(.+)\s(\d+)$/);
         if (match) {
-            setBibleBook(match[1]);
-            setBibleChapter(parseInt(match[2]));
-            setActiveTab('bible');
+            jumpToVerse(match[1], match[2]);
         }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -264,17 +284,11 @@ function App() {
                 <button 
                     onClick={() => goToProfile(user.uid)}
                     style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: 'inherit',
-                        fontWeight: 'bold',
+                        background: 'none', border: 'none', cursor: 'pointer',
+                        fontSize: 'inherit', fontWeight: 'bold',
                         color: theme === 'dark' ? '#90caf9' : '#1565c0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
+                        display: 'flex', alignItems: 'center', gap: '4px',
+                        padding: '2px 6px', borderRadius: '4px',
                         transition: 'background-color 0.2s'
                     }}
                     title="Go to Profile"
@@ -305,6 +319,9 @@ function App() {
                 chapter={bibleChapter} setChapter={setBibleChapter} 
                 onSearch={triggerSearch} 
                 onProfileClick={goToProfile}
+                // 👇 PASSING HISTORY PROPS
+                historyStack={bibleHistory}
+                onGoBack={goBackInBible}
             />
         ) : (
           /* --- DEVOTIONAL TAB --- */
