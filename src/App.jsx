@@ -10,7 +10,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, where, onSnapshot, arrayUnion, arrayRemove } from "firebase/firestore";
 import './App.css';
 
-// 📍 DEFAULT CITY (Will be overridden by Profile later)
+// 📍 DEFAULT CITY
 const CITY_NAME = "Sebastian";
 
 function App() {
@@ -18,7 +18,7 @@ function App() {
   
   // 🧭 NAV STATE
   const [activeTab, setActiveTab] = useState('devotional');
-  const [previousTab, setPreviousTab] = useState('devotional'); // 🔙 TRACK HISTORY
+  const [previousTab, setPreviousTab] = useState('devotional');
   const [viewingProfileUid, setViewingProfileUid] = useState(null); 
   
   const [theme, setTheme] = useState('light');
@@ -26,7 +26,7 @@ function App() {
   // --- 📖 BIBLE STATE ---
   const [bibleBook, setBibleBook] = useState('Genesis');
   const [bibleChapter, setBibleChapter] = useState(1);
-  const [bibleHistory, setBibleHistory] = useState([]); // 🕰️ NEW: Stores jump history
+  const [bibleHistory, setBibleHistory] = useState([]); // 🕰️ STORES HISTORY
 
   // --- 💧 THE WELL STATE ---
   const [isWellOpen, setIsWellOpen] = useState(false);
@@ -44,7 +44,6 @@ function App() {
   const [fontSize, setFontSize] = useState(1.1);
 
   const logout = () => signOut(auth);
-  
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const toggleTheme = () => {
@@ -54,9 +53,9 @@ function App() {
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
 
-  // --- 👤 PROFILE NAVIGATION HELPER (SMART BACK) ---
+  // --- 👤 PROFILE NAV ---
   const goToProfile = (uid) => {
-      setPreviousTab(activeTab); // 💾 Save where we came from
+      setPreviousTab(activeTab);
       setViewingProfileUid(uid);
       setActiveTab('profile');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -64,32 +63,26 @@ function App() {
 
   // --- 🚀 SMART BIBLE JUMP ---
   const jumpToVerse = (book, chapter) => {
-    // 💾 SAVE LOCATION: Before jumping, remember where we were
+    // Save current spot to history before moving
     setBibleHistory(prev => [...prev, { book: bibleBook, chapter: bibleChapter }]);
     
-    // Perform Jump
     setBibleBook(book);
     setBibleChapter(parseInt(chapter));
     setActiveTab('bible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- ↩️ POP HISTORY (RETURN BUTTON) ---
+  // --- ↩️ GO BACK ---
   const goBackInBible = () => {
     if (bibleHistory.length === 0) return;
-    
     const lastLocation = bibleHistory[bibleHistory.length - 1];
     
-    // Restore old location
     setBibleBook(lastLocation.book);
     setBibleChapter(lastLocation.chapter);
-    
-    // Remove from stack
-    setBibleHistory(prev => prev.slice(0, -1));
+    setBibleHistory(prev => prev.slice(0, -1)); // Pop stack
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- 🕰️ HISTORY JUMP HELPER (PROFILE) ---
   const jumpToHistoryItem = (post) => {
     if (post.date) {
         const [m, d] = post.date.split('.');
@@ -108,7 +101,6 @@ function App() {
         setActiveTab('devotional');
     }
     else if (post.chapter) {
-        // Use smart jump here too
         const match = post.chapter.match(/^(.+)\s(\d+)$/);
         if (match) {
             jumpToVerse(match[1], match[2]);
@@ -123,7 +115,6 @@ function App() {
     setIsWellOpen(true);
   };
 
-  // --- 🍓 FRUIT REACTION HANDLER ---
   const handleReaction = async (postId, fruitId) => {
     if (!user) return;
     const postRef = doc(db, "reflections", postId);
@@ -235,17 +226,13 @@ function App() {
   return (
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
-        
-        {/* 🧭 LEFT NAV: SMART NAVIGATION */}
         <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '10px' }}>
            {activeTab === 'profile' ? (
-             /* 👤 IN PROFILE: SHOW BOTH BUTTONS */
              <>
                 <button onClick={() => setActiveTab('devotional')} style={buttonStyle}>🙏 Daily</button>
                 <button onClick={() => setActiveTab('bible')} style={buttonStyle}>📖 Bible</button>
              </>
            ) : (
-             /* 🏠 NORMAL MODE: TOGGLE BUTTON */
              <button 
                onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} 
                style={buttonStyle}
@@ -255,11 +242,9 @@ function App() {
            )}
         </div>
 
-        {/* 📺 RIGHT NAV: YouTube | Dark Mode */}
         <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '8px' }}>
             <a href="https://www.youtube.com/@EquipDaily" target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
                 <button style={{ ...buttonStyle, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    {/* 🔴 RED YOUTUBE ICON SVG */}
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="red">
                         <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
                     </svg>
@@ -275,12 +260,9 @@ function App() {
         <p style={{ marginTop: '5px', marginBottom: '20px', fontStyle: 'italic', opacity: 0.8 }}>"For the equipping of the saints." - Eph 4:12</p>
         <hr style={{ width: '50%', margin: '0px auto 20px auto', borderColor: theme === 'dark' ? '#444' : '#eee' }} />
         
-        {/* 👤 CLICKABLE NAME PROFILE TRIGGER */}
         {user && (
             <div className="user-profile" style={{ marginBottom: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.9rem', color: theme === 'dark' ? '#aaa' : '#555' }}>
                 <span style={{ fontStyle: 'italic' }}>Grace and peace,</span>
-                
-                {/* 🔽 THE NAME IS NOW THE BUTTON */}
                 <button 
                     onClick={() => goToProfile(user.uid)}
                     style={{
@@ -302,8 +284,6 @@ function App() {
       </header>
 
       <main style={{ flex: 1 }}>
-        
-        {/* 🔀 TAB SWITCHER */}
         {activeTab === 'profile' ? (
             <MemberProfile 
                 theme={theme} 
@@ -319,12 +299,11 @@ function App() {
                 chapter={bibleChapter} setChapter={setBibleChapter} 
                 onSearch={triggerSearch} 
                 onProfileClick={goToProfile}
-                // 👇 PASSING HISTORY PROPS
-                historyStack={bibleHistory}
-                onGoBack={goBackInBible}
+                historyStack={bibleHistory} // 👈 PASS HISTORY
+                onGoBack={goBackInBible}    // 👈 PASS FUNCTION
             />
         ) : (
-          /* --- DEVOTIONAL TAB --- */
+          /* DEVOTIONAL TAB CONTENT */
           <>
             <section className="devotional-porch" style={{ textAlign: 'center', padding: '0 20px 20px 20px' }}>
               <div style={{ marginBottom: '30px', marginTop: '10px' }}>
@@ -363,11 +342,7 @@ function App() {
             {user ? (
               <section className="directory" style={{ marginTop: '40px' }}>
                 <h2 style={{ textAlign: 'center', marginBottom: '0px' }}>{CITY_NAME} Body Directory</h2>
-                
-                <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: '0.75rem', color: '#888', maxWidth: '90%', margin: '5px auto 25px auto', lineHeight: '1.4' }}>
-                  "But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control." <span style={{fontWeight:'bold'}}>— Gal 5:22-23</span>
-                </p>
-
+                <p style={{ textAlign: 'center', fontStyle: 'italic', fontSize: '0.75rem', color: '#888', maxWidth: '90%', margin: '5px auto 25px auto', lineHeight: '1.4' }}>"But the fruit of the Spirit is love, joy, peace, patience, kindness, goodness, faithfulness, gentleness, and self-control." <span style={{fontWeight:'bold'}}>— Gal 5:22-23</span></p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {communityReflections.length === 0 ? <p style={{ textAlign: 'center', color: '#888' }}>No reflections yet. Be the first to share!</p> : communityReflections.map((post) => (
                     <MemberCard 
@@ -394,7 +369,16 @@ function App() {
       </main>
       
       {user && <footer style={{ textAlign: 'center', padding: '40px 20px', marginTop: '20px', borderTop: '1px solid #eee' }}><button onClick={logout} className="secondary-btn" style={{ fontSize: '0.8rem', opacity: 0.7 }}>Logout</button></footer>}
-      <SearchWell theme={theme} isOpen={isWellOpen} onClose={() => setIsWellOpen(false)} initialQuery={wellQuery} onJumpToVerse={jumpToVerse} />
+      <SearchWell 
+        theme={theme} 
+        isOpen={isWellOpen} 
+        onClose={() => setIsWellOpen(false)} 
+        initialQuery={wellQuery} 
+        onJumpToVerse={jumpToVerse}
+        // 👇 PASSING HISTORY PROPS TO SEARCH WELL
+        historyStack={bibleHistory}
+        onGoBack={goBackInBible}
+      />
     </div>
   );
 }

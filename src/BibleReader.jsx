@@ -279,7 +279,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
             )}
         </div>
         
-        {/* 🔙 RETURN BUTTON (Only if History Exists) */}
+        {/* 🔙 RETURN BUTTON (MERGED) */}
         {historyStack && historyStack.length > 0 && (
             <div style={{ textAlign: 'center', marginBottom: '15px' }}>
                 <button 
