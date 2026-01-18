@@ -4,7 +4,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import MemberCard from './MemberCard';
 
-function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
+function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previousTab }) {
   const [currentUser] = useAuthState(auth);
   
   // Decide WHOSE profile we are looking at (Mine vs. Others)
@@ -14,7 +14,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
   // --- PROFILE DATA ---
   const [profileData, setProfileData] = useState(null);
   const [location, setLocation] = useState("");
-  const [homeChurch, setHomeChurch] = useState(""); // ⛪ Church State
+  const [homeChurch, setHomeChurch] = useState(""); 
   const [isHistoryPublic, setIsHistoryPublic] = useState(true); 
   
   // --- EDITING STATE ---
@@ -35,7 +35,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
         const data = docSnap.data();
         setProfileData(data);
         setLocation(data.location || "Sebastian");
-        setHomeChurch(data.homeChurch || ""); // ⛪ Load Church
+        setHomeChurch(data.homeChurch || ""); 
         setIsHistoryPublic(data.isHistoryPublic !== undefined ? data.isHistoryPublic : true);
       } else {
         setLocation("Sebastian"); 
@@ -92,7 +92,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
       const userRef = doc(db, "users", currentUser.uid);
       await setDoc(userRef, { 
         location: location,
-        homeChurch: homeChurch, // ⛪ Save Church
+        homeChurch: homeChurch, 
         isHistoryPublic: isHistoryPublic,
         displayName: currentUser.displayName,
         photoURL: currentUser.photoURL,
@@ -119,23 +119,25 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
   const displayName = profileData?.displayName || (isMyProfile ? currentUser.displayName : "Member");
   const displayEmail = profileData?.email || (isMyProfile ? currentUser.email : "");
   
-  // ⛪ VIEW MODE: Church Data
   const displayChurch = isMyProfile ? homeChurch : (profileData?.homeChurch || "");
   const displayLocation = isMyProfile ? location : (profileData?.location || "Sebastian");
+
+  // 🔙 DYNAMIC BACK BUTTON LABEL
+  const backLabel = previousTab === 'bible' ? 'Return to Bible' : 'Back to Directory';
 
   return (
     <div className="profile-container" style={{ maxWidth: '600px', margin: '0 auto', padding: '20px', color: theme === 'dark' ? '#fff' : '#333' }}>
       
-      {/* 🔙 BACK BUTTON */}
+      {/* 🔙 BACK BUTTON (SMART NAV) */}
       <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '15px' }}>
         <button 
-            onClick={() => onNavigate('devotional')} 
+            onClick={() => onNavigate(previousTab || 'devotional')} 
             style={{ 
                 background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', 
                 color: '#2196F3', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' 
             }}
         >
-            <span>←</span> {isMyProfile ? "Return to Devotional" : "Back to Directory"}
+            <span>←</span> {backLabel}
         </button>
       </div>
 
@@ -192,7 +194,6 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory }) {
                     📍 {displayLocation} Body
                 </span>
                 
-                {/* ⛪ CLICKABLE CHURCH MAP */}
                 {displayChurch && (
                     <a 
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayChurch + " " + displayLocation)}`} 

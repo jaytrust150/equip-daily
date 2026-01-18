@@ -18,7 +18,8 @@ function App() {
   
   // 🧭 NAV STATE
   const [activeTab, setActiveTab] = useState('devotional');
-  const [viewingProfileUid, setViewingProfileUid] = useState(null); // 👤 WHOSE profile?
+  const [previousTab, setPreviousTab] = useState('devotional'); // 🔙 TRACK HISTORY
+  const [viewingProfileUid, setViewingProfileUid] = useState(null); 
   
   const [theme, setTheme] = useState('light');
 
@@ -52,8 +53,9 @@ function App() {
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
 
-  // --- 👤 PROFILE NAVIGATION HELPER ---
+  // --- 👤 PROFILE NAVIGATION HELPER (SMART BACK) ---
   const goToProfile = (uid) => {
+      setPreviousTab(activeTab); // 💾 Save where we came from
       setViewingProfileUid(uid);
       setActiveTab('profile');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -66,16 +68,14 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // --- 🕰️ HISTORY JUMP HELPER (NEW FEATURE) ---
+  // --- 🕰️ HISTORY JUMP HELPER ---
   const jumpToHistoryItem = (post) => {
-    // Case 1: It's a Daily Devotional (has a date like "10.24")
     if (post.date) {
         const [m, d] = post.date.split('.');
         const targetDate = new Date();
         targetDate.setMonth(parseInt(m) - 1);
         targetDate.setDate(parseInt(d));
         
-        // Calculate difference in days from today to set the offset
         const today = new Date();
         today.setHours(0,0,0,0);
         targetDate.setHours(0,0,0,0);
@@ -86,7 +86,6 @@ function App() {
         setDayOffset(diffDays);
         setActiveTab('devotional');
     }
-    // Case 2: It's a Bible Chapter
     else if (post.chapter) {
         const match = post.chapter.match(/^(.+)\s(\d+)$/);
         if (match) {
@@ -217,14 +216,23 @@ function App() {
     <div className="app-container" style={appStyle}>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
         
-        {/* 🧭 LEFT NAV: SINGLE TOGGLE BUTTON */}
-        <div style={{ position: 'absolute', top: '20px', left: '20px' }}>
-           <button 
-             onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} 
-             style={buttonStyle}
-           >
-             {activeTab === 'devotional' ? '📖 Bible' : '🙏 Daily Devotional'}
-           </button>
+        {/* 🧭 LEFT NAV: SMART NAVIGATION */}
+        <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '10px' }}>
+           {activeTab === 'profile' ? (
+             /* 👤 IN PROFILE: SHOW BOTH BUTTONS */
+             <>
+                <button onClick={() => setActiveTab('devotional')} style={buttonStyle}>🙏 Daily</button>
+                <button onClick={() => setActiveTab('bible')} style={buttonStyle}>📖 Bible</button>
+             </>
+           ) : (
+             /* 🏠 NORMAL MODE: TOGGLE BUTTON */
+             <button 
+               onClick={() => setActiveTab(activeTab === 'devotional' ? 'bible' : 'devotional')} 
+               style={buttonStyle}
+             >
+               {activeTab === 'devotional' ? '📖 Bible' : '🙏 Daily Devotional'}
+             </button>
+           )}
         </div>
 
         {/* 📺 RIGHT NAV: YouTube | Dark Mode */}
@@ -287,7 +295,8 @@ function App() {
                 theme={theme} 
                 viewingUid={viewingProfileUid} 
                 onNavigate={setActiveTab}
-                onJumpToHistory={jumpToHistoryItem} // 👈 PASSING THE JUMP FUNCTION
+                onJumpToHistory={jumpToHistoryItem} 
+                previousTab={previousTab} 
             />
         ) : activeTab === 'bible' ? (
             <BibleReader 
