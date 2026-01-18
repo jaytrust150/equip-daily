@@ -21,8 +21,11 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [query, setQuery] = useState("");
   const [groupedResults, setGroupedResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // 📂 State to track which books are collapsed
   const [collapsedGroups, setCollapsedGroups] = useState({});
 
+  // Auto-search if opened with a specific verse
   useEffect(() => {
     if (initialQuery) {
       setQuery(initialQuery);
@@ -31,34 +34,46 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   }, [initialQuery]);
 
   const toggleGroup = (groupName) => {
-    setCollapsedGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }));
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName] // Toggle true/false
+    }));
   };
 
   const performSearch = async (searchTerm) => {
     if (!searchTerm) return;
     setLoading(true);
     setGroupedResults([]);
-    setCollapsedGroups({}); 
+    setCollapsedGroups({}); // Reset collapsed state on new search
 
     const isReference = /\d/.test(searchTerm);
 
     try {
       if (isReference) {
+        // 📖 MODE 1: REFERENCE LOOKUP (bible-api.com)
         const res = await fetch(`https://bible-api.com/${encodeURIComponent(searchTerm)}?translation=web`);
         const data = await res.json();
+
         if (data.text) {
           setGroupedResults([{
             groupName: "Passage",
-            verses: [{ book_name: data.reference, isRef: true, text: data.text }]
+            verses: [{
+              book_name: data.reference,
+              isRef: true, 
+              text: data.text
+            }]
           }]);
         }
       } else {
+        // 🔍 MODE 2: KEYWORD SEARCH (bolls.life)
         const res = await fetch(`https://bolls.life/find/WEB/?search=${encodeURIComponent(searchTerm)}`);
         const data = await res.json();
         
+        // 🧹 CLEAN & SORT: Remove junk, sort by Bible Order (1-66)
         const rawResults = Object.values(data)
-            .filter(item => item.book && BOOK_ID_MAP[item.book])
+            .filter(item => item.book && BOOK_ID_MAP[item.book]) // Remove items with no valid book ID
             .sort((a, b) => {
+                // Strict Sort: Book First, then Chapter, then Verse
                 if (a.book !== b.book) return a.book - b.book;
                 if (a.chapter !== b.chapter) return a.chapter - b.chapter;
                 return a.verse - b.verse;
@@ -70,6 +85,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                 text: item.text 
             }));
 
+        // Group by Book
         const groups = [];
         rawResults.forEach(item => {
             const lastGroup = groups[groups.length - 1];
@@ -79,6 +95,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                 groups.push({ groupName: item.book_name, verses: [item] });
             }
         });
+
         setGroupedResults(groups);
       }
     } catch (err) {
@@ -88,43 +105,62 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
     }
   };
 
+  // 🚀 JUMP HANDLER
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
-    if (window.innerWidth <= 768) onClose();
+
+    // Auto-close on mobile when clicking a result
+    const closeIfMobile = () => {
+        if (window.innerWidth <= 768) {
+            onClose();
+        }
+    };
 
     if (!r.isRef) {
       onJumpToVerse(r.book_name, r.chapter);
-    } else {
+      closeIfMobile();
+      return;
+    }
+
+    if (r.isRef) {
       const match = r.book_name.match(/^(.+)\s(\d+):/);
+      
       if (match) {
-        onJumpToVerse(match[1].trim(), match[2]);
+        const book = match[1].trim();   
+        const chapter = match[2];       
+        onJumpToVerse(book, chapter);
+        closeIfMobile();
       } else {
         const chapterMatch = r.book_name.match(/^(.+)\s(\d+)$/);
-        if (chapterMatch) onJumpToVerse(chapterMatch[1].trim(), chapterMatch[2]);
+        if (chapterMatch) {
+            onJumpToVerse(chapterMatch[1].trim(), chapterMatch[2]);
+            closeIfMobile();
+        }
       }
     }
   };
 
-  // 🛡️ THE FIX: Only render if open or auto-searching
   if (!isOpen && !initialQuery) return null;
 
+  // 🎨 STYLES
   const sidebarStyle = {
     position: 'fixed',
     top: '80px',
-    right: '20px', // Fixed right position
+    right: isOpen ? '20px' : '-450px',
     bottom: '20px',
     width: '350px',
     maxWidth: '85vw',
-    backgroundColor: theme === 'dark' ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: theme === 'dark' ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(12px)',
     borderRadius: '16px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
     border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
-    zIndex: 2000, // Higher Z-Index to stay on top
+    zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',
-    transition: 'opacity 0.3s ease',
-    pointerEvents: 'all' // Ensures it catches clicks
+    transition: 'right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    opacity: isOpen ? 1 : 0,
+    pointerEvents: isOpen ? 'all' : 'none'
   };
 
   return (
@@ -134,23 +170,21 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
           <h3 style={{ margin: 0, color: '#2196F3', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem' }}>
             <span>📖</span> Bible Search
           </h3>
-          {/* ❌ IMPROVED X BUTTON */}
-          <button 
-            onClick={onClose} 
-            style={{ 
-                background: 'none', border: 'none', fontSize: '1.5rem', 
-                cursor: 'pointer', color: theme === 'dark' ? '#888' : '#555',
-                padding: '5px', lineHeight: 1
-            }}
-          >
-            ✕
-          </button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: theme === 'dark' ? '#888' : '#555' }}>✕</button>
         </div>
         
+        {/* 👑 CENTERED & MARGINED TITLE */}
         <p style={{ 
-            fontSize: '0.75rem', fontStyle: 'italic', textAlign: 'center',
-            color: theme === 'dark' ? '#aaa' : '#666', marginTop: '15px',
-            marginBottom: '5px', lineHeight: '1.4'
+            fontSize: '0.75rem',      
+            fontStyle: 'italic', 
+            textAlign: 'center',
+            color: theme === 'dark' ? '#aaa' : '#666', 
+            marginTop: '15px',
+            marginBottom: '5px', 
+            lineHeight: '1.4',
+            maxWidth: '92%',
+            marginLeft: 'auto',
+            marginRight: 'auto'
         }}>
           "How much better to get wisdom than gold! To get understanding is to be chosen rather than silver."
           <span style={{ fontWeight: 'bold', fontStyle: 'normal', display: 'block', marginTop: '4px', opacity: 0.8, fontSize: '0.7rem' }}> — Prov 16:16</span>
@@ -170,7 +204,9 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
           />
           <button type="submit" style={{ background: '#2196F3', color: 'white', border: 'none', borderRadius: '8px', padding: '0 15px', cursor: 'pointer', fontWeight: 'bold' }}>Go</button>
         </form>
-        <p style={{ fontSize: '0.68rem', color: theme === 'dark' ? '#777' : '#888', marginTop: '8px', textAlign: 'center', fontStyle: 'italic', marginBottom: 0 }}>
+        
+        {/* 💡 ONE LINE TIP */}
+        <p style={{ fontSize: '0.68rem', color: theme === 'dark' ? '#777' : '#888', marginTop: '8px', textAlign: 'center', fontStyle: 'italic', marginBottom: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           💡 Tip: Click any result to jump to that chapter.
         </p>
       </div>
@@ -185,6 +221,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
             const isCollapsed = collapsedGroups[group.groupName];
             return (
               <div key={gIndex} style={{ marginBottom: '5px' }}>
+                {/* 📂 CLICKABLE HEADER */}
                 <div 
                   onClick={() => toggleGroup(group.groupName)}
                   style={{ 
@@ -197,6 +234,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                 }}>
                   <span>
                     {group.groupName} 
+                    {/* ✨ SMART COUNT: Hides (1) if it's a Passage, shows (50) if it's a Keyword */}
                     {group.groupName !== "Passage" && (
                         <span style={{fontSize: '0.8rem', opacity: 0.7, color: theme === 'dark' ? '#aaa' : '#666', marginLeft: '5px'}}>
                             ({group.verses.length})
@@ -205,6 +243,8 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
                   </span>
                   <span style={{ fontSize: '0.8rem' }}>{isCollapsed ? '▶' : '▼'}</span>
                 </div>
+                
+                {/* 📜 VERSES LIST (Hidden if collapsed) */}
                 {!isCollapsed && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '5px' }}>
                     {group.verses.map((r, i) => (
