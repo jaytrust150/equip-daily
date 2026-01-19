@@ -587,7 +587,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           isLongPress.current = true; 
           setSelectedVerses([verseNum]);
           
-          // ✅ DIRECTLY OPEN EDITOR (Bypass checks, always allow note via Long Press)
+          // ✅ 1. SHOW FLOATING TOOL (Without forcing study mode ON)
+          setShowFloatingNoteTool(true); 
+
+          // ✅ 2. DIRECTLY OPEN EDITOR
           setCurrentNoteText(""); 
           setEditingNoteId(null); 
           setIsNoteMode(true);
@@ -1242,7 +1245,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                       onClick={() => handleCopyCombo(note)} 
                                       style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '3px 6px' }}
                                     >
-                                      {noteFeedback[note.id] === 'combo' ? '✓ Copied!' : `Copy All`}
+                                      {noteFeedback[note.id] === 'combo' ? '✓ Copied!' : `Copy ${verseRef} + Note`}
                                     </button>
                                 </div>
                                 
