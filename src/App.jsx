@@ -39,10 +39,13 @@ function App() {
   const [dayOffset, setDayOffset] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // --- 🎧 AUDIO STATE ---
+  // --- 🎧 AUDIO & VIDEO STATE ---
   const [showAudio, setShowAudio] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const audioRef = useRef(null);
+  
+  // 📺 NEW: YouTube Video State
+  const [youtubeId, setYoutubeId] = useState(null);
 
   // --- REFLECTION / EDITING STATE ---
   const [reflection, setReflection] = useState("");
@@ -142,6 +145,22 @@ function App() {
 
   const processedDevotional = useMemo(() => { return processDevotionalText(devotional); }, [devotional]);
 
+  // 📺 NEW: Extract YouTube ID from devotional text whenever it changes
+  useEffect(() => {
+    if (!devotional) {
+      setYoutubeId(null);
+      return;
+    }
+    // Regex to find standard youtube links or youtu.be shortlinks
+    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = devotional.match(ytRegex);
+    if (match && match[1]) {
+      setYoutubeId(match[1]);
+    } else {
+      setYoutubeId(null);
+    }
+  }, [devotional]);
+
   const handleDevotionalInteraction = (e) => {
     if (e.target.classList.contains('verse-link')) {
       const verseRef = e.target.innerText;
@@ -223,7 +242,7 @@ function App() {
              text: reflection, 
              date: dateKey, 
              timestamp: serverTimestamp(), 
-             location: CITY_NAME,
+             location: CITY_NAME, 
              reactions: {} 
          });
       }
@@ -369,8 +388,19 @@ function App() {
               {/* 🎧 AUDIO PLAYER CONTAINER */}
               {showAudio && (
                 <div style={{ margin: '0 auto 20px auto', maxWidth: '600px', padding: '10px', backgroundColor: theme === 'dark' ? '#333' : '#f1f1f1', borderRadius: '8px', animation: 'fadeIn 0.5s' }}>
-                    <audio controls ref={audioRef} style={{ width: '100%', height: '40px' }} onError={() => setAudioError(true)}>
+                    {/* 📜 UPDATED: Added crossOrigin for tracks and track tag */}
+                    <audio controls ref={audioRef} style={{ width: '100%', height: '40px' }} onError={() => setAudioError(true)} crossOrigin="anonymous">
                         <source src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.mp3`} type="audio/mpeg" />
+                        
+                        {/* 📜 CAPTIONS TRACK (Uses matching .vtt file) */}
+                        <track 
+                            kind="captions" 
+                            src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.vtt`} 
+                            srcLang="en" 
+                            label="English" 
+                            default 
+                        />
+                        
                         Your browser does not support the audio element.
                     </audio>
                     {audioError && <p style={{ color: '#e53e3e', fontSize: '0.8rem', marginTop: '5px', marginBottom: 0 }}>Audio not available for this date yet.</p>}
@@ -379,6 +409,22 @@ function App() {
 
               <div className="devotional-content" style={{ fontSize: 'var(--devotional-font-size)', lineHeight: '1.7', textAlign: 'left', color: theme === 'dark' ? '#ccc' : '#333', backgroundColor: theme === 'dark' ? '#111' : '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'font-size 0.2s ease' }} dangerouslySetInnerHTML={{ __html: processedDevotional }} />
               
+              {/* 📺 VIDEO PLAYER (AUTO-INSERTED) */}
+              {youtubeId && (
+                <div className="youtube-container" style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto 0 auto' }}>
+                  <iframe
+                    width="100%"
+                    height="315"
+                    src={`https://www.youtube.com/embed/${youtubeId}`}
+                    title="Devotional Video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  ></iframe>
+                </div>
+              )}
+
               <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
                 {user && (!hasShared || editingId) ? (
                   <div id="devotional-input" style={{ background: theme === 'dark' ? '#111' : '#f9f9f9', padding: '20px', borderRadius: '12px', border: theme === 'dark' ? '1px solid #333' : '1px solid #eee' }}>
