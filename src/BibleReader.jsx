@@ -41,14 +41,18 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [readChapters, setReadChapters] = useState([]);
   const [isChapterRead, setIsChapterRead] = useState(false);
   
-  // ✅ FEEDBACK STATES (Restored)
+  // ✅ FEEDBACK STATES
   const [copyFeedback, setCopyFeedback] = useState("");
   const [noteFeedback, setNoteFeedback] = useState({}); 
 
   // Highlights Map
   const [highlightsMap, setHighlightsMap] = useState({});
   const [userNotes, setUserNotes] = useState([]);
-  const [showNotes, setShowNotes] = useState(false); // Default: Reading Mode
+  
+  // NOTE & STUDY MODES
+  const [showNotes, setShowNotes] = useState(false); // Master Study Mode Switch
+  const [displayNotes, setDisplayNotes] = useState(true); // Toggle visibility (Red Line)
+  
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
   const [editingNoteId, setEditingNoteId] = useState(null);
@@ -66,7 +70,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const isDraggingPalette = useRef(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
 
-  // 🖱️ DRAGGABLE NOTEBOOK STATE (Restored)
+  // 🖱️ DRAGGABLE NOTEBOOK STATE
   const [notebookPos, setNotebookPos] = useState({ x: 0, y: 0 });
   const isDraggingNotebook = useRef(false);
   const dragStartNotebookPos = useRef({ x: 0, y: 0 });
@@ -346,6 +350,9 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       if (!nextState) {
           setIsNoteMode(false);
           setEditingNoteId(null);
+      } else {
+          // If we turn on Study Mode, make sure display is ON (remove red line)
+          setDisplayNotes(true);
       }
 
       setHintText(nextState 
@@ -764,7 +771,29 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     cursor: 'grab'
                 }}
             >
-                <span style={{ fontSize: '1.2rem' }}>📝</span>
+                {/* Toggle Display Button */}
+                <span
+                    onClick={(e) => { e.stopPropagation(); setDisplayNotes(!displayNotes); }}
+                    style={{
+                        fontSize: '1.2rem',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        display: 'inline-block'
+                    }}
+                    title={displayNotes ? "Hide Notes in Text" : "Show Notes in Text"}
+                >
+                    📝
+                    {/* Red Line Overlay if inactive */}
+                    {!displayNotes && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%', left: '0', right: '0',
+                            height: '2px', backgroundColor: 'red',
+                            transform: 'rotate(-45deg)'
+                        }} />
+                    )}
+                </span>
+
                 {/* Close (Exit Study Mode) */}
                 <button 
                     onMouseDown={(e) => e.stopPropagation()}
@@ -795,9 +824,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onClick={handleHighlightButton} 
                 className="nav-btn" 
                 style={{ 
-                    backgroundColor: selectedVerses.length > 0 ? activeHighlightColor.code : (theme === 'dark' ? '#333' : '#f5f5f5'), 
-                    color: selectedVerses.length > 0 && activeHighlightColor.code !== '#ffffff' ? '#333' : (theme === 'dark' ? '#ccc' : '#aaa'), 
-                    border: selectedVerses.length > 0 ? `2px solid ${activeHighlightColor.border}` : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
+                    // ✅ FIXED: Always show the active color
+                    backgroundColor: activeHighlightColor.code,
+                    color: activeHighlightColor.code === '#ffffff' ? '#333' : '#333',
+                    // Add a border to indicate it's the highlight button
+                    border: `2px solid ${activeHighlightColor.border}`,
                     fontWeight: 'bold', padding: '5px 10px', fontSize: '0.85rem' 
                 }}
             >
@@ -997,7 +1028,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 }
 
                 // ✅ SAFELY GET ATTACHED NOTES (Fixing the crash)
-                const attachedNotes = showNotes ? userNotes.filter(n => {
+                const attachedNotes = (showNotes && displayNotes) ? userNotes.filter(n => {
                     return n.verses && Array.isArray(n.verses) && n.verses.length > 0 && n.verses[n.verses.length - 1] === v.verse;
                 }) : [];
                 
@@ -1072,11 +1103,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
                                 {/* COPY SCRIPTURE (New request) */}
                                 <button
-                                    onClick={() => {
-                                        handleCopyVerseText(note.verses);
-                                        // Optional: add visual feedback here too if desired
-                                        // triggerNoteFeedback(note.id, 'verse');
-                                    }}
+                                    onClick={() => handleCopyVerseText(note.verses)}
                                     style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
                                 >
                                     Copy Verse{note.verses.length > 1 ? 's' : ''}
@@ -1149,7 +1176,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         <span className="verse-text">{v.text}</span>
                         
                         {/* ⚡ MULTI-NOTE PEEK INDICATORS (Bottom Right, Stacked Horizontally) */}
-                        {!showNotes && hasPeekNotes && (
+                        {(!showNotes || !displayNotes) && hasPeekNotes && (
                             <div style={{ position: 'absolute', bottom: '5px', right: '5px', display: 'flex', gap: '4px' }}>
                                 {peekNotes.map((pn, i) => {
                                     // Generate reference string e.g. "v. 2-5"
@@ -1161,8 +1188,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     return (
                                     <span 
                                         key={pn.id}
-                                        onMouseEnter={() => setHoveredNoteId(pn.id)}
-                                        onMouseLeave={() => setHoveredNoteId(null)}
+                                        // 🛑 CHANGED: Removed onMouseEnter/Leave to mimic mobile (Click Toggle)
                                         onClick={(e) => { 
                                             // Toggle on click for mobile
                                             e.stopPropagation(); 
@@ -1312,7 +1338,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         </div>
                     )}
                     {/* NOTE CARDS RENDER */}
-                    {showNotes && attachedNotes.length > 0 && attachedNotes.map(note => {
+                    {showNotes && displayNotes && attachedNotes.length > 0 && attachedNotes.map(note => {
                         if (editingNoteId === note.id && isNoteMode) return null;
                         return renderNote(note);
                     })}
