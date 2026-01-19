@@ -14,6 +14,8 @@ import {
 // 🎨 COLORS
 const NOTE_BUTTON_COLOR = '#2196F3'; // 🔵 Blue for Note Toggle
 const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
+const SAVE_BUTTON_COLOR = '#4caf50'; // 🟢 Green for Save
+const DELETE_BUTTON_COLOR = '#f44336'; // 🔴 Red for Delete
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -937,28 +939,81 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         Copy {book} {chapter}:{selectedVerses[0]}{selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}
                     </button>
                     
-                    {/* ROW 3: NEW BLUE CREATE NOTE BUTTON */}
-                    <button
-                         onMouseDown={(e) => e.stopPropagation()}
-                         onClick={handleCreateNoteFromSelection} 
-                         title="Create Note from Selection"
-                         style={{
-                             background: NOTE_BUTTON_COLOR, // Blue
-                             color: 'white',
-                             border: '1px solid #1976D2', 
-                             borderRadius: '10px',
-                             fontSize: '0.75rem',
-                             fontWeight: 'bold',
-                             padding: '5px 10px',
-                             cursor: 'pointer',
-                             width: '100%',
-                             textAlign: 'center',
-                             whiteSpace: 'nowrap',
-                             marginTop: '2px'
-                         }}
-                    >
-                        {isNoteMode && !editingNoteId ? "Close Note" : "Create Note"}
-                    </button>
+                    {/* ROW 3: NEW ACTIONS IF EDITOR IS OPEN */}
+                    {!isNoteMode ? (
+                        // Blue Create Note (When Editor CLOSED)
+                        <button
+                             onMouseDown={(e) => e.stopPropagation()}
+                             onTouchStart={(e) => e.stopPropagation()}
+                             onClick={handleCreateNoteFromSelection} 
+                             title="Create Note from Selection"
+                             style={{
+                                 background: NOTE_BUTTON_COLOR, // Blue
+                                 color: 'white',
+                                 border: '1px solid #1976D2', 
+                                 borderRadius: '10px',
+                                 fontSize: '0.75rem',
+                                 fontWeight: 'bold',
+                                 padding: '5px 10px',
+                                 cursor: 'pointer',
+                                 width: '100%',
+                                 textAlign: 'center',
+                                 whiteSpace: 'nowrap',
+                                 marginTop: '2px'
+                             }}
+                        >
+                            Create Note
+                        </button>
+                    ) : (
+                        // Save (Green) & Delete (Red) (When Editor OPEN)
+                        <>
+                            <button
+                                 onMouseDown={(e) => e.stopPropagation()}
+                                 onTouchStart={(e) => e.stopPropagation()}
+                                 onClick={saveNote} 
+                                 title="Save Note"
+                                 style={{
+                                     background: SAVE_BUTTON_COLOR, // Green
+                                     color: 'white',
+                                     border: '1px solid #388E3C', 
+                                     borderRadius: '10px',
+                                     fontSize: '0.75rem',
+                                     fontWeight: 'bold',
+                                     padding: '5px 10px',
+                                     cursor: 'pointer',
+                                     width: '100%',
+                                     textAlign: 'center',
+                                     whiteSpace: 'nowrap',
+                                     marginTop: '2px'
+                                 }}
+                            >
+                                Save Note
+                            </button>
+
+                            <button
+                                 onMouseDown={(e) => e.stopPropagation()}
+                                 onTouchStart={(e) => e.stopPropagation()}
+                                 onClick={handleEditorDelete} 
+                                 title="Delete/Discard Note"
+                                 style={{
+                                     background: DELETE_BUTTON_COLOR, // Red
+                                     color: 'white',
+                                     border: '1px solid #D32F2F', 
+                                     borderRadius: '10px',
+                                     fontSize: '0.75rem',
+                                     fontWeight: 'bold',
+                                     padding: '5px 10px',
+                                     cursor: 'pointer',
+                                     width: '100%',
+                                     textAlign: 'center',
+                                     whiteSpace: 'nowrap',
+                                     marginTop: '2px'
+                                 }}
+                            >
+                                Delete Note
+                            </button>
+                        </>
+                    )}
                     </>
                 )}
             </div>
