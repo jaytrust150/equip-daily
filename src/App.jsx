@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import BibleReader from './BibleReader';
 import MemberCard from './MemberCard';
 import MemberProfile from './MemberProfile'; 
@@ -26,7 +26,7 @@ function App() {
   // --- 📖 BIBLE STATE ---
   const [bibleBook, setBibleBook] = useState('Genesis');
   const [bibleChapter, setBibleChapter] = useState(1);
-  const [bibleHistory, setBibleHistory] = useState([]); // 🕰️ STORES HISTORY
+  const [bibleHistory, setBibleHistory] = useState([]); 
 
   // --- 💧 THE WELL STATE ---
   const [isWellOpen, setIsWellOpen] = useState(false);
@@ -63,9 +63,7 @@ function App() {
 
   // --- 🚀 SMART BIBLE JUMP ---
   const jumpToVerse = (book, chapter) => {
-    // Save current spot to history before moving
     setBibleHistory(prev => [...prev, { book: bibleBook, chapter: bibleChapter }]);
-    
     setBibleBook(book);
     setBibleChapter(parseInt(chapter));
     setActiveTab('bible');
@@ -76,10 +74,9 @@ function App() {
   const goBackInBible = () => {
     if (bibleHistory.length === 0) return;
     const lastLocation = bibleHistory[bibleHistory.length - 1];
-    
     setBibleBook(lastLocation.book);
     setBibleChapter(lastLocation.chapter);
-    setBibleHistory(prev => prev.slice(0, -1)); // Pop stack
+    setBibleHistory(prev => prev.slice(0, -1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -89,22 +86,14 @@ function App() {
         const targetDate = new Date();
         targetDate.setMonth(parseInt(m) - 1);
         targetDate.setDate(parseInt(d));
-        
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        targetDate.setHours(0,0,0,0);
-        
-        const diffTime = targetDate - today;
+        const diffTime = targetDate - new Date().setHours(0,0,0,0);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        
         setDayOffset(diffDays);
         setActiveTab('devotional');
     }
     else if (post.chapter) {
         const match = post.chapter.match(/^(.+)\s(\d+)$/);
-        if (match) {
-            jumpToVerse(match[1], match[2]);
-        }
+        if (match) jumpToVerse(match[1], match[2]);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -138,11 +127,23 @@ function App() {
 
   const processedDevotional = useMemo(() => { return processDevotionalText(devotional); }, [devotional]);
 
+  // --- 🖱️ MOUSE INTERACTION (WITH CRASH GUARD) ---
   const handleDevotionalInteraction = (e) => {
     if (e.target.classList.contains('verse-link')) {
       const verseRef = e.target.innerText;
-      setWellQuery(verseRef);
-      if (e.type === 'click' || e.type === 'mouseover') setIsWellOpen(true);
+      
+      // 🛡️ CRASH PREVENTION: Only update state if it is NEW.
+      // This stops the infinite re-render loop that causes the crash.
+      if (wellQuery !== verseRef) {
+          setWellQuery(verseRef);
+      }
+      
+      // Open the window if it's closed
+      if (e.type === 'click' || e.type === 'mouseover') {
+        if (!isWellOpen) {
+            setIsWellOpen(true);
+        }
+      }
     }
   };
 
@@ -150,9 +151,7 @@ function App() {
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + dayOffset);
     setCurrentDate(targetDate);
-    const month = targetDate.getMonth() + 1;
-    const day = targetDate.getDate();
-    const fileName = `${month}.${day}-devotional.txt`;
+    const fileName = `${targetDate.getMonth() + 1}.${targetDate.getDate()}-devotional.txt`;
     setEditingId(null); 
     fetch(`/${fileName}`)
       .then(res => { if (!res.ok) throw new Error("File not found"); return res.text(); })
@@ -283,7 +282,12 @@ function App() {
         )}
       </header>
 
-      <main style={{ flex: 1 }}>
+      <main 
+        style={{ flex: 1 }}
+        // ✅ ATTACHING INTERACTION HANDLERS TO MAIN CONTENT
+        onClick={handleDevotionalInteraction} 
+        onMouseOver={handleDevotionalInteraction} 
+      >
         {activeTab === 'profile' ? (
             <MemberProfile 
                 theme={theme} 
@@ -299,8 +303,8 @@ function App() {
                 chapter={bibleChapter} setChapter={setBibleChapter} 
                 onSearch={triggerSearch} 
                 onProfileClick={goToProfile}
-                historyStack={bibleHistory} // 👈 PASS HISTORY
-                onGoBack={goBackInBible}    // 👈 PASS FUNCTION
+                historyStack={bibleHistory}
+                onGoBack={goBackInBible}
             />
         ) : (
           /* DEVOTIONAL TAB CONTENT */
@@ -323,7 +327,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="devotional-content" onClick={handleDevotionalInteraction} onMouseOver={handleDevotionalInteraction} style={{ fontSize: 'var(--devotional-font-size)', lineHeight: '1.7', textAlign: 'left', color: theme === 'dark' ? '#ccc' : '#333', backgroundColor: theme === 'dark' ? '#111' : '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'font-size 0.2s ease' }} dangerouslySetInnerHTML={{ __html: processedDevotional }} />
+              <div className="devotional-content" style={{ fontSize: 'var(--devotional-font-size)', lineHeight: '1.7', textAlign: 'left', color: theme === 'dark' ? '#ccc' : '#333', backgroundColor: theme === 'dark' ? '#111' : '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'font-size 0.2s ease' }} dangerouslySetInnerHTML={{ __html: processedDevotional }} />
               
               <div style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto' }}>
                 {user && (!hasShared || editingId) ? (
@@ -375,7 +379,6 @@ function App() {
         onClose={() => setIsWellOpen(false)} 
         initialQuery={wellQuery} 
         onJumpToVerse={jumpToVerse}
-        // 👇 PASSING HISTORY PROPS TO SEARCH WELL
         historyStack={bibleHistory}
         onGoBack={goBackInBible}
       />
