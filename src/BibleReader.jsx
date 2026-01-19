@@ -41,8 +41,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [readChapters, setReadChapters] = useState([]);
   const [isChapterRead, setIsChapterRead] = useState(false);
   
-  // Editor Button Text State
-  const [copyBtnText, setCopyBtnText] = useState("Copy Selected Verse");
+  // Editor Button State (Used for "Copied!" feedback)
+  const [copyFeedback, setCopyFeedback] = useState("");
   
   // Highlights Map: "VerseKey" -> { bg: hex, border: hex }
   const [highlightsMap, setHighlightsMap] = useState({});
@@ -536,8 +536,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         await navigator.clipboard.writeText(`"${textBlock}" ${citation}`); 
         
         if (targetVerses === selectedVerses) {
-            setCopyBtnText("Copied!"); 
-            setTimeout(() => setCopyBtnText(selectedVerses.length > 1 ? "Copy Selected Verses" : "Copy Selected Verse"), 2000); 
+            setCopyFeedback("Copied!"); 
+            setTimeout(() => setCopyFeedback(""), 2000); 
         } else {
             alert("Scripture copied!");
         }
@@ -578,11 +578,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           }
       } catch (e) { console.error("Editor highlight error:", e); }
   };
-
-  // Dynamic Button Label
-  useEffect(() => {
-      setCopyBtnText(selectedVerses.length > 1 ? "Copy Selected Verses" : "Copy Selected Verse");
-  }, [selectedVerses]);
 
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
@@ -667,8 +662,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     left: palettePos.x === 0 && palettePos.y === 0 ? '20px' : `${palettePos.x}px`,
                     transform: palettePos.x === 0 && palettePos.y === 0 ? 'translateY(-50%)' : 'none',
                     backgroundColor: theme === 'dark' ? '#333' : 'white', 
-                    border: '1px solid #ccc', borderRadius: '15px', padding: '8px 4px', // Taller, narrower padding
-                    display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', // VERTICAL
+                    border: '1px solid #ccc', borderRadius: '15px', 
+                    padding: '4px 2px', // 🛠️ SKINNER PADDING
+                    width: '26px',      // 🛠️ FORCED NARROW WIDTH
+                    display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', // 🛠️ SMALLER GAP
                     zIndex: 1000, boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
                     cursor: 'grab'
                 }}
@@ -680,21 +677,21 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         onClick={() => applyHighlightColor(color)}
                         title={`Select ${color.name}`}
                         style={{ 
-                            width: '18px', height: '18px', borderRadius: '50%', // SMALLER CIRCLES
+                            width: '16px', height: '16px', borderRadius: '50%', // 🛠️ SLIGHTLY SMALLER DOTS
                             backgroundColor: color.code, border: '1px solid #999', cursor: 'pointer', padding: 0 
                         }}
                     />
                 ))}
                 
                 {/* Horizontal Separator */}
-                <span style={{ width: '20px', height: '1px', background: '#ccc', margin: '2px 0' }}></span>
+                <span style={{ width: '16px', height: '1px', background: '#ccc', margin: '2px 0' }}></span>
 
                 {/* 🚫 REMOVE HIGHLIGHT BUTTON */}
                 <button 
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={() => applyHighlightColor(null)} // Sends null to remove
                     title="Remove Highlight"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', padding: '0 2px' }}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', padding: '0 2px' }}
                 >
                     🚫
                 </button>
@@ -703,7 +700,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 <button 
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={closePalette} 
-                    style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer', marginLeft: '2px', padding: '0 4px' }}>✕</button>
+                    style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer', marginLeft: '0', padding: '0' }}>✕</button>
             </div>
         )}
 
@@ -962,7 +959,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     if (note.verses && note.verses.length > 0) {
                         const first = note.verses[0];
                         const last = note.verses[note.verses.length - 1];
-                        verseRef = (first === last) ? `v.${first}` : `v.${first}-${last}`;
+                        // 🛠️ UPDATED: Uses Book Name + Chapter + Verse Range (Standard Format)
+                        verseRef = (first === last) ? `${book} ${chapter}:${first}` : `${book} ${chapter}:${first}-${last}`;
                     }
 
                     const noteBorderColor = note.color || DEFAULT_NOTE_COLOR;
@@ -1012,10 +1010,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
                                 {/* COPY REF (New - Replaces Static Text) */}
                                 <button 
-                                  onClick={() => { navigator.clipboard.writeText(`${book} ${chapter}:${verseRef}`); alert("Reference copied!"); }}
+                                  onClick={() => { navigator.clipboard.writeText(verseRef); alert("Reference copied!"); }}
                                   style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
                                 >
-                                  Copy Ref {verseRef}
+                                  Copy {verseRef}
                                 </button>
 
                                 <div style={{ flex: 1 }}></div>
@@ -1080,7 +1078,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     // Generate reference string e.g. "v. 2-5"
                                     const start = pn.verses[0];
                                     const end = pn.verses[pn.verses.length-1];
-                                    const ref = start === end ? `v. ${start}` : `v. ${start}-${end}`;
+                                    // 🛠️ UPDATED: Uses Full Reference (e.g. Note on Genesis 1:1-2)
+                                    const ref = start === end ? `${book} ${chapter}:${start}` : `${book} ${chapter}:${start}-${end}`;
 
                                     return (
                                     <span 
@@ -1101,7 +1100,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        Note Available ({ref})
+                                        Note on {ref}
                                     </span>
                                     );
                                 })}
@@ -1129,10 +1128,21 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {showEditor && (
                         <div className="inline-editor-container" style={{ marginLeft: '30px', marginRight: '10px', marginBottom: '15px' }}>
                             <div style={{ backgroundColor: theme === 'dark' ? '#222' : '#f0f4f8', padding: '15px', borderRadius: '8px', border: `1px solid ${NOTE_BUTTON_COLOR}` }}>
+                                {/* 📝 NEW: EDITOR HEADER (Shows "Note on Gen 1:1-5") */}
+                                <div style={{ 
+                                    fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '5px', 
+                                    color: theme === 'dark' ? '#aaa' : '#555',
+                                    fontStyle: 'italic'
+                                }}>
+                                    Note on {book} {chapter}:{selectedVerses[0]}{selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}
+                                </div>
+
                                 <textarea ref={editorRef} value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder="Write your note..." style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit', marginBottom: '10px', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
+                                
                                 {/* 📝 COPY/PASTE VERSE BUTTONS */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', gap: '5px' }}>
+                                        {/* 🛠️ UPDATED: SMART COPY BUTTON (Shows "Copy Gen 1:1-5") */}
                                         <button 
                                             onClick={() => handleCopyVerseText(selectedVerses)} 
                                             style={{ 
@@ -1142,10 +1152,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                                 border: '1px solid #ddd', 
                                                 borderRadius: '15px', 
                                                 fontSize: '0.75rem', 
-                                                cursor: 'pointer' 
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap' 
                                             }}
                                         >
-                                            📋 {copyBtnText}
+                                            {copyFeedback === "Copied!" ? "Copied!" : `📋 Copy ${book} ${chapter}:${selectedVerses[0]}${selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}`}
                                         </button>
                                         
                                         {/* ✅ NEW SYSTEM PASTE BUTTON */}

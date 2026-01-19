@@ -39,6 +39,11 @@ function App() {
   const [dayOffset, setDayOffset] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
 
+  // --- 🎧 AUDIO STATE ---
+  const [showAudio, setShowAudio] = useState(false);
+  const [audioError, setAudioError] = useState(false);
+  const audioRef = useRef(null);
+
   // --- REFLECTION / EDITING STATE ---
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
@@ -145,7 +150,6 @@ function App() {
       if (e.type === 'mouseover' && ignoredVerseRef.current === verseRef) return;
 
       // 🛡️ 2. CRASH FIX: Only update state if it is DIFFERENT from current.
-      // This stops the infinite loop re-renders!
       if (wellQuery !== verseRef) {
           setWellQuery(verseRef);
       }
@@ -166,6 +170,14 @@ function App() {
         ignoredVerseRef.current = null;
     }
   };
+
+  // --- AUDIO RESET & RELOAD ON DATE CHANGE ---
+  useEffect(() => {
+    setAudioError(false);
+    if (showAudio && audioRef.current) {
+        audioRef.current.load();
+    }
+  }, [currentDate, showAudio]);
 
   useEffect(() => {
     const targetDate = new Date();
@@ -342,11 +354,28 @@ function App() {
                   <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn" style={navBtnStyle}>← Prior</button>
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
+                  
+                  {/* 🎧 AUDIO BUTTON */}
+                  <button onClick={() => setShowAudio(!showAudio)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title={showAudio ? "Hide Audio" : "Listen to Devotional"}>
+                    {showAudio ? '🔊' : '🔇'}
+                  </button>
+
                   <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
                   <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
                   <button onClick={() => setIsWellOpen(!isWellOpen)} style={{ padding: '6px 15px', borderRadius: '20px', backgroundColor: isWellOpen ? '#2196F3' : 'transparent', color: isWellOpen ? 'white' : '#2196F3', border: '1px solid #2196F3', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>🔍 Bible Search & Concordance</button>
                 </div>
               </div>
+
+              {/* 🎧 AUDIO PLAYER CONTAINER */}
+              {showAudio && (
+                <div style={{ margin: '0 auto 20px auto', maxWidth: '600px', padding: '10px', backgroundColor: theme === 'dark' ? '#333' : '#f1f1f1', borderRadius: '8px', animation: 'fadeIn 0.5s' }}>
+                    <audio controls ref={audioRef} style={{ width: '100%', height: '40px' }} onError={() => setAudioError(true)}>
+                        <source src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.mp3`} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                    </audio>
+                    {audioError && <p style={{ color: '#e53e3e', fontSize: '0.8rem', marginTop: '5px', marginBottom: 0 }}>Audio not available for this date yet.</p>}
+                </div>
+              )}
 
               <div className="devotional-content" style={{ fontSize: 'var(--devotional-font-size)', lineHeight: '1.7', textAlign: 'left', color: theme === 'dark' ? '#ccc' : '#333', backgroundColor: theme === 'dark' ? '#111' : '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'font-size 0.2s ease' }} dangerouslySetInnerHTML={{ __html: processedDevotional }} />
               
