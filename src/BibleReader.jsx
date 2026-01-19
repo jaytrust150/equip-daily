@@ -343,6 +343,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       if (!nextState) {
           setIsNoteMode(false);
           setEditingNoteId(null);
+          setCurrentNoteText("");
+          
+          // 🛑 NEW: CLEAR SELECTION & CLOSE PALETTE IN READING MODE
+          setSelectedVerses([]);
+          setShowHighlightPalette(false);
       } else {
           // If we turn on Study Mode, make sure display is ON (remove red line)
           setDisplayNotes(true);
@@ -400,6 +405,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 setIsNoteMode(false);
                 setEditingNoteId(null);
                 setCurrentNoteText("");
+                // FIX: Clear selection
+                setSelectedVerses([]);
             } catch (e) { console.error(e); }
         }
     } else {
@@ -407,6 +414,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         setIsNoteMode(false);
         setEditingNoteId(null);
         setCurrentNoteText("");
+        // FIX: Clear selection
+        setSelectedVerses([]);
     }
   };
 
@@ -497,11 +506,13 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const handleCreateNoteFromSelection = () => {
       if (selectedVerses.length === 0) return;
 
-      // ✅ TOGGLE LOGIC: If open, close it.
+      // ✅ TOGGLE LOGIC: If open, close it and CLEAR selection
       if (isNoteMode) {
           setIsNoteMode(false);
           setEditingNoteId(null);
           setCurrentNoteText("");
+          // FIX: Clear selection
+          setSelectedVerses([]);
           return;
       }
       
@@ -1360,14 +1371,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     return (
                                     <span 
                                         key={pn.id}
-                                        // 🛑 RESTORED: Hover to Open
-                                        // onMouseEnter={() => setHoveredNoteId(pn.id)} <--- REMOVED HOVER OPEN
-                                        
-                                        // 🛑 CHANGED: NO Mouse Leave (Sticky)
-                                        // onMouseLeave={() => setHoveredNoteId(null)}
-                                        
+                                        // 🛑 RESTORED: Click to Open (Hover Removed)
                                         onClick={(e) => { 
-                                            // Toggle on click for mobile
                                             e.stopPropagation(); 
                                             setHoveredNoteId(hoveredNoteId === pn.id ? null : pn.id); 
                                         }}
@@ -1391,10 +1396,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* ⚡ PEEKED NOTE DISPLAY (Shows specific hovered note) */}
                     {hoveredNoteId && peekNotes.some(n => n.id === hoveredNoteId) && (
                         <div 
-                            // onMouseEnter={() => setHoveredNoteId(hoveredNoteId)} <--- REMOVED HOVER OPEN
-                            // Keep open if mouse moves to note
-                            // 🛑 REMOVED: Auto-close on mouse leave to keep sticky behavior consistent
-                            // onMouseLeave={() => setHoveredNoteId(null)}
+                            // 🛑 NOTE: No mouse leave close logic anymore
                             style={{ 
                                 marginLeft: '30px', marginRight: '10px', marginBottom: '15px', padding: '10px', 
                                 backgroundColor: theme === 'dark' ? '#222' : '#f9f9f9', 
@@ -1404,8 +1406,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                             }}
                         >
                             <p style={{ margin: 0 }}>{peekNotes.find(n => n.id === hoveredNoteId)?.text}</p>
-                            
-                            {/* 🛑 REMOVED PEEK COPY BUTTON AS REQUESTED */}
                         </div>
                     )}
 
@@ -1428,7 +1428,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     
                                     {/* Left Side: Tools */}
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                                        {/* 1. COPY SCRIPTURE TEXT + REFERENCE (Fixed Logic) */}
+                                        {/* 1. COPY REFERENCE TEXT */}
                                         <button 
                                             onClick={() => handleCopyVerseText(selectedVerses)} 
                                             style={{ 
@@ -1514,7 +1514,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             🗑️
                                         </button>
 
-                                        <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); }} style={{ padding: '3px 6px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
+                                        <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); setSelectedVerses([]); }} style={{ padding: '3px 6px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
                                         <button onClick={saveNote} style={{ padding: '3px 6px', backgroundColor: NOTE_BUTTON_COLOR, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>Save</button>
                                     </div>
                                 </div>
