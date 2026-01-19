@@ -12,7 +12,8 @@ import {
 } from "firebase/firestore";
 
 // 🎨 COLORS
-const NOTE_BUTTON_COLOR = '#2196F3'; 
+const NOTE_BUTTON_COLOR = '#2196F3'; // 🔵 Blue for Note Toggle
+const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -491,6 +492,22 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           triggerNoteFeedback(note.id, 'combo');
       } catch(err) {}
   };
+  
+  // ✅ NEW: SHORTCUT TO CREATE NOTE FROM FLOATING MENU
+  const handleCreateNoteFromSelection = () => {
+      if (selectedVerses.length === 0) return;
+      
+      setCurrentNoteText(""); 
+      setEditingNoteId(null); 
+      setIsNoteMode(true);
+      
+      setTimeout(() => { 
+          if (editorRef.current) { 
+              editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); 
+              editorRef.current.focus(); 
+          } 
+      }, 100);
+  };
 
   // ✅ SYSTEM PASTE BUTTON
   const handleSystemPaste = async () => {
@@ -600,9 +617,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         if (targetVerses === selectedVerses) {
             setCopyFeedback("Copied!"); 
             setTimeout(() => setCopyFeedback(""), 2000); 
-        } else {
-            alert("Scripture copied!");
-        }
+        } 
     } catch (err) {}
   };
 
@@ -843,15 +858,17 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 
                 {/* ROW 2: NEW ORANGE COPY VERSES BUTTON (Visible if selection exists) */}
                 {selectedVerses.length > 0 && (
+                    <>
                     <button
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={() => handleCopyVerseText(selectedVerses)}
                         title="Copy Selected Verses"
                         style={{
-                            // ✅ MATCHES "SELECTED VERSE" STYLE (Light Blue)
-                            backgroundColor: '#e3f2fd', 
-                            color: '#1565c0',           
-                            border: '1px solid #2196F3', 
+                            // ✅ ORANGE for Copy Button (Requested Style)
+                            background: COPY_BUTTON_COLOR,
+                            color: 'white',
+                            // Match styling of main nav buttons
+                            border: '1px solid #e65100', 
                             borderRadius: '10px',
                             fontSize: '0.75rem',
                             fontWeight: 'bold',
@@ -864,6 +881,30 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     >
                         Copy {book} {chapter}:{selectedVerses[0]}{selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}
                     </button>
+                    
+                    {/* ROW 3: NEW BLUE CREATE NOTE BUTTON */}
+                    <button
+                         onMouseDown={(e) => e.stopPropagation()}
+                         onClick={handleCreateNoteFromSelection} 
+                         title="Create Note from Selection"
+                         style={{
+                             background: NOTE_BUTTON_COLOR, // Blue
+                             color: 'white',
+                             border: '1px solid #1976D2', 
+                             borderRadius: '10px',
+                             fontSize: '0.75rem',
+                             fontWeight: 'bold',
+                             padding: '5px 10px',
+                             cursor: 'pointer',
+                             width: '100%',
+                             textAlign: 'center',
+                             whiteSpace: 'nowrap',
+                             marginTop: '2px'
+                         }}
+                    >
+                        Create Note
+                    </button>
+                    </>
                 )}
             </div>
         )}
@@ -907,7 +948,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onClick={handleNoteButtonClick} 
                 className="nav-btn" 
                 style={{ 
-                    // ✅ BLUE when active
+                    // ✅ BLUE when active, similar to Highlight but blue
                     backgroundColor: showNotes ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
                     color: showNotes ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
                     border: showNotes ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
@@ -1170,7 +1211,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                 {/* EDIT */}
                                 <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', fontSize: '0.75rem', padding: '4px 6px' }}>Edit</button>
                                 
-                                {/* 1. COPY SCRIPTURE TEXT */}
+                                {/* 1. COPY SCRIPTURE TEXT + REF (Fixed: Copies the Text) */}
                                 <button
                                     onClick={() => handleCopyVerseText(note.verses)}
                                     style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
@@ -1186,7 +1227,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                   {noteFeedback[note.id] === 'text' ? '✓ Copied!' : 'Copy Note Text'}
                                 </button>
 
-                                {/* 3. COPY VERSE & NOTE (The Combo) */}
+                                {/* 3. COPY COMBO (Scripture + Note) */}
                                 <button 
                                   onClick={() => handleCopyCombo(note)} 
                                   style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
