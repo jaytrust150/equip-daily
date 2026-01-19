@@ -14,8 +14,6 @@ import {
 // 🎨 COLORS
 const NOTE_BUTTON_COLOR = '#2196F3'; // 🔵 Blue for Note Toggle
 const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
-const SAVE_BUTTON_COLOR = '#4caf50'; // 🟢 Green for Save
-const DELETE_BUTTON_COLOR = '#f44336'; // 🔴 Red for Delete
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -356,8 +354,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       }
 
       setHintText(nextState 
-          ? "📝 Study Mode: Notes Visible. Long press a verse to write a note." 
-          : "📖 Reading Mode: Clean View. Long press a verse to write a note.");
+          ? "📝 Study Mode: Notes Visible. Tap verses to select." 
+          : "📖 Reading Mode: Clean View. Click 'Notes' to select.");
   };
 
   const saveNote = async () => {
@@ -1020,7 +1018,21 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <button onClick={() => setShowAudio(!showAudio)} title={showAudio ? "Hide Audio" : "Show Audio"} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 5px' }}>{showAudio ? '🔊' : '🔇'}</button>
+            {/* Prev/Next with onMouseEnter/Leave */}
+            <button 
+                onClick={handlePrev} 
+                className="nav-btn" 
+                style={{ padding: '5px 10px', fontSize: '0.85rem' }}
+                onMouseEnter={() => setHintText("💡 Tip: On mobile, Swipe Right ➡️ anywhere to go Back.")}
+                onMouseLeave={() => setHintText("")}
+            >← Prev</button>
+            <button 
+                onClick={handleNext} 
+                className="nav-btn" 
+                style={{ padding: '5px 10px', fontSize: '0.85rem' }}
+                onMouseEnter={() => setHintText("💡 Tip: On mobile, Swipe Left ⬅️ anywhere to go Next.")}
+                onMouseLeave={() => setHintText("")}
+            >Next →</button>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>{bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}</select>
             <span style={{ fontSize: '0.75rem', color: '#555' }}>|</span>
             <select value={chapter} onChange={(e) => setChapter(e.target.value)} style={{ ...compactSelectStyle, width: 'auto' }}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>)}</select>
@@ -1440,7 +1452,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        Note on {ref}
+                                        {hoveredNoteId === pn.id ? "Close Note" : `Note on ${ref}`}
                                     </span>
                                     );
                                 })}
