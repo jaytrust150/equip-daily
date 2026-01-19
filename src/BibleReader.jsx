@@ -891,7 +891,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* Close (Exit Study Mode) */}
                     <button 
                         onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => { 
                             setShowNotes(false); 
                             setShowFloatingNoteTool(false); // Close the tool completely
@@ -906,7 +905,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     <>
                     <button
                         onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => handleCopyVerseText(selectedVerses)}
                         title="Copy Selected Verses"
                         style={{
@@ -931,7 +929,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* ROW 3: NEW BLUE CREATE NOTE BUTTON */}
                     <button
                          onMouseDown={(e) => e.stopPropagation()}
-                         onTouchStart={(e) => e.stopPropagation()}
                          onClick={handleCreateNoteFromSelection} 
                          title="Create Note from Selection"
                          style={{
@@ -995,7 +992,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onClick={handleNoteButtonClick} 
                 className="nav-btn" 
                 style={{ 
-                    // ✅ BLUE when active, similar to Highlight but blue
+                    // ✅ BLUE when active
                     backgroundColor: showNotes ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
                     color: showNotes ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
                     border: showNotes ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
@@ -1394,7 +1391,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* ⚡ PEEKED NOTE DISPLAY (Shows specific hovered note) */}
                     {hoveredNoteId && peekNotes.some(n => n.id === hoveredNoteId) && (
                         <div 
-                            onMouseEnter={() => setHoveredNoteId(hoveredNoteId)} // Keep open if mouse moves to note
+                            // onMouseEnter={() => setHoveredNoteId(hoveredNoteId)} <--- REMOVED HOVER OPEN
+                            // Keep open if mouse moves to note
                             // 🛑 REMOVED: Auto-close on mouse leave to keep sticky behavior consistent
                             // onMouseLeave={() => setHoveredNoteId(null)}
                             style={{ 

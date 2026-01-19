@@ -370,13 +370,18 @@ function App() {
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
+                  {/* 🎧 AUDIO BUTTON (MOVED TO FIRST) */}
+                  <button onClick={() => setShowAudio(!showAudio)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title={showAudio ? "Hide Audio" : "Listen to Devotional"}>
+                    {showAudio ? '🔊' : '🔇'}
+                  </button>
+
                   <button onClick={() => setDayOffset(dayOffset - 1)} className="nav-btn" style={navBtnStyle}>← Prior</button>
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
                   
-                  {/* 🎧 AUDIO BUTTON */}
-                  <button onClick={() => setShowAudio(!showAudio)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title={showAudio ? "Hide Audio" : "Listen to Devotional"}>
-                    {showAudio ? '🔊' : '🔇'}
+                  {/* 📅 CALENDAR BUTTON (PLACEHOLDER) */}
+                  <button onClick={() => setDayOffset(0)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title="Calendar">
+                    📅
                   </button>
 
                   <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
