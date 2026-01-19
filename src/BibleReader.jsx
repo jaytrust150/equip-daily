@@ -723,32 +723,63 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       const rect = e.currentTarget.getBoundingClientRect();
       dragStartNotebookPos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
+  
+  // ✅ 📱 MOBILE DRAG SUPPORT (TOUCH EVENTS)
+  const handlePaletteTouchStart = (e) => {
+      isDraggingPalette.current = true;
+      const touch = e.touches[0];
+      const rect = e.currentTarget.getBoundingClientRect();
+      dragStartPos.current = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  };
+
+  const handleNotebookTouchStart = (e) => {
+      isDraggingNotebook.current = true;
+      const touch = e.touches[0];
+      const rect = e.currentTarget.getBoundingClientRect();
+      dragStartNotebookPos.current = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+  };
 
   useEffect(() => {
+      // 🖱️ MOUSE EVENTS
       const handleGlobalMouseMove = (e) => {
           if (isDraggingPalette.current) {
-              setPalettePos({
-                  x: e.clientX - dragStartPos.current.x,
-                  y: e.clientY - dragStartPos.current.y
-              });
+              setPalettePos({ x: e.clientX - dragStartPos.current.x, y: e.clientY - dragStartPos.current.y });
           }
           if (isDraggingNotebook.current) {
-               setNotebookPos({
-                  x: e.clientX - dragStartNotebookPos.current.x,
-                  y: e.clientY - dragStartNotebookPos.current.y
-              });
+               setNotebookPos({ x: e.clientX - dragStartNotebookPos.current.x, y: e.clientY - dragStartNotebookPos.current.y });
           }
       };
-      const handleGlobalMouseUp = () => { 
+      
+      // 📱 TOUCH EVENTS (For Mobile Dragging)
+      const handleGlobalTouchMove = (e) => {
+          const touch = e.touches[0];
+          if (isDraggingPalette.current) {
+              setPalettePos({ x: touch.clientX - dragStartPos.current.x, y: touch.clientY - dragStartPos.current.y });
+              e.preventDefault(); // Prevent scrolling while dragging
+          }
+          if (isDraggingNotebook.current) {
+               setNotebookPos({ x: touch.clientX - dragStartNotebookPos.current.x, y: touch.clientY - dragStartNotebookPos.current.y });
+               e.preventDefault(); 
+          }
+      };
+
+      const handleGlobalUp = () => { 
           isDraggingPalette.current = false; 
           isDraggingNotebook.current = false;
       };
 
       window.addEventListener('mousemove', handleGlobalMouseMove);
-      window.addEventListener('mouseup', handleGlobalMouseUp);
+      window.addEventListener('mouseup', handleGlobalUp);
+      
+      // Add Touch Listeners to Window
+      window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
+      window.addEventListener('touchend', handleGlobalUp);
+
       return () => {
           window.removeEventListener('mousemove', handleGlobalMouseMove);
-          window.removeEventListener('mouseup', handleGlobalMouseUp);
+          window.removeEventListener('mouseup', handleGlobalUp);
+          window.removeEventListener('touchmove', handleGlobalTouchMove);
+          window.removeEventListener('touchend', handleGlobalUp);
       };
   }, []);
 
@@ -759,6 +790,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         {showHighlightPalette && (
             <div 
                 onMouseDown={handlePaletteMouseDown}
+                onTouchStart={handlePaletteTouchStart} // 📱
                 style={{ 
                     // Fixed position always (defaulting to left side if not moved)
                     position: 'fixed',
@@ -812,6 +844,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         {showFloatingNoteTool && (
             <div 
                 onMouseDown={handleNotebookMouseDown}
+                onTouchStart={handleNotebookTouchStart} // 📱
                 style={{ 
                     // Fixed position always (defaulting to left side below highlights)
                     position: 'fixed',
@@ -858,6 +891,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* Close (Exit Study Mode) */}
                     <button 
                         onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => { 
                             setShowNotes(false); 
                             setShowFloatingNoteTool(false); // Close the tool completely
@@ -872,6 +906,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     <>
                     <button
                         onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => handleCopyVerseText(selectedVerses)}
                         title="Copy Selected Verses"
                         style={{
@@ -896,6 +931,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* ROW 3: NEW BLUE CREATE NOTE BUTTON */}
                     <button
                          onMouseDown={(e) => e.stopPropagation()}
+                         onTouchStart={(e) => e.stopPropagation()}
                          onClick={handleCreateNoteFromSelection} 
                          title="Create Note from Selection"
                          style={{
@@ -959,7 +995,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onClick={handleNoteButtonClick} 
                 className="nav-btn" 
                 style={{ 
-                    // ✅ BLUE when active
+                    // ✅ BLUE when active, similar to Highlight but blue
                     backgroundColor: showNotes ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
                     color: showNotes ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
                     border: showNotes ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
@@ -1328,7 +1364,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     <span 
                                         key={pn.id}
                                         // 🛑 RESTORED: Hover to Open
-                                        onMouseEnter={() => setHoveredNoteId(pn.id)}
+                                        // onMouseEnter={() => setHoveredNoteId(pn.id)} <--- REMOVED HOVER OPEN
                                         
                                         // 🛑 CHANGED: NO Mouse Leave (Sticky)
                                         // onMouseLeave={() => setHoveredNoteId(null)}
