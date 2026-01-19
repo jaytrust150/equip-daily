@@ -41,10 +41,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [readChapters, setReadChapters] = useState([]);
   const [isChapterRead, setIsChapterRead] = useState(false);
   
-  // Editor Button State (Used for "Copied!" feedback)
+  // ✅ FEEDBACK STATES (Restored)
   const [copyFeedback, setCopyFeedback] = useState("");
-  
-  // Highlights Map: "VerseKey" -> { bg: hex, border: hex }
+  const [noteFeedback, setNoteFeedback] = useState({}); 
+
+  // Highlights Map
   const [highlightsMap, setHighlightsMap] = useState({});
   const [userNotes, setUserNotes] = useState([]);
   const [showNotes, setShowNotes] = useState(false); // Default: Reading Mode
@@ -64,6 +65,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [palettePos, setPalettePos] = useState({ x: 0, y: 0 });
   const isDraggingPalette = useRef(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
+
+  // 🖱️ DRAGGABLE NOTEBOOK STATE (Restored)
+  const [notebookPos, setNotebookPos] = useState({ x: 0, y: 0 });
+  const isDraggingNotebook = useRef(false);
+  const dragStartNotebookPos = useRef({ x: 0, y: 0 });
 
   // ⚡ PEEK NOTE STATE
   const [hoveredNoteId, setHoveredNoteId] = useState(null);
@@ -293,6 +299,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   
   const handleVerseDoubleClick = async (verseNum) => {
       if (!user) return;
+      
+      // ✅ NEW: Automatically open the palette
+      setShowHighlightPalette(true);
+
       const verseKey = `${book} ${chapter}:${verseNum}`;
       const isCurrentlyHighlighted = highlightsMap.hasOwnProperty(verseKey);
       const userRef = doc(db, "users", user.uid);
@@ -403,6 +413,18 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const deleteNote = async (noteId) => { if (window.confirm("Are you sure?")) { try { await deleteDoc(doc(db, "notes", noteId)); } catch (e) { console.error(e); } } };
   const startEditingNote = (note) => { setCurrentNoteText(note.text); setEditingNoteId(note.id); setIsNoteMode(true); };
   
+  // ⚡ HELPER: TRIGGER NOTE FEEDBACK (Visual only)
+  const triggerNoteFeedback = (noteId, type) => {
+      setNoteFeedback(prev => ({ ...prev, [noteId]: type }));
+      setTimeout(() => {
+          setNoteFeedback(prev => {
+              const newState = { ...prev };
+              delete newState[noteId];
+              return newState;
+          });
+      }, 2000);
+  };
+
   const handleShareNote = async (note, type) => {
       const noteVerseText = note.verses.map(vNum => { 
           const v = verses.find(v => v.verse === vNum); 
@@ -460,8 +482,12 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
     }
   };
 
+  // ✅ NEW: COPY NOTE TEXT (No Alert)
   const handleCopyNote = async (note) => {
-      try { await navigator.clipboard.writeText(note.text); alert("Note copied!"); } catch (err) {}
+      try { 
+          await navigator.clipboard.writeText(note.text); 
+          triggerNoteFeedback(note.id, 'text'); // Trigger visual feedback
+      } catch (err) {}
   };
 
   const saveReflection = async () => {
@@ -623,22 +649,38 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
   const compactSelectStyle = { border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.75rem', color: theme === 'dark' ? '#aaa' : '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit', maxWidth: '70px' };
   
-  // --- 🖱️ DRAGGABLE PALETTE LOGIC ---
+  // --- 🖱️ DRAGGABLE LOGIC (Highlight & Notebook) ---
   const handlePaletteMouseDown = (e) => {
       isDraggingPalette.current = true;
       const rect = e.currentTarget.getBoundingClientRect();
       dragStartPos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
 
+  const handleNotebookMouseDown = (e) => {
+      isDraggingNotebook.current = true;
+      const rect = e.currentTarget.getBoundingClientRect();
+      dragStartNotebookPos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
   useEffect(() => {
       const handleGlobalMouseMove = (e) => {
-          if (!isDraggingPalette.current) return;
-          setPalettePos({
-              x: e.clientX - dragStartPos.current.x,
-              y: e.clientY - dragStartPos.current.y
-          });
+          if (isDraggingPalette.current) {
+              setPalettePos({
+                  x: e.clientX - dragStartPos.current.x,
+                  y: e.clientY - dragStartPos.current.y
+              });
+          }
+          if (isDraggingNotebook.current) {
+               setNotebookPos({
+                  x: e.clientX - dragStartNotebookPos.current.x,
+                  y: e.clientY - dragStartNotebookPos.current.y
+              });
+          }
       };
-      const handleGlobalMouseUp = () => { isDraggingPalette.current = false; };
+      const handleGlobalMouseUp = () => { 
+          isDraggingPalette.current = false; 
+          isDraggingNotebook.current = false;
+      };
 
       window.addEventListener('mousemove', handleGlobalMouseMove);
       window.addEventListener('mouseup', handleGlobalMouseUp);
@@ -701,6 +743,34 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     onMouseDown={(e) => e.stopPropagation()}
                     onClick={closePalette} 
                     style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer', marginLeft: '0', padding: '0' }}>✕</button>
+            </div>
+        )}
+
+        {/* 📝 DRAGGABLE NOTEBOOK (STUDY MODE) */}
+        {showNotes && (
+            <div 
+                onMouseDown={handleNotebookMouseDown}
+                style={{ 
+                    // Fixed position always (defaulting to left side below highlights)
+                    position: 'fixed',
+                    top: notebookPos.x === 0 && notebookPos.y === 0 ? '65%' : `${notebookPos.y}px`,
+                    left: notebookPos.x === 0 && notebookPos.y === 0 ? '20px' : `${notebookPos.x}px`,
+                    transform: notebookPos.x === 0 && notebookPos.y === 0 ? 'translateY(-50%)' : 'none',
+                    backgroundColor: theme === 'dark' ? '#333' : 'white', 
+                    border: `1px solid ${NOTE_BUTTON_COLOR}`, borderRadius: '20px', 
+                    padding: '6px 12px',
+                    display: 'flex', gap: '8px', alignItems: 'center',
+                    zIndex: 1000, boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                    cursor: 'grab'
+                }}
+            >
+                <span style={{ fontSize: '1.2rem' }}>📝</span>
+                {/* Close (Exit Study Mode) */}
+                <button 
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={() => { setShowNotes(false); setHintText("📖 Reading Mode Active"); }} 
+                    title="Exit Study Mode"
+                    style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', padding: '0' }}>✕</button>
             </div>
         )}
 
@@ -997,12 +1067,16 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                   onClick={() => handleCopyNote(note)} 
                                   style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
                                 >
-                                  Copy Text
+                                  {noteFeedback[note.id] === 'text' ? '✓ Copied!' : 'Copy Text'}
                                 </button>
 
                                 {/* COPY SCRIPTURE (New request) */}
                                 <button
-                                    onClick={() => handleCopyVerseText(note.verses)}
+                                    onClick={() => {
+                                        handleCopyVerseText(note.verses);
+                                        // Optional: add visual feedback here too if desired
+                                        // triggerNoteFeedback(note.id, 'verse');
+                                    }}
                                     style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
                                 >
                                     Copy Verse{note.verses.length > 1 ? 's' : ''}
@@ -1010,10 +1084,13 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
                                 {/* COPY REF (New - Replaces Static Text) */}
                                 <button 
-                                  onClick={() => { navigator.clipboard.writeText(verseRef); alert("Reference copied!"); }}
+                                  onClick={() => { 
+                                      navigator.clipboard.writeText(verseRef); 
+                                      triggerNoteFeedback(note.id, 'ref'); 
+                                  }}
                                   style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
                                 >
-                                  Copy {verseRef}
+                                  {noteFeedback[note.id] === 'ref' ? '✓ Copied!' : `Copy ${verseRef}`}
                                 </button>
 
                                 <div style={{ flex: 1 }}></div>
