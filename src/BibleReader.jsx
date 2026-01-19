@@ -720,63 +720,32 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       const rect = e.currentTarget.getBoundingClientRect();
       dragStartNotebookPos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
   };
-  
-  // ✅ 📱 MOBILE DRAG SUPPORT (TOUCH EVENTS)
-  const handlePaletteTouchStart = (e) => {
-      isDraggingPalette.current = true;
-      const touch = e.touches[0];
-      const rect = e.currentTarget.getBoundingClientRect();
-      dragStartPos.current = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-  };
-
-  const handleNotebookTouchStart = (e) => {
-      isDraggingNotebook.current = true;
-      const touch = e.touches[0];
-      const rect = e.currentTarget.getBoundingClientRect();
-      dragStartNotebookPos.current = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
-  };
 
   useEffect(() => {
-      // 🖱️ MOUSE EVENTS
       const handleGlobalMouseMove = (e) => {
           if (isDraggingPalette.current) {
-              setPalettePos({ x: e.clientX - dragStartPos.current.x, y: e.clientY - dragStartPos.current.y });
+              setPalettePos({
+                  x: e.clientX - dragStartPos.current.x,
+                  y: e.clientY - dragStartPos.current.y
+              });
           }
           if (isDraggingNotebook.current) {
-               setNotebookPos({ x: e.clientX - dragStartNotebookPos.current.x, y: e.clientY - dragStartNotebookPos.current.y });
+               setNotebookPos({
+                  x: e.clientX - dragStartNotebookPos.current.x,
+                  y: e.clientY - dragStartNotebookPos.current.y
+              });
           }
       };
-      
-      // 📱 TOUCH EVENTS (For Mobile Dragging)
-      const handleGlobalTouchMove = (e) => {
-          const touch = e.touches[0];
-          if (isDraggingPalette.current) {
-              setPalettePos({ x: touch.clientX - dragStartPos.current.x, y: touch.clientY - dragStartPos.current.y });
-              e.preventDefault(); // Prevent scrolling while dragging
-          }
-          if (isDraggingNotebook.current) {
-               setNotebookPos({ x: touch.clientX - dragStartNotebookPos.current.x, y: touch.clientY - dragStartNotebookPos.current.y });
-               e.preventDefault(); 
-          }
-      };
-
-      const handleGlobalUp = () => { 
+      const handleGlobalMouseUp = () => { 
           isDraggingPalette.current = false; 
           isDraggingNotebook.current = false;
       };
 
       window.addEventListener('mousemove', handleGlobalMouseMove);
-      window.addEventListener('mouseup', handleGlobalUp);
-      
-      // Add Touch Listeners to Window
-      window.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
-      window.addEventListener('touchend', handleGlobalUp);
-
+      window.addEventListener('mouseup', handleGlobalMouseUp);
       return () => {
           window.removeEventListener('mousemove', handleGlobalMouseMove);
-          window.removeEventListener('mouseup', handleGlobalUp);
-          window.removeEventListener('touchmove', handleGlobalTouchMove);
-          window.removeEventListener('touchend', handleGlobalUp);
+          window.removeEventListener('mouseup', handleGlobalMouseUp);
       };
   }, []);
 
@@ -787,7 +756,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         {showHighlightPalette && (
             <div 
                 onMouseDown={handlePaletteMouseDown}
-                onTouchStart={handlePaletteTouchStart} // 📱
                 style={{ 
                     // Fixed position always (defaulting to left side if not moved)
                     position: 'fixed',
@@ -807,7 +775,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     <button 
                         key={color.code}
                         onMouseDown={(e) => e.stopPropagation()} // Prevent dragging when clicking color
-                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => applyHighlightColor(color)}
                         title={`Select ${color.name}`}
                         style={{ 
@@ -823,7 +790,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 {/* 🚫 REMOVE HIGHLIGHT BUTTON */}
                 <button 
                     onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
                     onClick={() => applyHighlightColor(null)} // Sends null to remove
                     title="Remove Highlight"
                     style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', padding: '0 2px' }}
@@ -834,7 +800,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 {/* Close Button */}
                 <button 
                     onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
                     onClick={closePalette} 
                     style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.75rem', cursor: 'pointer', marginLeft: '0', padding: '0' }}>✕</button>
             </div>
@@ -844,7 +809,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         {showFloatingNoteTool && (
             <div 
                 onMouseDown={handleNotebookMouseDown}
-                onTouchStart={handleNotebookTouchStart} // 📱
                 style={{ 
                     // Fixed position always (defaulting to left side below highlights)
                     position: 'fixed',
@@ -891,7 +855,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* Close (Exit Study Mode) */}
                     <button 
                         onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => { 
                             setShowNotes(false); 
                             setShowFloatingNoteTool(false); // Close the tool completely
@@ -906,7 +869,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     <>
                     <button
                         onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
                         onClick={() => handleCopyVerseText(selectedVerses)}
                         title="Copy Selected Verses"
                         style={{
@@ -931,7 +893,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     {/* ROW 3: NEW BLUE CREATE NOTE BUTTON */}
                     <button
                          onMouseDown={(e) => e.stopPropagation()}
-                         onTouchStart={(e) => e.stopPropagation()}
                          onClick={handleCreateNoteFromSelection} 
                          title="Create Note from Selection"
                          style={{
@@ -995,7 +956,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onClick={handleNoteButtonClick} 
                 className="nav-btn" 
                 style={{ 
-                    // ✅ BLUE when active, similar to Highlight but blue
+                    // ✅ BLUE when active
                     backgroundColor: showNotes ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
                     color: showNotes ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
                     border: showNotes ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
@@ -1250,84 +1211,77 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
                             {/* FOOTER ACTIONS - WRAPPED FOR MOBILE */}
                             <div style={{ 
-                                display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', 
+                                display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between',
                                 borderTop: theme === 'dark' ? '1px solid #444' : '1px solid #d1e3f6', 
                                 paddingTop: '8px' 
                             }}>
                                 
-                                {/* EDIT */}
-                                <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', fontSize: '0.75rem', padding: '4px 6px' }}>Edit</button>
-                                
-                                {/* 1. COPY SCRIPTURE TEXT */}
-                                <button
-                                    onClick={() => handleCopyVerseText(note.verses)}
-                                    style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
-                                >
-                                    Copy {verseRef}
-                                </button>
-                                
-                                {/* 2. COPY NOTE TEXT */}
-                                <button 
-                                  onClick={() => handleCopyNote(note)} 
-                                  style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
-                                >
-                                  {noteFeedback[note.id] === 'text' ? '✓ Copied!' : 'Copy Note Text'}
-                                </button>
+                                {/* Group 1: Tools */}
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                    {/* EDIT */}
+                                    <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', fontSize: '0.75rem', padding: '3px 5px' }}>Edit</button>
+                                    
+                                    {/* 1. COPY REFERENCE TEXT */}
+                                    <button
+                                        onClick={() => handleCopyVerseText(note.verses)}
+                                        style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '3px 6px' }}
+                                    >
+                                        Copy {verseRef}
+                                    </button>
+                                    
+                                    {/* 2. COPY NOTE TEXT */}
+                                    <button 
+                                      onClick={() => handleCopyNote(note)} 
+                                      style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '3px 6px' }}
+                                    >
+                                      {noteFeedback[note.id] === 'text' ? '✓ Copied!' : 'Copy Note'}
+                                    </button>
 
-                                {/* 3. COPY VERSE & NOTE (The Combo) */}
-                                <button 
-                                  onClick={() => handleCopyCombo(note)} 
-                                  style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
-                                >
-                                  {noteFeedback[note.id] === 'combo' ? '✓ Copied!' : `Copy Verse & Note`}
-                                </button>
-
-                                {/* 4. COPY REFERENCE ONLY (String) */}
-                                <button 
-                                  onClick={() => { 
-                                      navigator.clipboard.writeText(verseRef); 
-                                      triggerNoteFeedback(note.id, 'ref'); 
-                                  }}
-                                  style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
-                                >
-                                  {noteFeedback[note.id] === 'ref' ? '✓ Copied!' : `Copy Reference`}
-                                </button>
-                                
-                                {/* 5. SHARE (Native) */}
-                                <button
-                                    onClick={() => handleShareNote(note)}
-                                    title="Share Note"
-                                    style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontSize: '0.75rem', padding: '4px 8px', fontWeight: 'bold' }}
-                                >
-                                    📤 Share
-                                </button>
-
-                                <div style={{ flex: 1 }}></div>
-
-                                {/* COLOR DOTS */}
-                                <div style={{ display: 'flex', gap: '4px' }}>
-                                    {COLOR_PALETTE.map(color => (
-                                        <button 
-                                            key={color.code}
-                                            onClick={() => handleNoteColorChange(note, color.code)}
-                                            style={{ 
-                                                width: '14px', height: '14px', borderRadius: '50%', 
-                                                backgroundColor: color.code, border: '1px solid rgba(0,0,0,0.2)',
-                                                cursor: 'pointer', padding: 0
-                                            }}
-                                        />
-                                    ))}
+                                    {/* 3. COPY COMBO */}
+                                    <button 
+                                      onClick={() => handleCopyCombo(note)} 
+                                      style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '3px 6px' }}
+                                    >
+                                      {noteFeedback[note.id] === 'combo' ? '✓ Copied!' : `Copy All`}
+                                    </button>
                                 </div>
                                 
-                                {/* DELETE */}
-                                <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e53e3e', fontSize: '0.9rem', padding: '0 4px', marginLeft: '5px' }}>🗑️</button>
+                                {/* Group 2: Actions */}
+                                <div style={{ display: 'flex', gap: '5px', marginTop: '5px' }}>
+                                     {/* 4. SHARE */}
+                                    <button
+                                        onClick={() => handleShareNote(note)}
+                                        title="Share Note"
+                                        style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontSize: '0.75rem', padding: '3px 6px', fontWeight: 'bold' }}
+                                    >
+                                        📤
+                                    </button>
+                                    
+                                    {/* COLOR DOTS */}
+                                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                        {COLOR_PALETTE.map(color => (
+                                            <button 
+                                                key={color.code}
+                                                onClick={() => handleNoteColorChange(note, color.code)}
+                                                style={{ 
+                                                    width: '12px', height: '12px', borderRadius: '50%', 
+                                                    backgroundColor: color.code, border: '1px solid rgba(0,0,0,0.2)',
+                                                    cursor: 'pointer', padding: 0
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                    
+                                    {/* DELETE */}
+                                    <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e53e3e', fontSize: '0.9rem', padding: '0 4px' }}>🗑️</button>
+                                </div>
                             </div>
                         </div>
                     );
                 };
 
                 return (
-                <div key={index} style={{ position: 'relative', overflow: 'hidden' }}>
+                <div key={index} style={{ position: 'relative', overflow: 'visible' }}> {/* 🛑 Overflow Visible to fix clippings */}
                     <div 
                         className={`verse-box ${themeClass} ${selectedClass}`} 
                         style={highlightStyle} 
@@ -1433,13 +1387,15 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                 <textarea ref={editorRef} value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder="Write your note..." style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit', marginBottom: '10px', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
                                 
                                 {/* 📝 COPY/PASTE VERSE BUTTONS */}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <div style={{ display: 'flex', gap: '5px' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                                    
+                                    {/* Left Side: Tools */}
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
                                         {/* 1. COPY SCRIPTURE TEXT + REFERENCE (Fixed Logic) */}
                                         <button 
                                             onClick={() => handleCopyVerseText(selectedVerses)} 
                                             style={{ 
-                                                padding: '5px 10px', 
+                                                padding: '3px 6px', 
                                                 background: '#f5f5f5', 
                                                 color: '#555', 
                                                 border: '1px solid #ddd', 
@@ -1456,7 +1412,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                         <button 
                                             onClick={handleSystemPaste} 
                                             style={{ 
-                                                padding: '5px 10px', 
+                                                padding: '3px 6px', 
                                                 background: '#e3f2fd', 
                                                 color: '#1976d2', 
                                                 border: '1px solid #90caf9', 
@@ -1501,13 +1457,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                         </div>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                    {/* Right Side: Actions */}
+                                    <div style={{ display: 'flex', gap: '5px', marginLeft: 'auto' }}>
                                         {/* 🔴 NEW DELETE/DISCARD BUTTON */}
                                         <button 
                                             onClick={handleEditorDelete}
                                             title={editingNoteId ? "Delete Note" : "Discard"}
                                             style={{ 
-                                                padding: '6px 12px', 
+                                                padding: '3px 6px', 
                                                 background: 'transparent', 
                                                 border: '1px solid #e53e3e', 
                                                 borderRadius: '4px', 
@@ -1520,8 +1477,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             🗑️
                                         </button>
 
-                                        <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
-                                        <button onClick={saveNote} style={{ padding: '6px 12px', backgroundColor: NOTE_BUTTON_COLOR, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>Save</button>
+                                        <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); }} style={{ padding: '3px 6px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
+                                        <button onClick={saveNote} style={{ padding: '3px 6px', backgroundColor: NOTE_BUTTON_COLOR, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>Save</button>
                                     </div>
                                 </div>
                             </div>
