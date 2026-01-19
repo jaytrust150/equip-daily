@@ -12,7 +12,6 @@ import {
 } from "firebase/firestore";
 
 // 🎨 COLORS
-const HIGHLIGHT_COLOR = '#ffeb3b';
 const NOTE_BUTTON_COLOR = '#2196F3'; 
 const CITY_NAME = "Sebastian"; 
 
@@ -56,11 +55,19 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [topNavMode, setTopNavMode] = useState(null);
   const [fontSize, setFontSize] = useState(1.1);
   
-  // 💡 HINT STATE
+  // 💡 HINT & PALETTE STATE
   const [hintText, setHintText] = useState("");
+  const [showHighlightPalette, setShowHighlightPalette] = useState(false);
+  const [activeHighlightColor, setActiveHighlightColor] = useState(COLOR_PALETTE[0]); // Default Yellow
+
+  // 🖱️ DRAGGABLE PALETTE STATE
+  const [palettePos, setPalettePos] = useState({ x: 0, y: 0 });
+  const isDraggingPalette = useRef(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
 
   // ⚡ PEEK NOTE STATE
   const [hoveredNoteId, setHoveredNoteId] = useState(null);
+  const [quickNoteVerse, setQuickNoteVerse] = useState(null);
 
   // --- AUDIO STATE ---
   const [showAudio, setShowAudio] = useState(false); 
@@ -100,7 +107,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   // --- 🪄 AUTO-HIDE HINT TIMER ---
   useEffect(() => {
     if (hintText) {
-      const timer = setTimeout(() => { setHintText(""); }, 4000);
+      const timer = setTimeout(() => { setHintText(""); }, 5000);
       return () => clearTimeout(timer);
     }
   }, [hintText]);
@@ -231,19 +238,22 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
   const handleSearchSubmit = (e) => { e.preventDefault(); if(onSearch && searchInput.trim()) onSearch(searchInput); };
 
-  const handleHighlightButton = async () => {
-    if (!user) { alert("Please log in to highlight."); return; }
-    if (selectedVerses.length === 0) { 
-        setHintText("💡 Select verses first to highlight, or Double Tap a verse.");
-        return; 
-    }
-    
-    const userRef = doc(db, "users", user.uid);
-    const selectedKeys = selectedVerses.map(v => `${book} ${chapter}:${v}`);
-    const allSelectedAreHighlighted = selectedKeys.every(k => highlightsMap.hasOwnProperty(k));
+  // --- 🎨 CLOSE PALETTE (Resets pos, clears selection) ---
+  const closePalette = () => {
+    setShowHighlightPalette(false);
+    setPalettePos({ x: 0, y: 0 }); // Reset position
+    setSelectedVerses([]);         // ✅ Clears selection ONLY on close
+  };
 
-    try {
-        if (allSelectedAreHighlighted) {
+  // --- 🎨 APPLY HIGHLIGHT COLOR (Does NOT Clear Selection) ---
+  const applyHighlightColor = async (colorObj) => {
+    setActiveHighlightColor(colorObj);
+
+    if (selectedVerses.length > 0) {
+        const userRef = doc(db, "users", user.uid);
+        const selectedKeys = selectedVerses.map(v => `${book} ${chapter}:${v}`);
+        
+        try {
             const docSnap = await getDoc(userRef);
             if (docSnap.exists()) {
                 const currentData = docSnap.data().highlights || [];
@@ -255,12 +265,23 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     await updateDoc(userRef, { highlights: arrayRemove(...toRemove) });
                 }
             }
-        } else {
-            const toAdd = selectedKeys.map(k => `${k}|${DEFAULT_HIGHLIGHT_DATA.bg}`);
+            const toAdd = selectedKeys.map(k => `${k}|${colorObj.code}`);
             await updateDoc(userRef, { highlights: arrayUnion(...toAdd) });
-        }
-        setSelectedVerses([]); 
-    } catch (e) { console.error("Error highlights:", e); }
+        } catch (e) { console.error("Error applying highlight:", e); }
+    }
+  };
+
+  // --- 🎨 HIGHLIGHT BUTTON CLICK HANDLER ---
+  const handleHighlightButton = () => {
+    if (!user) { alert("Please log in to highlight."); return; }
+    
+    // Always Open/Toggle Palette
+    setShowHighlightPalette(!showHighlightPalette);
+
+    // If verses selected, apply current color immediately
+    if (selectedVerses.length > 0) {
+        applyHighlightColor(activeHighlightColor);
+    }
   };
   
   const handleVerseDoubleClick = async (verseNum) => {
@@ -277,34 +298,43 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                   if (toRemove) await updateDoc(userRef, { highlights: arrayRemove(toRemove) });
               }
           } else {
-              await updateDoc(userRef, { highlights: arrayUnion(`${verseKey}|${DEFAULT_HIGHLIGHT_DATA.bg}`) });
+              // Use currently active color for double tap
+              await updateDoc(userRef, { highlights: arrayUnion(`${verseKey}|${activeHighlightColor.code}`) });
           }
           setSelectedVerses(prev => prev.filter(v => v !== verseNum));
       } catch (e) { console.error("Highlight toggle error:", e); }
   };
 
+  // ✅ NOTES BUTTON HANDLER
   const handleNoteButtonClick = () => {
       if (!user) { alert("Please log in to add notes."); return; }
       
-      if (!showNotes) {
-          setHintText("💡 Toggle Notes 📓 ➔ (on the right) to add a note.");
+      // 1. If currently editing -> CLOSE Editor
+      if (isNoteMode) {
+          setIsNoteMode(false);
+          setEditingNoteId(null);
+          setCurrentNoteText("");
           return;
       }
-      
-      if (selectedVerses.length === 0) { 
-          setHintText("💡 Long Press a verse to note instantly, or toggle 📓 ➔ (on the right) to manage selections.");
-          return; 
-      }
-      
-      if (isNoteMode && currentNoteText.length > 0) {
-          if (editorRef.current) editorRef.current.focus();
+
+      // 2. If verses selected -> OPEN Editor
+      if (selectedVerses.length > 0) {
+          setCurrentNoteText(""); 
+          setEditingNoteId(null); 
+          setIsNoteMode(true);
+          setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
           return;
       }
-      
-      setCurrentNoteText(""); 
-      setEditingNoteId(null); 
-      setIsNoteMode(true);
-      setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
+
+      // 3. General Toggle (Reading vs Study)
+      const nextState = !showNotes;
+      setShowNotes(nextState);
+
+      if (nextState) {
+          setHintText("📝 Study Mode Enabled: Tap verses to select.");
+      } else {
+          setHintText("📖 Reading Mode Enabled: Selection hidden.");
+      }
   };
 
   const saveNote = async () => {
@@ -323,7 +353,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           
           setIsNoteMode(false); setEditingNoteId(null); setSelectedVerses([]); 
           setHintText(""); 
-          if (!showNotes) setShowNotes(true); 
+          
       } catch (e) { console.error("Error saving note:", e); }
   };
 
@@ -355,12 +385,78 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
       
       let fullShareText = "";
-      if (type === 'verse') fullShareText = `"${noteVerseText}" ${citation}`;
-      else if (type === 'note') fullShareText = note.text;
-      else fullShareText = `"${noteVerseText}" ${citation}\n\n${note.text}`;
+      
+      const settings = noteSettings[note.id] || { showDate: false, showTime: false };
+      let timestampText = "";
+      
+      if (settings.showTime || settings.showDate) {
+          const dateObj = note.timestamp?.toDate ? note.timestamp.toDate() : new Date(note.timestamp);
+          if (settings.showTime) timestampText += dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " ";
+          if (settings.showDate) timestampText += dateObj.toLocaleDateString();
+          timestampText = `\n\n— ${timestampText.trim()}`;
+      }
+
+      if (type === 'verse') {
+          fullShareText = `"${noteVerseText}" ${citation}`;
+      } else if (type === 'note') {
+          fullShareText = `${note.text}${timestampText}`;
+      } else { 
+          fullShareText = `"${noteVerseText}" ${citation}\n\n${note.text}${timestampText}`;
+      }
 
       const shareData = { title: 'Equip Daily Note', text: fullShareText, url: window.location.href };
       if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { try { await navigator.clipboard.writeText(fullShareText); alert("Copied to clipboard!"); } catch (err) {} }
+  };
+
+  // ✅ COPY VERSE AND NOTE
+  const handleCopyVerseAndNote = async (note) => {
+      const noteVerseText = note.verses.map(vNum => { 
+          const v = verses.find(v => v.verse === vNum); 
+          return v ? `[${vNum}] ${v.text}` : ""; 
+      }).join(' ');
+      const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
+      
+      let fullText = `"${noteVerseText}" ${citation}\n\n${note.text}`;
+
+      const settings = noteSettings[note.id] || { showDate: false, showTime: false };
+      if (settings.showTime || settings.showDate) {
+          const dateObj = note.timestamp?.toDate ? note.timestamp.toDate() : new Date(note.timestamp);
+          let timestampStr = "";
+          if (settings.showTime) timestampStr += dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + " ";
+          if (settings.showDate) timestampStr += dateObj.toLocaleDateString();
+          fullText += `\n\n— ${timestampStr.trim()}`;
+      }
+
+      try { 
+          await navigator.clipboard.writeText(fullText); 
+          alert("Verse & Note copied!"); 
+      } catch (err) { console.error("Copy failed", err); }
+  };
+
+  // ✅ SYSTEM PASTE BUTTON
+  const handleSystemPaste = async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (editorRef.current) {
+            const start = editorRef.current.selectionStart;
+            const end = editorRef.current.selectionEnd;
+            const current = currentNoteText;
+            const newText = current.substring(0, start) + text + current.substring(end);
+            setCurrentNoteText(newText);
+            
+            setTimeout(() => {
+                if(editorRef.current) {
+                    editorRef.current.selectionStart = editorRef.current.selectionEnd = start + text.length;
+                    editorRef.current.focus();
+                }
+            }, 0);
+        } else {
+            setCurrentNoteText(prev => prev + text);
+        }
+    } catch (err) {
+        console.error('Failed to read clipboard contents: ', err);
+        alert("Clipboard permission denied or empty.");
+    }
   };
 
   const handleCopyNote = async (note) => {
@@ -403,7 +499,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           isLongPress.current = true; 
           setSelectedVerses([verseNum]);
           
-          // ✅ DIRECTLY OPEN EDITOR
+          // ✅ DIRECTLY OPEN EDITOR (Bypass checks, always allow note via Long Press)
           setCurrentNoteText(""); 
           setEditingNoteId(null); 
           setIsNoteMode(true);
@@ -419,12 +515,13 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
   const toggleVerse = (verseNum) => { 
       if (!isLongPress.current) {
-          if (!showNotes) return; // Reading Mode = No Selection
-          
-          // Study Mode = Selection Enabled
+          // ✅ ALWAYS ALLOW SELECTION (For Highlight/Copy)
           if (selectedVerses.includes(verseNum)) setSelectedVerses(selectedVerses.filter(v => v !== verseNum)); 
           else setSelectedVerses([...selectedVerses, verseNum].sort((a, b) => a - b)); 
-          setHintText("");
+          
+          // If in Reading Mode, ensure hint tells them what they can do
+          if (!showNotes) setHintText("💡 Selection active. Use Highlight above, or Long Press to Note.");
+          else setHintText("");
       }
   };
   
@@ -439,7 +536,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
     } catch (err) {}
   };
 
-  // ✅ APPLY HIGHLIGHT FROM EDITOR (New Feature)
+  // ✅ APPLY HIGHLIGHT FROM EDITOR
   const handleEditorHighlight = async (colorCode) => {
       if (selectedVerses.length === 0) return;
       
@@ -450,7 +547,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           const docSnap = await getDoc(userRef);
           if (docSnap.exists()) {
               const currentData = docSnap.data().highlights || [];
-              // Remove ANY existing highlight for these verses regardless of color
               const toRemove = currentData.filter(h => {
                   const key = h.split('|')[0];
                   return selectedKeys.includes(key);
@@ -459,7 +555,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                   await updateDoc(userRef, { highlights: arrayRemove(...toRemove) });
               }
           }
-          // Add NEW color
           const toAdd = selectedKeys.map(k => `${k}|${colorCode}`);
           await updateDoc(userRef, { highlights: arrayUnion(...toAdd) });
       } catch (e) { console.error("Editor highlight error:", e); }
@@ -513,8 +608,72 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const getChapterCount = () => { const b = bibleData.find(d => d.name === book); return b ? b.chapters : 50; };
 
   const compactSelectStyle = { border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.75rem', color: theme === 'dark' ? '#aaa' : '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit', maxWidth: '70px' };
+  
+  // --- 🖱️ DRAGGABLE PALETTE LOGIC ---
+  const handlePaletteMouseDown = (e) => {
+      isDraggingPalette.current = true;
+      const rect = e.currentTarget.getBoundingClientRect();
+      dragStartPos.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  };
+
+  useEffect(() => {
+      const handleGlobalMouseMove = (e) => {
+          if (!isDraggingPalette.current) return;
+          setPalettePos({
+              x: e.clientX - dragStartPos.current.x,
+              y: e.clientY - dragStartPos.current.y
+          });
+      };
+      const handleGlobalMouseUp = () => { isDraggingPalette.current = false; };
+
+      window.addEventListener('mousemove', handleGlobalMouseMove);
+      window.addEventListener('mouseup', handleGlobalMouseUp);
+      return () => {
+          window.removeEventListener('mousemove', handleGlobalMouseMove);
+          window.removeEventListener('mouseup', handleGlobalMouseUp);
+      };
+  }, []);
+
   const renderControlBar = () => (
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0', minHeight: '40px' }}>
+        
+        {/* 🎨 DRAGGABLE HIGHLIGHT PALETTE */}
+        {showHighlightPalette && (
+            <div 
+                onMouseDown={handlePaletteMouseDown}
+                style={{ 
+                    // Fixed position if moved, otherwise absolute below the button
+                    position: palettePos.x === 0 && palettePos.y === 0 ? 'absolute' : 'fixed',
+                    top: palettePos.x === 0 && palettePos.y === 0 ? '45px' : `${palettePos.y}px`,
+                    left: palettePos.x === 0 && palettePos.y === 0 ? '50%' : `${palettePos.x}px`,
+                    transform: palettePos.x === 0 && palettePos.y === 0 ? 'translateX(-50%)' : 'none',
+                    backgroundColor: theme === 'dark' ? '#333' : 'white', 
+                    border: '1px solid #ccc', borderRadius: '15px', padding: '4px', // COMPACT PADDING
+                    display: 'flex', gap: '6px', alignItems: 'center', // COMPACT GAP
+                    zIndex: 1000, boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+                    cursor: 'grab'
+                }}
+            >
+                {COLOR_PALETTE.map(color => (
+                    <button 
+                        key={color.code}
+                        onMouseDown={(e) => e.stopPropagation()} // Prevent dragging when clicking color
+                        onClick={() => applyHighlightColor(color)}
+                        title={`Select ${color.name}`}
+                        style={{ 
+                            width: '18px', height: '18px', borderRadius: '50%', // SMALLER CIRCLES
+                            backgroundColor: color.code, border: '1px solid #999', cursor: 'pointer', padding: 0 
+                        }}
+                    />
+                ))}
+                {/* Close Button */}
+                <button 
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onClick={closePalette} 
+                    style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.8rem', cursor: 'pointer', marginLeft: '2px', padding: '0 4px' }}>✕</button>
+            </div>
+        )}
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <button onClick={() => setShowAudio(!showAudio)} title={showAudio ? "Hide Audio" : "Show Audio"} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 5px' }}>{showAudio ? '🔊' : '🔇'}</button>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>{bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}</select>
@@ -530,27 +689,37 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
             
-            <button onClick={handleHighlightButton} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? HIGHLIGHT_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), textShadow: selectedVerses.length > 0 ? '0px 1px 2px rgba(0,0,0,0.3)' : 'none', padding: '5px 10px', fontSize: '0.85rem' }}>Highlight</button>
-            <button onClick={handleNoteButtonClick} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>Note</button>
-            
-            {/* 📝 NOTEBOOK ICON TOGGLE (RIGHT SIDE) */}
             <button 
-                onClick={() => {
-                    const nextState = !showNotes;
-                    setShowNotes(nextState);
-                    setHintText(nextState ? "📝 Study Mode Enabled: Tap verses to select." : "📖 Reading Mode Enabled: Selection hidden.");
-                }} 
+                onMouseEnter={() => setHintText("💡 Double Tap a verse to highlight instantly! For multiple, select first.")} 
+                onMouseLeave={() => setHintText("")}
+                onClick={handleHighlightButton} 
+                className="nav-btn" 
                 style={{ 
-                    position: 'relative', 
-                    background: 'none', border: 'none', cursor: 'pointer', marginLeft: '2px', padding: '2px 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' 
-                }} 
-                title={showNotes ? "Hide Notes (Reading Mode)" : "Show Notes (Study Mode)"}
+                    backgroundColor: selectedVerses.length > 0 ? activeHighlightColor.code : (theme === 'dark' ? '#333' : '#f5f5f5'), 
+                    color: selectedVerses.length > 0 && activeHighlightColor.code !== '#ffffff' ? '#333' : (theme === 'dark' ? '#ccc' : '#aaa'), 
+                    border: selectedVerses.length > 0 ? `2px solid ${activeHighlightColor.border}` : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
+                    fontWeight: 'bold', padding: '5px 10px', fontSize: '0.85rem' 
+                }}
             >
-                <span style={{ fontSize: '1.3rem', filter: showNotes ? 'none' : 'grayscale(100%) opacity(0.6)' }}>📓</span>
-                {!showNotes && (
-                    <div style={{ position: 'absolute', top: '50%', left: '50%', width: '120%', height: '2px', background: '#e53e3e', transform: 'translate(-50%, -50%) rotate(-45deg)', borderRadius: '2px', pointerEvents: 'none' }}></div>
-                )}
-            </button> 
+                Highlight
+            </button>
+            
+            {/* ✅ MERGED NOTE BUTTON (UPDATED HINT) */}
+            <button 
+                onMouseEnter={() => setHintText(showNotes ? "💡 Switch to Reading Mode (Hide Notes)." : "💡 Switch to Study Mode. (Tip: Long Press a verse to note instantly!)")}
+                onMouseLeave={() => setHintText("")}
+                onClick={handleNoteButtonClick} 
+                className="nav-btn" 
+                style={{ 
+                    backgroundColor: showNotes ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
+                    color: showNotes ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
+                    border: showNotes ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
+                    padding: '5px 10px', fontSize: '0.85rem',
+                    transition: 'all 0.2s ease'
+                }}
+            >
+                Notes
+            </button>
 
             <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
             <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
@@ -698,13 +867,29 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     borderLeft: `4px solid ${highlightData.border}` 
                 } : {};
                 
+                // ✅ If Selected AND Highlighted -> Dim it + Add Blue Outline (Combined State)
+                if (isSelected && isHighlighted) {
+                     // For White highlights, use Light Blue bg so selection is visible
+                     if (highlightData.bg === '#ffffff') {
+                         highlightStyle.backgroundColor = '#e3f2fd'; 
+                         highlightStyle.outline = '2px solid #2196F3';
+                     } else {
+                         // For colored highlights, use brightness filter
+                         highlightStyle.filter = 'brightness(0.85) sepia(0.2)'; 
+                         highlightStyle.outline = '2px solid #2196F3';
+                     }
+                     highlightStyle.zIndex = 1;
+                } else if (isSelected) {
+                    // Standard selection (no highlight) handled by .selected class
+                }
+
                 // ✅ SAFELY GET ATTACHED NOTES (Fixing the crash)
                 const attachedNotes = showNotes ? userNotes.filter(n => {
                     return n.verses && Array.isArray(n.verses) && n.verses.length > 0 && n.verses[n.verses.length - 1] === v.verse;
                 }) : [];
                 
-                // ✅ GET PEEK NOTES (Reading Mode, Safety Check)
-                const peekNotes = userNotes.filter(n => n.verses && Array.isArray(n.verses) && n.verses.includes(v.verse));
+                // ✅ GET PEEK NOTES (Shows only on LAST verse)
+                const peekNotes = userNotes.filter(n => n.verses && Array.isArray(n.verses) && n.verses.length > 0 && n.verses[n.verses.length - 1] === v.verse);
                 const hasPeekNotes = peekNotes.length > 0;
 
                 const isEditingHere = isNoteMode && editingNoteId && attachedNotes.some(n => n.id === editingNoteId);
@@ -726,6 +911,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     };
                     const timestampStr = getFormattedTimestamp();
                     
+                    // ✅ VERSE RANGE LABEL (Replacing "Copy Verse & Note" button)
+                    let verseRange = "";
+                    if (note.verses && note.verses.length > 0) {
+                        const first = note.verses[0];
+                        const last = note.verses[note.verses.length - 1];
+                        verseRange = (first === last) ? `v. ${first}` : `v. ${first}-${last}`;
+                    }
+
                     const noteBorderColor = note.color || DEFAULT_NOTE_COLOR;
 
                     return (
@@ -762,7 +955,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                 <span style={{color: '#ccc'}}>|</span>
                                 <button onClick={() => handleCopyNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Copy Note</button>
                                 <span style={{color: '#ccc'}}>|</span>
-                                <button onClick={() => handleShareNote(note, 'all')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Copy Verse & Note</button>
+                                
+                                {/* ✅ SHOW VERSE REF INSTEAD OF BUTTON */}
+                                <span style={{ color: theme === 'dark' ? '#aaa' : '#666', fontStyle: 'italic', fontWeight: 'bold' }}>{verseRange}</span>
+
                                 <span style={{color: '#ccc'}}>|</span>
                                 
                                 {!settings.showShareMenu ? (
@@ -832,7 +1028,13 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         {/* ⚡ MULTI-NOTE PEEK INDICATORS (Bottom Right, Stacked Horizontally) */}
                         {!showNotes && hasPeekNotes && (
                             <div style={{ position: 'absolute', bottom: '5px', right: '5px', display: 'flex', gap: '4px' }}>
-                                {peekNotes.map((pn, i) => (
+                                {peekNotes.map((pn, i) => {
+                                    // Generate reference string e.g. "v. 2-5"
+                                    const start = pn.verses[0];
+                                    const end = pn.verses[pn.verses.length-1];
+                                    const ref = start === end ? `v. ${start}` : `v. ${start}-${end}`;
+
+                                    return (
                                     <span 
                                         key={pn.id}
                                         onMouseEnter={() => setHoveredNoteId(pn.id)}
@@ -851,9 +1053,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             whiteSpace: 'nowrap'
                                         }}
                                     >
-                                        Note Available
+                                        Note Available ({ref})
                                     </span>
-                                ))}
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
@@ -879,7 +1082,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         <div className="inline-editor-container" style={{ marginLeft: '30px', marginRight: '10px', marginBottom: '15px' }}>
                             <div style={{ backgroundColor: theme === 'dark' ? '#222' : '#f0f4f8', padding: '15px', borderRadius: '8px', border: `1px solid ${NOTE_BUTTON_COLOR}` }}>
                                 <textarea ref={editorRef} value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder="Write your note..." style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit', marginBottom: '10px', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
-                                {/* 📝 COPY VERSE BUTTON */}
+                                {/* 📝 COPY/PASTE VERSE BUTTONS */}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <div style={{ display: 'flex', gap: '5px' }}>
                                         <button 
@@ -897,6 +1100,23 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             📋 {copyBtnText}
                                         </button>
                                         
+                                        {/* ✅ NEW SYSTEM PASTE BUTTON */}
+                                        <button 
+                                            onClick={handleSystemPaste} 
+                                            style={{ 
+                                                padding: '5px 10px', 
+                                                background: '#e3f2fd', 
+                                                color: '#1976d2', 
+                                                border: '1px solid #90caf9', 
+                                                borderRadius: '15px', 
+                                                fontSize: '0.75rem', 
+                                                cursor: 'pointer' 
+                                            }}
+                                            title="Paste from Clipboard"
+                                        >
+                                            📋 Paste
+                                        </button>
+
                                         {/* 🎨 EDITOR HIGHLIGHT PALETTE */}
                                         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', marginLeft: '5px' }}>
                                             <span style={{ fontSize: '0.7rem', color: '#555' }}>Highlight:</span>
