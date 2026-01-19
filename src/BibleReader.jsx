@@ -12,8 +12,7 @@ import {
 } from "firebase/firestore";
 
 // 🎨 COLORS
-const NOTE_BUTTON_COLOR = '#2196F3'; // 🔵 Blue for Note Toggle
-const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
+const NOTE_BUTTON_COLOR = '#2196F3'; 
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -849,11 +848,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         onClick={() => handleCopyVerseText(selectedVerses)}
                         title="Copy Selected Verses"
                         style={{
-                            // ✅ ORANGE for Copy Button
-                            background: COPY_BUTTON_COLOR,
-                            color: 'white',
-                            // Match styling of main nav buttons
-                            border: '1px solid #e65100', 
+                            // ✅ MATCHES "SELECTED VERSE" STYLE (Light Blue)
+                            backgroundColor: '#e3f2fd', 
+                            color: '#1565c0',           
+                            border: '1px solid #2196F3', 
                             borderRadius: '10px',
                             fontSize: '0.75rem',
                             fontWeight: 'bold',
@@ -909,7 +907,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onClick={handleNoteButtonClick} 
                 className="nav-btn" 
                 style={{ 
-                    // ✅ BLUE when active, similar to Highlight but blue
+                    // ✅ BLUE when active
                     backgroundColor: showNotes ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), 
                     color: showNotes ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), 
                     border: showNotes ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), 
@@ -1172,7 +1170,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                 {/* EDIT */}
                                 <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', fontSize: '0.75rem', padding: '4px 6px' }}>Edit</button>
                                 
-                                {/* 1. COPY SCRIPTURE TEXT + REF (Fixed Logic) */}
+                                {/* 1. COPY SCRIPTURE TEXT */}
                                 <button
                                     onClick={() => handleCopyVerseText(note.verses)}
                                     style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
@@ -1187,7 +1185,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                 >
                                   {noteFeedback[note.id] === 'text' ? '✓ Copied!' : 'Copy Note Text'}
                                 </button>
-                                
+
                                 {/* 3. COPY VERSE & NOTE (The Combo) */}
                                 <button 
                                   onClick={() => handleCopyCombo(note)} 
@@ -1195,19 +1193,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                 >
                                   {noteFeedback[note.id] === 'combo' ? '✓ Copied!' : `Copy Verse & Note`}
                                 </button>
-
-                                {/* 4. COPY REFERENCE ONLY (String) */}
-                                <button 
-                                  onClick={() => { 
-                                      navigator.clipboard.writeText(verseRef); 
-                                      triggerNoteFeedback(note.id, 'ref'); 
-                                  }}
-                                  style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '4px 8px' }}
-                                >
-                                  {noteFeedback[note.id] === 'ref' ? '✓ Copied!' : `Copy Reference`}
-                                </button>
                                 
-                                {/* 5. SHARE (Native) */}
+                                {/* 4. SHARE (Native) */}
                                 <button
                                     onClick={() => handleShareNote(note)}
                                     title="Share Note"
