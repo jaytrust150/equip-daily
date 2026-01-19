@@ -31,6 +31,9 @@ function App() {
   // --- 💧 THE WELL STATE ---
   const [isWellOpen, setIsWellOpen] = useState(false);
   const [wellQuery, setWellQuery] = useState("");
+  
+  // 🛡️ SMART LOCK: Tracks the specific verse you just closed
+  const ignoredVerseRef = useRef(null); 
 
   const [devotional, setDevotional] = useState("Loading the Word...");
   const [dayOffset, setDayOffset] = useState(0);
@@ -80,6 +83,13 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // --- 🛡️ SMART CLOSE LOGIC ---
+  const handleWellClose = () => {
+    setIsWellOpen(false);
+    // Memorize: "User specifically closed THIS verse"
+    ignoredVerseRef.current = wellQuery;
+  };
+
   const jumpToHistoryItem = (post) => {
     if (post.date) {
         const [m, d] = post.date.split('.');
@@ -127,23 +137,33 @@ function App() {
 
   const processedDevotional = useMemo(() => { return processDevotionalText(devotional); }, [devotional]);
 
-  // --- 🖱️ MOUSE INTERACTION (WITH CRASH GUARD) ---
   const handleDevotionalInteraction = (e) => {
     if (e.target.classList.contains('verse-link')) {
       const verseRef = e.target.innerText;
       
-      // 🛡️ CRASH PREVENTION: Only update state if it is NEW.
-      // This stops the infinite re-render loop that causes the crash.
+      // 🛡️ 1. ZOMBIE CHECK: If we just closed this specific verse, ignore hover
+      if (e.type === 'mouseover' && ignoredVerseRef.current === verseRef) return;
+
+      // 🛡️ 2. CRASH FIX: Only update state if it is DIFFERENT from current.
+      // This stops the infinite loop re-renders!
       if (wellQuery !== verseRef) {
           setWellQuery(verseRef);
       }
       
-      // Open the window if it's closed
       if (e.type === 'click' || e.type === 'mouseover') {
         if (!isWellOpen) {
             setIsWellOpen(true);
+            // If we are opening a NEW verse, clear the ignore list
+            if (ignoredVerseRef.current !== verseRef) ignoredVerseRef.current = null;
         }
       }
+    }
+  };
+
+  // 🛡️ RESET: As soon as mouse leaves the verse, we forget it was closed.
+  const handleMouseOut = (e) => {
+    if (e.target.classList.contains('verse-link')) {
+        ignoredVerseRef.current = null;
     }
   };
 
@@ -287,6 +307,7 @@ function App() {
         // ✅ ATTACHING INTERACTION HANDLERS TO MAIN CONTENT
         onClick={handleDevotionalInteraction} 
         onMouseOver={handleDevotionalInteraction} 
+        onMouseOut={handleMouseOut}
       >
         {activeTab === 'profile' ? (
             <MemberProfile 
@@ -376,7 +397,7 @@ function App() {
       <SearchWell 
         theme={theme} 
         isOpen={isWellOpen} 
-        onClose={() => setIsWellOpen(false)} 
+        onClose={handleWellClose} 
         initialQuery={wellQuery} 
         onJumpToVerse={jumpToVerse}
         historyStack={bibleHistory}

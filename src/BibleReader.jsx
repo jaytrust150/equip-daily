@@ -14,7 +14,10 @@ import {
 // 🎨 COLORS
 const HIGHLIGHT_COLOR = '#ffeb3b';
 const NOTE_BUTTON_COLOR = '#2196F3'; 
-const CITY_NAME = "Sebastian"; // 📍 Default city
+const CITY_NAME = "Sebastian"; 
+
+// 🎧 AUDIO BASE URL
+const AUDIO_BASE_PATH = "/audio/";
 
 function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick, historyStack, onGoBack }) {
   const [user] = useAuthState(auth);
@@ -25,7 +28,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [loading, setLoading] = useState(false);
   const [readChapters, setReadChapters] = useState([]);
   const [isChapterRead, setIsChapterRead] = useState(false);
-  const [copyBtnText, setCopyBtnText] = useState("Copy");
+  
+  // Editor Button Text State
+  const [copyBtnText, setCopyBtnText] = useState("Copy Selected Verse");
+  
   const [highlights, setHighlights] = useState([]);
   const [userNotes, setUserNotes] = useState([]);
   const [showNotes, setShowNotes] = useState(true);
@@ -36,11 +42,51 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const [topNavMode, setTopNavMode] = useState(null);
   const [fontSize, setFontSize] = useState(1.1);
   
+  // 💡 HINT STATE
+  const [hintText, setHintText] = useState("");
+
+  // --- AUDIO STATE ---
+  const [showAudio, setShowAudio] = useState(false); 
+  const audioRef = useRef(null);
+  const [audioError, setAudioError] = useState(false);
+  const [sleepMinutes, setSleepMinutes] = useState(null); 
+  const [sleepTimeLeft, setSleepTimeLeft] = useState(null); 
+
+  // --- LONG PRESS STATE ---
+  const longPressTimer = useRef(null);
+  const isLongPress = useRef(false);
+
+  // --- SWIPE NAV STATE ---
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchEndRef = useRef({ x: 0, y: 0 });
+  const minSwipeDistance = 75; 
+
   // --- REFLECTION STATE ---
   const [reflection, setReflection] = useState("");
   const [hasShared, setHasShared] = useState(false);
   const [chapterReflections, setChapterReflections] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
+  // --- NOTE CARD TOGGLE STATES (Local map to track individual note settings) ---
+  const [noteSettings, setNoteSettings] = useState({});
+
+  const toggleNoteSetting = (noteId, setting) => {
+      setNoteSettings(prev => ({
+          ...prev,
+          [noteId]: {
+              ...prev[noteId],
+              [setting]: !prev[noteId]?.[setting]
+          }
+      }));
+  };
+
+  // --- 🪄 AUTO-HIDE HINT TIMER ---
+  useEffect(() => {
+    if (hintText) {
+      const timer = setTimeout(() => { setHintText(""); }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [hintText]);
 
   // --- 🍓 FRUIT REACTION HANDLER ---
   const handleReaction = async (postId, fruitId) => {
@@ -100,6 +146,42 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
   useEffect(() => { const chapterKey = `${book} ${chapter}`; setIsChapterRead(readChapters.includes(chapterKey)); }, [book, chapter, readChapters]);
 
+  // --- AUDIO RESET & SLEEP TIMER ---
+  useEffect(() => {
+      setAudioError(false);
+      if (showAudio && audioRef.current) {
+          audioRef.current.load();
+      }
+  }, [book, chapter, showAudio]);
+
+  useEffect(() => {
+    if (sleepTimeLeft === null) return;
+    if (sleepTimeLeft <= 0) {
+        if (audioRef.current) audioRef.current.pause();
+        setSleepMinutes(null);
+        setSleepTimeLeft(null);
+        return;
+    }
+    const interval = setInterval(() => { setSleepTimeLeft((prev) => prev - 1); }, 1000);
+    return () => clearInterval(interval);
+  }, [sleepTimeLeft]);
+
+  const toggleSleepTimer = () => {
+      let newMinutes = null;
+      if (sleepMinutes === null) newMinutes = 15;
+      else if (sleepMinutes === 15) newMinutes = 30;
+      else if (sleepMinutes === 30) newMinutes = 60;
+      else newMinutes = null;
+      setSleepMinutes(newMinutes);
+      setSleepTimeLeft(newMinutes ? newMinutes * 60 : null);
+  };
+
+  const formatTimeLeft = (seconds) => {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   const toggleChapterRead = useCallback(async (e) => {
     if (!user) { if (e && e.preventDefault) e.preventDefault(); alert("Please log in to track your progress."); document.getElementById('login-section')?.scrollIntoView({ behavior: 'smooth' }); return; }
     const isNowChecked = (e && e.target && e.target.type === 'checkbox') ? e.target.checked : !isChapterRead;
@@ -122,7 +204,10 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
   const handleHighlightButton = async () => {
     if (!user) { alert("Please log in to highlight."); return; }
-    if (selectedVerses.length === 0) { alert("Select verses first!"); return; }
+    if (selectedVerses.length === 0) { 
+        setHintText("💡 Select verses first to highlight, or Double Tap a verse.");
+        return; 
+    }
     const userRef = doc(db, "users", user.uid);
     const selectedKeys = selectedVerses.map(v => `${book} ${chapter}:${v}`);
     const allSelectedAreHighlighted = selectedKeys.every(k => highlights.includes(k));
@@ -132,6 +217,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         setSelectedVerses([]); 
     } catch (e) { console.error("Error highlights:", e); }
   };
+  
   const handleVerseDoubleClick = async (verseNum) => {
       if (!user) return;
       const verseKey = `${book} ${chapter}:${verseNum}`;
@@ -143,33 +229,66 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           setSelectedVerses(prev => prev.filter(v => v !== verseNum));
       } catch (e) { console.error("Highlight toggle error:", e); }
   };
+
   const handleNoteButtonClick = () => {
       if (!user) { alert("Please log in to add notes."); return; }
-      if (selectedVerses.length === 0) { alert("Select verses to attach a note to!"); return; }
-      setCurrentNoteText(""); setEditingNoteId(null); setIsNoteMode(true);
+      if (selectedVerses.length === 0) { 
+          setHintText("💡 Select a verse first, or Long Press a verse to note directly.");
+          return; 
+      }
+      
+      if (isNoteMode && currentNoteText.length > 0) {
+          if (editorRef.current) editorRef.current.focus();
+          return;
+      }
+      
+      setCurrentNoteText(""); 
+      setEditingNoteId(null); 
+      setIsNoteMode(true);
       setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
   };
+
   const saveNote = async () => {
       if (!currentNoteText.trim()) return;
+      
+      const now = new Date().toLocaleString([], { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      // ✅ Auto-append date at bottom
+      const finalNoteText = `${currentNoteText}\n\n— ${now}`;
+
       try {
-          if (editingNoteId) { await updateDoc(doc(db, "notes", editingNoteId), { text: currentNoteText, timestamp: serverTimestamp() }); } 
-          else { await addDoc(collection(db, "notes"), { userId: user.uid, book: book, chapter: parseInt(chapter), verses: selectedVerses.sort((a,b) => a-b), text: currentNoteText, timestamp: serverTimestamp(), color: 'blue' }); }
+          if (editingNoteId) { await updateDoc(doc(db, "notes", editingNoteId), { text: finalNoteText, timestamp: serverTimestamp() }); } 
+          else { await addDoc(collection(db, "notes"), { userId: user.uid, book: book, chapter: parseInt(chapter), verses: selectedVerses.sort((a,b) => a-b), text: finalNoteText, timestamp: serverTimestamp(), color: 'blue' }); }
           setIsNoteMode(false); setEditingNoteId(null); setSelectedVerses([]); 
+          setHintText(""); 
       } catch (e) { console.error("Error saving note:", e); }
   };
   const deleteNote = async (noteId) => { if (window.confirm("Are you sure?")) { try { await deleteDoc(doc(db, "notes", noteId)); } catch (e) { console.error(e); } } };
   const startEditingNote = (note) => { setCurrentNoteText(note.text); setEditingNoteId(note.id); setIsNoteMode(true); };
-  const handleShareNote = async (note) => {
-      const noteVerseText = note.verses.map(vNum => { const v = verses.find(v => v.verse === vNum); return v ? v.text : ""; }).join(' ');
+  
+  // ✅ GRANULAR SHARE HANDLER
+  const handleShareNote = async (note, type) => {
+      const noteVerseText = note.verses.map(vNum => { 
+          const v = verses.find(v => v.verse === vNum); 
+          return v ? `[${vNum}] ${v.text}` : ""; 
+      }).join(' ');
       const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
-      const fullShareText = `"${noteVerseText}" ${citation}\n\n${note.text}`;
+      
+      let fullShareText = "";
+
+      if (type === 'verse') {
+          fullShareText = `"${noteVerseText}" ${citation}`;
+      } else if (type === 'note') {
+          fullShareText = note.text;
+      } else { // 'all'
+          fullShareText = `"${noteVerseText}" ${citation}\n\n${note.text}`;
+      }
+
       const shareData = { title: 'Equip Daily Note', text: fullShareText, url: window.location.href };
-      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { try { await navigator.clipboard.writeText(fullShareText); alert("Note copied!"); } catch (err) {} }
+      if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} } else { try { await navigator.clipboard.writeText(fullShareText); alert("Copied to clipboard!"); } catch (err) {} }
   };
+
   const handleCopyNote = async (note) => {
-      const noteVerseText = note.verses.map(vNum => { const v = verses.find(v => v.verse === vNum); return v ? v.text : ""; }).join(' ');
-      const citation = `${book} ${chapter}:${note.verses[0]}${note.verses.length > 1 ? '-' + note.verses[note.verses.length-1] : ''} (${version.toUpperCase()})`;
-      try { await navigator.clipboard.writeText(`"${noteVerseText}" ${citation}\n\n${note.text}`); alert("Note copied!"); } catch (err) {}
+      try { await navigator.clipboard.writeText(note.text); alert("Note copied!"); } catch (err) {}
   };
 
   const saveReflection = async () => {
@@ -200,25 +319,93 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       .then(res => res.json()).then(data => { setVerses(data.verses || []); setSelectedVerses([]); setLoading(false); })
       .catch(err => { console.error(err); setLoading(false); });
   }, [book, chapter, version]);
-  const toggleVerse = (verseNum) => { if (selectedVerses.includes(verseNum)) setSelectedVerses(selectedVerses.filter(v => v !== verseNum)); else setSelectedVerses([...selectedVerses, verseNum].sort((a, b) => a - b)); };
-  const handleCopy = async () => {
-    if (selectedVerses.length === 0) { alert("Select verses first!"); return; }
+  
+  // --- 👆 LONG PRESS LOGIC (PC + Mobile) ---
+  const startLongPress = (verseNum) => {
+      isLongPress.current = false;
+      longPressTimer.current = setTimeout(() => {
+          isLongPress.current = true; 
+          setSelectedVerses([verseNum]);
+          setTimeout(() => handleNoteButtonClick(), 50);
+          if (navigator.vibrate) navigator.vibrate(50);
+      }, 600);
+  };
+
+  const endLongPress = () => {
+      if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
+  const toggleVerse = (verseNum) => { 
+      if (!isLongPress.current) {
+          if (selectedVerses.includes(verseNum)) setSelectedVerses(selectedVerses.filter(v => v !== verseNum)); 
+          else setSelectedVerses([...selectedVerses, verseNum].sort((a, b) => a - b)); 
+          setHintText("");
+      }
+  };
+  
+  // ✅ COPY SELECTED VERSE TEXT (Editor Context)
+  const handleCopyVerseText = async () => {
     try { 
         const textBlock = selectedVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
         const citation = `${book} ${chapter}:${selectedVerses[0]}${selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''} (${version.toUpperCase()})`;
-        await navigator.clipboard.writeText(`"${textBlock}" ${citation}`); setCopyBtnText("Copied!"); setTimeout(() => setCopyBtnText("Copy"), 2000); 
+        await navigator.clipboard.writeText(`"${textBlock}" ${citation}`); 
+        setCopyBtnText("Copied!"); 
+        setTimeout(() => setCopyBtnText(selectedVerses.length > 1 ? "Copy Selected Verses" : "Copy Selected Verse"), 2000); 
     } catch (err) {}
   };
+
+  // Dynamic Button Label
+  useEffect(() => {
+      setCopyBtnText(selectedVerses.length > 1 ? "Copy Selected Verses" : "Copy Selected Verse");
+  }, [selectedVerses]);
+
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
   const decreaseFont = () => setFontSize(prev => Math.max(prev - 0.1, 0.8));
-  const handleNext = () => { const idx = bibleData.findIndex(b => b.name === book); if (parseInt(chapter) < bibleData[idx].chapters) setChapter(parseInt(chapter) + 1); else if (idx < bibleData.length - 1) { setBook(bibleData[idx + 1].name); setChapter(1); } window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  const handlePrev = () => { if (parseInt(chapter) > 1) setChapter(parseInt(chapter) - 1); else { const idx = bibleData.findIndex(b => b.name === book); if (idx > 0) { setBook(bibleData[idx - 1].name); setChapter(bibleData[idx - 1].chapters); } } window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  
+  // --- 📖 NAV HANDLERS ---
+  const handleNext = () => { 
+      const idx = bibleData.findIndex(b => b.name === book); 
+      if (parseInt(chapter) < bibleData[idx].chapters) setChapter(parseInt(chapter) + 1); 
+      else if (idx < bibleData.length - 1) { setBook(bibleData[idx + 1].name); setChapter(1); } 
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setHintText("💡 Tip: On mobile, Swipe Left ⬅️ anywhere to go Next.");
+  };
+
+  const handlePrev = () => { 
+      if (parseInt(chapter) > 1) setChapter(parseInt(chapter) - 1); 
+      else { const idx = bibleData.findIndex(b => b.name === book); if (idx > 0) { setBook(bibleData[idx - 1].name); setChapter(bibleData[idx - 1].chapters); } } 
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setHintText("💡 Tip: On mobile, Swipe Right ➡️ anywhere to go Back.");
+  };
+  
+  // --- SWIPE LOGIC ---
+  const onGlobalTouchStart = (e) => {
+      touchEndRef.current = { x: 0, y: 0 }; 
+      touchStartRef.current = { x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY };
+  };
+
+  const onGlobalTouchMove = (e) => {
+      touchEndRef.current = { x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY };
+  };
+
+  const onGlobalTouchEnd = () => {
+      if (!touchStartRef.current.x || !touchEndRef.current.x) return;
+      const distanceX = touchStartRef.current.x - touchEndRef.current.x;
+      const distanceY = touchStartRef.current.y - touchEndRef.current.y;
+      
+      if (Math.abs(distanceX) > Math.abs(distanceY)) {
+          if (distanceX > minSwipeDistance) handleNext(); 
+          if (distanceX < -minSwipeDistance) handlePrev(); 
+      }
+  };
+
   const getChapterCount = () => { const b = bibleData.find(d => d.name === book); return b ? b.chapters : 50; };
 
   const compactSelectStyle = { border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '0.75rem', color: theme === 'dark' ? '#aaa' : '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit', maxWidth: '70px' };
   const renderControlBar = () => (
     <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 0', minHeight: '40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <button onClick={() => setShowAudio(!showAudio)} title={showAudio ? "Hide Audio" : "Show Audio"} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 5px' }}>{showAudio ? '🔊' : '🔇'}</button>
             <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>{bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}</select>
             <span style={{ fontSize: '0.75rem', color: '#555' }}>|</span>
             <select value={chapter} onChange={(e) => setChapter(e.target.value)} style={{ ...compactSelectStyle, width: 'auto' }}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>)}</select>
@@ -231,10 +418,29 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
             <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
-            <button onClick={handleCopy} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? '#ff9900' : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>{copyBtnText}</button>
+            
+            {/* 🛑 COPY BUTTON REMOVED FROM TOP BAR */}
+            
             <button onClick={handleHighlightButton} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? HIGHLIGHT_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), textShadow: selectedVerses.length > 0 ? '0px 1px 2px rgba(0,0,0,0.3)' : 'none', padding: '5px 10px', fontSize: '0.85rem' }}>Highlight</button>
             <button onClick={handleNoteButtonClick} className="nav-btn" style={{ backgroundColor: selectedVerses.length > 0 ? NOTE_BUTTON_COLOR : (theme === 'dark' ? '#333' : '#f5f5f5'), color: selectedVerses.length > 0 ? 'white' : (theme === 'dark' ? '#ccc' : '#aaa'), border: selectedVerses.length > 0 ? 'none' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'), padding: '5px 10px', fontSize: '0.85rem' }}>Note</button>
-            {userNotes.length > 0 && ( <button onClick={() => setShowNotes(!showNotes)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9rem', marginLeft: '5px', color: theme === 'dark' ? '#888' : '#555' }} title={showNotes ? "Hide Notes" : "Show Notes"}> {showNotes ? "👁️" : "🙈"} </button> )}
+            
+            {/* 📝 NEW NOTEBOOK ICON TOGGLE */}
+            {userNotes.length > 0 && ( 
+                <button 
+                    onClick={() => setShowNotes(!showNotes)} 
+                    style={{ 
+                        background: 'none', border: 'none', cursor: 'pointer', marginLeft: '5px', padding: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                    }} 
+                    title={showNotes ? "Hide Notes" : "Show Notes"}
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={theme === 'dark' ? '#aaa' : '#555'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        {!showNotes && <line x1="3" y1="3" x2="21" y2="21" stroke="#e53e3e" strokeWidth="2.5" />}
+                    </svg>
+                </button> 
+            )}
+
             <button onClick={decreaseFont} className="nav-btn" style={{ padding: '5px 12px', fontSize: '0.9rem', fontWeight: 'bold' }}>-</button>
             <button onClick={increaseFont} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.9rem', fontWeight: 'bold' }}>+</button>
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '5px 12px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.3s ease', marginLeft: '5px', backgroundColor: isChapterRead ? (theme === 'dark' ? '#0f2f21' : '#e6fffa') : (theme === 'dark' ? '#333' : '#f0f0f0'), border: isChapterRead ? '1px solid #38b2ac' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'), color: isChapterRead ? '#276749' : (theme === 'dark' ? '#fff' : '#333'), boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
@@ -242,17 +448,31 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 <span style={{ whiteSpace: 'nowrap' }}>Track Read for Daily Bible Plan</span>
             </label>
         </div>
+        {/* 💡 HINT DISPLAY */}
+        {hintText && (
+            <p style={{ width: '100%', textAlign: 'center', fontSize: '0.75rem', color: theme === 'dark' ? '#888' : '#666', marginTop: '10px', fontStyle: 'italic', marginBottom: 0, animation: 'fadeIn 0.3s ease' }}>
+                {hintText}
+            </p>
+        )}
     </div>
   );
   const MemoizedTracker = useMemo(() => { if (topNavMode === 'OT' || topNavMode === 'NT') return <BibleTracker readChapters={readChapters} onNavigate={handleTrackerNavigation} sectionFilter={topNavMode} />; return null; }, [user, readChapters, handleTrackerNavigation, topNavMode]);
 
   return (
-    <div id="bible-reader-top" className="container" style={{ maxWidth: '100%', padding: '0', boxShadow: 'none', '--verse-font-size': `${fontSize}rem` }}>
+    <div 
+        id="bible-reader-top" 
+        className="container" 
+        style={{ maxWidth: '100%', padding: '0', boxShadow: 'none', '--verse-font-size': `${fontSize}rem` }}
+        // 🌍 GLOBAL TOUCH LISTENERS FOR PAGE SWIPE
+        onTouchStart={onGlobalTouchStart}
+        onTouchMove={onGlobalTouchMove}
+        onTouchEnd={onGlobalTouchEnd}
+    >
       <style>{`
-        .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: all 0.2s ease; user-select: none; position: relative; }
+        .verse-box { padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; transition: transform 0.1s linear, background-color 0.2s ease; user-select: none; position: relative; touch-action: pan-y; }
         .verse-text { font-size: var(--verse-font-size); line-height: 1.6; transition: font-size 0.2s ease; }
         .verse-box.light { background-color: #fff; color: #333; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .verse-box.light:hover { background-color: #f8f9fa; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transform: translateY(-1px); } 
+        .verse-box.light:hover { background-color: #f8f9fa; box-shadow: 0 4px 8px rgba(0,0,0,0.1); } 
         .verse-box.light.selected { background-color: #e3f2fd; border: 1px solid #2196F3; }
         .verse-box.dark { background-color: #000; color: #ccc; border: 1px solid #333; }
         .verse-box.dark:hover { background-color: #333; } 
@@ -263,6 +483,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         .nav-toggle-btn.active { background-color: #e3f2fd; color: #1976d2; border: 1px solid #2196F3; }
         .inline-editor-container { animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; transform-origin: top; overflow: hidden; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-10px) scaleY(0.95); max-height: 0; } to { opacity: 1; transform: translateY(0) scaleY(1); max-height: 300px; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
       <div style={{ marginBottom: '20px', padding: '0 20px' }}>
@@ -279,7 +500,42 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
             )}
         </div>
         
-        {/* 🔙 RETURN BUTTON (MERGED) */}
+        {/* 🎧 AUDIO PLAYER + SLEEP TIMER (TOGGLEABLE) */}
+        {showAudio && (
+            <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: theme === 'dark' ? '#222' : '#f8f9fa', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <audio 
+                        ref={audioRef} 
+                        controls 
+                        style={{ flex: 1, height: '40px' }}
+                        onError={() => setAudioError(true)}
+                    >
+                        <source src={`${AUDIO_BASE_PATH}${book}_${chapter}.mp3`} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                    </audio>
+                    <button 
+                        onClick={toggleSleepTimer}
+                        style={{
+                            marginLeft: '10px',
+                            background: sleepMinutes ? '#e3f2fd' : 'transparent',
+                            color: sleepMinutes ? '#2196F3' : (theme === 'dark' ? '#ccc' : '#555'),
+                            border: `1px solid ${sleepMinutes ? '#2196F3' : '#ccc'}`,
+                            borderRadius: '20px',
+                            padding: '5px 12px',
+                            fontSize: '0.85rem',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                            minWidth: '80px'
+                        }}
+                    >
+                        {sleepMinutes ? `🌙 ${formatTimeLeft(sleepTimeLeft)}` : "🌙 Off"}
+                    </button>
+                </div>
+                {audioError && <span style={{ fontSize: '0.8rem', color: '#888', textAlign: 'center' }}>Audio coming soon...</span>}
+            </div>
+        )}
+
+        {/* 🔙 RETURN BUTTON */}
         {historyStack && historyStack.length > 0 && (
             <div style={{ textAlign: 'center', marginBottom: '15px' }}>
                 <button 
@@ -316,15 +572,93 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 const themeClass = theme === 'dark' ? 'dark' : 'light';
                 const selectedClass = isSelected ? 'selected' : '';
                 const highlightStyle = isHighlighted ? { backgroundColor: HIGHLIGHT_COLOR, border: `1px solid #fdd835`, color: '#333' } : {};
+                
                 const attachedNotes = showNotes ? userNotes.filter(n => { if (!n.verses || !Array.isArray(n.verses) || n.verses.length === 0) return false; const lastVerse = n.verses[n.verses.length - 1]; return lastVerse === v.verse; }) : [];
                 const isEditingHere = isNoteMode && editingNoteId && attachedNotes.some(n => n.id === editingNoteId);
                 const isCreatingHere = isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === v.verse;
                 const showEditor = isEditingHere || isCreatingHere;
 
+                // --- 📝 INTERNAL NOTE CARD RENDER LOGIC ---
+                const renderNoteCard = (note) => {
+                    const settings = noteSettings[note.id] || { showDate: false, showTime: false, showShareMenu: false };
+                    
+                    const getFormattedTimestamp = () => {
+                        if (!note.timestamp) return "";
+                        const dateObj = note.timestamp.toDate ? note.timestamp.toDate() : new Date(note.timestamp);
+                        let str = "";
+                        if (settings.showDate) str += dateObj.toLocaleDateString() + " ";
+                        if (settings.showTime) str += dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        return str.trim();
+                    };
+                    const timestampStr = getFormattedTimestamp();
+
+                    return (
+                        <div key={note.id} style={{ 
+                            marginLeft: '30px', marginRight: '10px', marginBottom: '15px', 
+                            backgroundColor: theme === 'dark' ? '#1e3a5f' : '#e3f2fd', 
+                            borderLeft: `4px solid ${NOTE_BUTTON_COLOR}`, 
+                            padding: '10px 15px', borderRadius: '4px', 
+                            fontSize: '0.9rem', color: theme === 'dark' ? '#fff' : '#333', 
+                            position: 'relative' 
+                        }}>
+                            <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{note.text}</p>
+                            
+                            {timestampStr && (
+                                <p style={{ fontSize: '0.75rem', color: theme === 'dark' ? '#aaa' : '#666', textAlign: 'right', marginTop: '5px', marginBottom: '0', fontStyle: 'italic' }}>
+                                    {timestampStr}
+                                </p>
+                            )}
+
+                            <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', fontSize: '0.75rem', borderTop: theme === 'dark' ? '1px solid #444' : '1px solid #d1e3f6', paddingTop: '8px' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
+                                    <input type="checkbox" checked={settings.showTime || false} onChange={() => toggleNoteSetting(note.id, 'showTime')} /> Time
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '3px', cursor: 'pointer' }}>
+                                    <input type="checkbox" checked={settings.showDate || false} onChange={() => toggleNoteSetting(note.id, 'showDate')} /> Date
+                                </label>
+                                
+                                <span style={{color: '#ccc'}}>|</span>
+
+                                <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', padding: 0 }}>Edit</button>
+                                <span style={{color: '#ccc'}}>|</span>
+                                <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e53e3e', fontWeight: 'bold', padding: 0 }}>Delete</button>
+                                <span style={{color: '#ccc'}}>|</span>
+                                <button onClick={() => handleCopyNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Copy Note</button>
+                                <span style={{color: '#ccc'}}>|</span>
+                                
+                                {!settings.showShareMenu ? (
+                                    <button onClick={() => toggleNoteSetting(note.id, 'showShareMenu')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Share ▾</button>
+                                ) : (
+                                    <div style={{ display: 'flex', gap: '5px', background: theme === 'dark' ? '#333' : '#fff', padding: '2px 5px', borderRadius: '4px' }}>
+                                        <button onClick={() => { handleShareNote(note, 'verse'); toggleNoteSetting(note.id, 'showShareMenu'); }} style={{ fontSize: '0.7rem', cursor: 'pointer', border: 'none', background: 'none', color: NOTE_BUTTON_COLOR }}>Verse</button>
+                                        <span style={{opacity:0.3}}>/</span>
+                                        <button onClick={() => { handleShareNote(note, 'note'); toggleNoteSetting(note.id, 'showShareMenu'); }} style={{ fontSize: '0.7rem', cursor: 'pointer', border: 'none', background: 'none', color: NOTE_BUTTON_COLOR }}>Note</button>
+                                        <span style={{opacity:0.3}}>/</span>
+                                        <button onClick={() => { handleShareNote(note, 'all'); toggleNoteSetting(note.id, 'showShareMenu'); }} style={{ fontSize: '0.7rem', cursor: 'pointer', border: 'none', background: 'none', color: NOTE_BUTTON_COLOR }}>All</button>
+                                        <button onClick={() => toggleNoteSetting(note.id, 'showShareMenu')} style={{ fontSize: '0.7rem', cursor: 'pointer', border: 'none', background: 'none', color: '#e53e3e', marginLeft:'2px' }}>✕</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                };
+
                 return (
-                <div key={index}>
-                    <div className={`verse-box ${themeClass} ${selectedClass}`} style={highlightStyle} onClick={() => toggleVerse(v.verse)} onDoubleClick={() => handleVerseDoubleClick(v.verse)}>
-                        <input type="checkbox" checked={isSelected} onChange={() => {}} style={{ cursor: 'pointer', marginTop: '4px' }} />
+                <div key={index} style={{ position: 'relative', overflow: 'hidden' }}>
+                    <div 
+                        className={`verse-box ${themeClass} ${selectedClass}`} 
+                        style={highlightStyle} 
+                        // 🖱️ CLICK VS LONG PRESS LOGIC
+                        onMouseDown={() => startLongPress(v.verse)}
+                        onMouseUp={endLongPress}
+                        onMouseLeave={endLongPress}
+                        onTouchStart={() => startLongPress(v.verse)}
+                        onTouchMove={endLongPress} // 🛑 CANCEL ON SCROLL
+                        onTouchEnd={endLongPress}
+                        onClick={() => toggleVerse(v.verse)}
+                        onDoubleClick={() => handleVerseDoubleClick(v.verse)}
+                    >
+                        {/* 🛑 REMOVED CHECKBOX INPUT HERE - CLEANER UI */}
                         <span style={{ fontWeight: 'bold', marginRight: '5px', fontSize: '0.8rem', color: isHighlighted ? '#444' : (theme === 'dark' ? '#888' : '#999') }}>{v.verse}</span>
                         <span className="verse-text">{v.text}</span>
                     </div>
@@ -333,29 +667,34 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         <div className="inline-editor-container" style={{ marginLeft: '30px', marginRight: '10px', marginBottom: '15px' }}>
                             <div style={{ backgroundColor: theme === 'dark' ? '#222' : '#f0f4f8', padding: '15px', borderRadius: '8px', border: `1px solid ${NOTE_BUTTON_COLOR}` }}>
                                 <textarea ref={editorRef} value={currentNoteText} onChange={(e) => setCurrentNoteText(e.target.value)} placeholder="Write your note..." style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit', marginBottom: '10px', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                                    <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
-                                    <button onClick={saveNote} style={{ padding: '6px 12px', backgroundColor: NOTE_BUTTON_COLOR, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>Save</button>
+                                {/* 📝 COPY VERSE BUTTON (Replaced Date Checkbox) */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <button 
+                                        onClick={handleCopyVerseText} 
+                                        style={{ 
+                                            padding: '5px 10px', 
+                                            background: '#f5f5f5', 
+                                            color: '#555', 
+                                            border: '1px solid #ddd', 
+                                            borderRadius: '15px', 
+                                            fontSize: '0.75rem', 
+                                            cursor: 'pointer' 
+                                        }}
+                                    >
+                                        📋 {copyBtnText}
+                                    </button>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); }} style={{ padding: '6px 12px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
+                                        <button onClick={saveNote} style={{ padding: '6px 12px', backgroundColor: NOTE_BUTTON_COLOR, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>Save</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
+                    {/* NOTE CARDS RENDER */}
                     {showNotes && attachedNotes.length > 0 && attachedNotes.map(note => {
                         if (editingNoteId === note.id && isNoteMode) return null;
-                        return (
-                            <div key={note.id} style={{ marginLeft: '30px', marginRight: '10px', marginBottom: '15px', backgroundColor: theme === 'dark' ? '#1e3a5f' : '#e3f2fd', borderLeft: `4px solid ${NOTE_BUTTON_COLOR}`, padding: '10px 15px', borderRadius: '4px', fontSize: '0.9rem', color: theme === 'dark' ? '#fff' : '#333', position: 'relative' }}>
-                                <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{note.text}</p>
-                                <div style={{ marginTop: '8px', display: 'flex', gap: '10px', fontSize: '0.75rem' }}>
-                                    <button onClick={() => startEditingNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: NOTE_BUTTON_COLOR, fontWeight: 'bold', padding: 0 }}>Edit</button>
-                                    <span style={{color: '#ccc'}}>|</span>
-                                    <button onClick={() => deleteNote(note.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e53e3e', fontWeight: 'bold', padding: 0 }}>Delete</button>
-                                    <span style={{color: '#ccc'}}>|</span>
-                                    <button onClick={() => handleCopyNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Copy</button>
-                                    <span style={{color: '#ccc'}}>|</span>
-                                    <button onClick={() => handleShareNote(note)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontWeight: 'bold', padding: 0 }}>Share</button>
-                                </div>
-                            </div>
-                        );
+                        return renderNoteCard(note);
                     })}
                 </div>
                 );
