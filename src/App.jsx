@@ -43,6 +43,8 @@ function App() {
   const [showAudio, setShowAudio] = useState(false);
   const [audioError, setAudioError] = useState(false);
   const audioRef = useRef(null);
+  const [sleepMinutes, setSleepMinutes] = useState(null); 
+  const [sleepTimeLeft, setSleepTimeLeft] = useState(null); 
   
   // 📺 NEW: YouTube Video State
   const [youtubeId, setYoutubeId] = useState(null);
@@ -190,13 +192,52 @@ function App() {
     }
   };
 
+  // --- SLEEP TIMER LOGIC ---
+  useEffect(() => {
+    if (sleepTimeLeft === null) return;
+    if (sleepTimeLeft <= 0) {
+        if (audioRef.current) audioRef.current.pause();
+        setSleepMinutes(null);
+        setSleepTimeLeft(null);
+        return;
+    }
+    const interval = setInterval(() => { setSleepTimeLeft((prev) => prev - 1); }, 1000);
+    return () => clearInterval(interval);
+  }, [sleepTimeLeft]);
+
+  const toggleSleepTimer = () => {
+      let newMinutes = null;
+      if (sleepMinutes === null) newMinutes = 15;
+      else if (sleepMinutes === 15) newMinutes = 30;
+      else if (sleepMinutes === 30) newMinutes = 60;
+      else newMinutes = null;
+      setSleepMinutes(newMinutes);
+      setSleepTimeLeft(newMinutes ? newMinutes * 60 : null);
+  };
+
+  const formatTimeLeft = (seconds) => {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
+
   // --- AUDIO RESET & RELOAD ON DATE CHANGE ---
   useEffect(() => {
     setAudioError(false);
     if (showAudio && audioRef.current) {
         audioRef.current.load();
+        // 🛠️ FORCE CAPTIONS (Aggressive check to ensure they show)
+        setTimeout(() => {
+             if (audioRef.current && audioRef.current.textTracks[0]) audioRef.current.textTracks[0].mode = 'showing';
+        }, 500);
     }
   }, [currentDate, showAudio]);
+
+  const handleTrackLoad = () => {
+      if (audioRef.current && audioRef.current.textTracks && audioRef.current.textTracks.length > 0) {
+          audioRef.current.textTracks[0].mode = 'showing';
+      }
+  };
 
   useEffect(() => {
     const targetDate = new Date();
@@ -275,6 +316,16 @@ function App() {
 
   return (
     <div className="app-container" style={appStyle}>
+      {/* 🎨 GLOBAL CAPTION STYLES: Makes text Yellow & Large */}
+      <style>{`
+        video::cue {
+            font-size: 1.25rem;
+            color: #ffeb3b;
+            background-color: transparent;
+            font-family: sans-serif;
+            text-shadow: 2px 2px 3px #000;
+        }
+      `}</style>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
         <div style={{ position: 'absolute', top: '20px', left: '20px', display: 'flex', gap: '10px' }}>
            {activeTab === 'profile' ? (
@@ -392,23 +443,43 @@ function App() {
 
               {/* 🎧 AUDIO PLAYER CONTAINER */}
               {showAudio && (
-                <div style={{ margin: '0 auto 20px auto', maxWidth: '600px', padding: '10px', backgroundColor: theme === 'dark' ? '#333' : '#f1f1f1', borderRadius: '8px', animation: 'fadeIn 0.5s' }}>
-                    {/* 📜 UPDATED: Added crossOrigin for tracks and track tag */}
-                    <audio controls ref={audioRef} style={{ width: '100%', height: '40px' }} onError={() => setAudioError(true)} crossOrigin="anonymous">
-                        <source src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.mp3`} type="audio/mpeg" />
-                        
-                        {/* 📜 CAPTIONS TRACK (Uses matching .vtt file) */}
-                        <track 
-                            kind="captions" 
-                            src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.vtt`} 
-                            srcLang="en" 
-                            label="English" 
-                            default 
-                        />
-                        
-                        Your browser does not support the audio element.
-                    </audio>
-                    {audioError && <p style={{ color: '#e53e3e', fontSize: '0.8rem', marginTop: '5px', marginBottom: 0 }}>Audio not available for this date yet.</p>}
+                <div style={{ margin: '0 auto 20px auto', maxWidth: '600px', padding: '10px', backgroundColor: theme === 'dark' ? '#222' : '#f8f9fa', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn 0.5s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        {/* 📜 UPDATED: Added crossOrigin for tracks and track tag */}
+                        <video key={`${currentDate.getMonth() + 1}.${currentDate.getDate()}`} controls ref={audioRef} onLoadedMetadata={handleTrackLoad} style={{ flex: 1, height: '140px', backgroundColor: '#2c3e50', borderRadius: '4px' }} onError={() => setAudioError(true)} playsInline>
+                            <source src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.mp3`} type="audio/mpeg" />
+                            
+                            {/* 📜 CAPTIONS TRACK (Uses matching .vtt file) */}
+                            <track 
+                                key={`track-${currentDate.getMonth() + 1}.${currentDate.getDate()}`}
+                                kind="captions" 
+                                src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.vtt`} 
+                                srcLang="en" 
+                                label="English" 
+                                default 
+                            />
+                            
+                            Your browser does not support the audio element.
+                        </video>
+                        <button 
+                            onClick={toggleSleepTimer}
+                            style={{
+                                marginLeft: '10px',
+                                background: sleepMinutes ? '#e3f2fd' : 'transparent',
+                                color: sleepMinutes ? '#2196F3' : (theme === 'dark' ? '#ccc' : '#555'),
+                                border: `1px solid ${sleepMinutes ? '#2196F3' : '#ccc'}`,
+                                borderRadius: '20px',
+                                padding: '5px 12px',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                minWidth: '80px'
+                            }}
+                        >
+                            {sleepMinutes ? `🌙 ${formatTimeLeft(sleepTimeLeft)}` : "🌙 Off"}
+                        </button>
+                    </div>
+                    {audioError && <p style={{ color: '#e53e3e', fontSize: '0.8rem', marginTop: '5px', marginBottom: 0, textAlign: 'center' }}>Audio not available for this date yet.</p>}
                 </div>
               )}
 

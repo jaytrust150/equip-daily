@@ -204,8 +204,18 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
       setAudioError(false);
       if (showAudio && audioRef.current) {
           audioRef.current.load();
+          // 🛠️ FORCE CAPTIONS (Aggressive check to ensure they show)
+          setTimeout(() => {
+               if (audioRef.current && audioRef.current.textTracks[0]) audioRef.current.textTracks[0].mode = 'showing';
+          }, 500);
       }
   }, [book, chapter, showAudio]);
+
+  const handleTrackLoad = () => {
+      if (audioRef.current && audioRef.current.textTracks && audioRef.current.textTracks.length > 0) {
+          audioRef.current.textTracks[0].mode = 'showing';
+      }
+  };
 
   useEffect(() => {
     if (sleepTimeLeft === null) return;
@@ -1017,6 +1027,40 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         style={{ background: 'none', border: 'none', color: '#888', fontWeight: 'bold', fontSize: '0.9rem', cursor: 'pointer', padding: '0' }}>✕</button>
                 </div>
                 
+                {/* 🎨 MINI PALETTE IN FLOATING TOOL */}
+                <div style={{ display: 'flex', gap: '3px', margin: '4px 0', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '140px' }}>
+                    {COLOR_PALETTE.map(color => (
+                        <button 
+                            key={color.code}
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onTouchStart={(e) => e.stopPropagation()}
+                            onClick={() => applyHighlightColor(color)}
+                            title={`Highlight ${color.name}`}
+                            style={{ 
+                                width: '14px', height: '14px', borderRadius: '50%', 
+                                backgroundColor: color.code, 
+                                border: activeHighlightColor.code === color.code ? '2px solid #555' : '1px solid #ccc', 
+                                cursor: 'pointer', padding: 0 
+                            }}
+                        />
+                    ))}
+                    <button 
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onClick={() => applyHighlightColor(null)}
+                        title="Remove Highlight"
+                        style={{ 
+                            width: '14px', height: '14px', borderRadius: '50%', 
+                            backgroundColor: 'transparent', border: '1px solid #ccc', 
+                            cursor: 'pointer', padding: 0, fontSize: '0.6rem',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#555'
+                        }}
+                    >
+                        🚫
+                    </button>
+                </div>
+
                 {/* ROW 2: NEW ORANGE COPY VERSES BUTTON (Visible if selection exists) */}
                 {selectedVerses.length > 0 && (
                     <>
@@ -1286,15 +1330,18 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
             <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: theme === 'dark' ? '#222' : '#f8f9fa', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     {/* 📜 UPDATED: Added crossOrigin for tracks and track tag */}
-                    <audio 
+                    <video 
+                        key={`${book}-${chapter}`}
                         ref={audioRef} 
+                        onLoadedMetadata={handleTrackLoad}
                         controls 
-                        style={{ flex: 1, height: '40px' }}
+                        style={{ flex: 1, height: '140px', backgroundColor: '#2c3e50', borderRadius: '4px' }}
                         onError={() => setAudioError(true)}
-                        crossOrigin="anonymous" 
+                        playsInline
                     >
                         <source src={`${AUDIO_BASE_PATH}${book}_${chapter}.mp3`} type="audio/mpeg" />
                         <track 
+                            key={`track-${book}-${chapter}`}
                             kind="captions" 
                             src={`${AUDIO_BASE_PATH}${book}_${chapter}.vtt`} 
                             srcLang="en" 
@@ -1302,7 +1349,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                             default 
                         />
                         Your browser does not support the audio element.
-                    </audio>
+                    </video>
                     <button 
                         onClick={toggleSleepTimer}
                         style={{
