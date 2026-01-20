@@ -17,7 +17,7 @@ const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
 const PASTE_BUTTON_COLOR = '#9c27b0'; // 🟣 Purple for Paste Action
 const SAVE_BUTTON_COLOR = '#4caf50'; // 🟢 Green for Save
 const DELETE_BUTTON_COLOR = '#f44336'; // 🔴 Red for Delete
-const SYSTEM_PASTE_COLOR = '#009688'; // 🖌️ Teal for System Paste (New)
+const SYSTEM_PASTE_COLOR = '#009688'; // 🖌️ Teal for System Paste
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -962,8 +962,8 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     transform: notebookPos.x === 0 && notebookPos.y === 0 ? 'translateY(-50%)' : 'none',
                     backgroundColor: theme === 'dark' ? '#333' : 'white', 
                     border: `1px solid ${NOTE_BUTTON_COLOR}`, borderRadius: '20px', 
-                    padding: '6px 12px',
-                    display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', // VERTICAL
+                    padding: '4px 8px', // 🛠️ REDUCED PADDING
+                    display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center', // 🛠️ REDUCED GAP
                     zIndex: 1000, boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
                     cursor: 'grab'
                 }}
@@ -1033,7 +1033,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                             borderRadius: '10px',
                             fontSize: '0.75rem',
                             fontWeight: 'bold',
-                            padding: '5px 10px',
+                            padding: '3px 6px', // 🛠️ REDUCED PADDING
                             cursor: 'pointer',
                             width: '100%',
                             textAlign: 'center',
@@ -1062,7 +1062,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                  borderRadius: '10px',
                                  fontSize: '0.75rem',
                                  fontWeight: 'bold',
-                                 padding: '5px 10px',
+                                 padding: '3px 6px', // 🛠️ REDUCED PADDING
                                  cursor: 'pointer',
                                  width: '100%',
                                  textAlign: 'center',
@@ -1088,7 +1088,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                      borderRadius: '10px',
                                      fontSize: '0.75rem',
                                      fontWeight: 'bold',
-                                     padding: '5px 10px',
+                                     padding: '3px 6px', // 🛠️ REDUCED PADDING
                                      cursor: 'pointer',
                                      width: '100%',
                                      textAlign: 'center',
@@ -1111,7 +1111,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                      borderRadius: '10px',
                                      fontSize: '0.75rem',
                                      fontWeight: 'bold',
-                                     padding: '5px 10px',
+                                     padding: '3px 6px', // 🛠️ REDUCED PADDING
                                      cursor: 'pointer',
                                      width: '100%',
                                      textAlign: 'center',
@@ -1134,7 +1134,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                      borderRadius: '10px',
                                      fontSize: '0.75rem',
                                      fontWeight: 'bold',
-                                     padding: '5px 10px',
+                                     padding: '3px 6px', // 🛠️ REDUCED PADDING
                                      cursor: 'pointer',
                                      width: '100%',
                                      textAlign: 'center',
@@ -1670,9 +1670,9 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             onClick={handleSystemPaste} 
                                             style={{ 
                                                 padding: '3px 6px', 
-                                                background: '#e3f2fd', 
-                                                color: '#1976d2', 
-                                                border: '1px solid #90caf9', 
+                                                background: SYSTEM_PASTE_COLOR, 
+                                                color: 'white', 
+                                                border: `1px solid ${SYSTEM_PASTE_COLOR}`, 
                                                 borderRadius: '15px', 
                                                 fontSize: '0.75rem', 
                                                 cursor: 'pointer' 
