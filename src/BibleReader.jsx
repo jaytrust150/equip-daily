@@ -427,7 +427,19 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   };
 
   const deleteNote = async (noteId) => { if (window.confirm("Are you sure?")) { try { await deleteDoc(doc(db, "notes", noteId)); } catch (e) { console.error(e); } } };
-  const startEditingNote = (note) => { setCurrentNoteText(note.text); setEditingNoteId(note.id); setIsNoteMode(true); };
+  
+  // ✅ FIX: FIXED EDIT TO UPDATE FLOATING PANEL & SELECTION
+  const startEditingNote = (note) => { 
+      setCurrentNoteText(note.text); 
+      setEditingNoteId(note.id); 
+      setIsNoteMode(true);
+      // 🔥 FIX: Manually set selected verses so floating tool knows what's up
+      setSelectedVerses(note.verses);
+      setShowFloatingNoteTool(true); // Ensure tool is visible
+      
+      // Scroll to editor
+      setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
+  };
   
   // ⚡ HELPER: TRIGGER NOTE FEEDBACK (Visual only)
   const triggerNoteFeedback = (noteId, type) => {
@@ -887,8 +899,15 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     <span
                         onClick={(e) => { 
                             e.stopPropagation(); 
-                            setShowNotes(!showNotes); // Toggle Note Visibility
-                            setHintText(!showNotes ? "📝 Study Mode: Notes Visible. Long press a verse to write a note." : "📖 Reading Mode: Clean View. Long press a verse to write a note.");
+                            const newShowNotes = !showNotes;
+                            setShowNotes(newShowNotes); 
+                            
+                            // Auto-deselect if turning OFF notes (Reading Mode)
+                            if (!newShowNotes) {
+                                setSelectedVerses([]);
+                            }
+
+                            setHintText(newShowNotes ? "📝 Study Mode: Notes Visible. Long press a verse to write a note." : "📖 Reading Mode: Clean View. Long press a verse to write a note.");
                         }}
                         style={{
                             fontSize: '1.2rem',
@@ -896,7 +915,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                             position: 'relative',
                             display: 'inline-block'
                         }}
-                        title={showNotes ? "Hide Notes in Text" : "Show Notes in Text"}
+                        title={showNotes ? "Switch to Reading Mode" : "Show Notes in Text"}
                     >
                         📝
                         {/* Red Line Overlay if inactive */}
