@@ -14,6 +14,9 @@ import {
 // 🎨 COLORS
 const NOTE_BUTTON_COLOR = '#2196F3'; // 🔵 Blue for Note Toggle
 const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
+const PASTE_BUTTON_COLOR = '#9c27b0'; // 🟣 Purple for Paste Action
+const SAVE_BUTTON_COLOR = '#4caf50'; // 🟢 Green for Save
+const DELETE_BUTTON_COLOR = '#f44336'; // 🔴 Red for Delete
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -45,6 +48,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   // ✅ FEEDBACK STATES
   const [copyFeedback, setCopyFeedback] = useState("");
   const [noteFeedback, setNoteFeedback] = useState({}); 
+  const [verseButtonMode, setVerseButtonMode] = useState('copy'); // 'copy' | 'paste'
 
   // Highlights Map
   const [highlightsMap, setHighlightsMap] = useState({});
@@ -374,6 +378,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           
           setIsNoteMode(false); setEditingNoteId(null); setSelectedVerses([]); 
           setHintText(""); 
+          setVerseButtonMode('copy'); // Reset mode
           
       } catch (e) { console.error("Error saving note:", e); }
   };
@@ -407,6 +412,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 setCurrentNoteText("");
                 // FIX: Clear selection
                 setSelectedVerses([]);
+                setVerseButtonMode('copy'); // Reset
             } catch (e) { console.error(e); }
         }
     } else {
@@ -416,11 +422,24 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         setCurrentNoteText("");
         // FIX: Clear selection
         setSelectedVerses([]);
+        setVerseButtonMode('copy'); // Reset
     }
   };
 
   const deleteNote = async (noteId) => { if (window.confirm("Are you sure?")) { try { await deleteDoc(doc(db, "notes", noteId)); } catch (e) { console.error(e); } } };
-  const startEditingNote = (note) => { setCurrentNoteText(note.text); setEditingNoteId(note.id); setIsNoteMode(true); };
+  
+  // ✅ FIX: FIXED EDIT TO UPDATE FLOATING PANEL & SELECTION
+  const startEditingNote = (note) => { 
+      setCurrentNoteText(note.text); 
+      setEditingNoteId(note.id); 
+      setIsNoteMode(true);
+      // 🔥 FIX: Manually set selected verses so floating tool knows what's up
+      setSelectedVerses(note.verses);
+      setShowFloatingNoteTool(true); // Ensure tool is visible
+      
+      // Scroll to editor
+      setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
+  };
   
   // ⚡ HELPER: TRIGGER NOTE FEEDBACK (Visual only)
   const triggerNoteFeedback = (noteId, type) => {
@@ -513,6 +532,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
           setCurrentNoteText("");
           // FIX: Clear selection
           setSelectedVerses([]);
+          setVerseButtonMode('copy'); // Reset
           return;
       }
       
@@ -634,13 +654,55 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
     try { 
         const textBlock = targetVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
         const citation = `${book} ${chapter}:${targetVerses[0]}${targetVerses.length > 1 ? '-' + targetVerses[targetVerses.length-1] : ''} (${version.toUpperCase()})`;
+        
+        // 📋 1. COPY TO CLIPBOARD
         await navigator.clipboard.writeText(`"${textBlock}" ${citation}`); 
         
+        // 🔄 2. TOGGLE BUTTON TO PASTE MODE (For Editor Button)
+        if (verseButtonMode === 'copy') {
+             setVerseButtonMode('paste');
+             setTimeout(() => {
+                 // Optionally revert back after 5s or stick
+             }, 5000);
+        }
+
         if (targetVerses === selectedVerses) {
             setCopyFeedback("Copied!"); 
             setTimeout(() => setCopyFeedback(""), 2000); 
         } 
     } catch (err) {}
+  };
+  
+  // ✅ NEW: PASTE VERSE TEXT INTO NOTE
+  const handlePasteVerseText = (targetVerses = selectedVerses) => {
+    if (!targetVerses || targetVerses.length === 0) return;
+    
+    const textBlock = targetVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
+    const citation = `${book} ${chapter}:${targetVerses[0]}${targetVerses.length > 1 ? '-' + targetVerses[targetVerses.length-1] : ''} (${version.toUpperCase()})`;
+    
+    // Insert into Note Text
+    const fullPaste = `"${textBlock}" ${citation}`;
+    
+    if (editorRef.current) {
+        const start = editorRef.current.selectionStart;
+        const end = editorRef.current.selectionEnd;
+        const current = currentNoteText;
+        const newText = current.substring(0, start) + fullPaste + current.substring(end);
+        setCurrentNoteText(newText);
+        
+        // Reset Cursor
+        setTimeout(() => {
+            if(editorRef.current) {
+                editorRef.current.selectionStart = editorRef.current.selectionEnd = start + fullPaste.length;
+                editorRef.current.focus();
+            }
+        }, 0);
+    } else {
+        setCurrentNoteText(prev => prev + fullPaste);
+    }
+    
+    // Reset Mode
+    setVerseButtonMode('copy');
   };
 
   // ✅ APPLY HIGHLIGHT FROM EDITOR (Handles removal via null)
@@ -1338,9 +1400,15 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     {/* 1. COPY REFERENCE TEXT */}
                                     <button
                                         onClick={() => handleCopyVerseText(note.verses)}
-                                        style={{ background: 'none', border: '1px solid ' + (theme === 'dark' ? '#555' : '#ccc'), borderRadius:'4px', cursor: 'pointer', color: theme === 'dark' ? '#ccc' : '#555', fontSize: '0.75rem', padding: '3px 6px' }}
+                                        // 🔄 DYNAMIC BUTTON TEXT & COLOR
+                                        style={{ 
+                                            background: verseButtonMode === 'paste' ? PASTE_BUTTON_COLOR : 'none', 
+                                            color: verseButtonMode === 'paste' ? 'white' : (theme === 'dark' ? '#ccc' : '#555'),
+                                            border: verseButtonMode === 'paste' ? 'none' : ('1px solid ' + (theme === 'dark' ? '#555' : '#ccc')), 
+                                            borderRadius:'4px', cursor: 'pointer', fontSize: '0.75rem', padding: '3px 6px' 
+                                        }}
                                     >
-                                        Copy {verseRef}
+                                        {verseButtonMode === 'paste' ? `Paste ${verseRef}` : `Copy ${verseRef}`}
                                     </button>
                                     
                                     {/* 2. COPY NOTE TEXT */}
@@ -1497,19 +1565,23 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
                                         {/* 1. COPY REFERENCE TEXT */}
                                         <button 
-                                            onClick={() => handleCopyVerseText(selectedVerses)} 
+                                            // 🔄 DYNAMIC HANDLER
+                                            onClick={verseButtonMode === 'paste' ? () => handlePasteVerseText(selectedVerses) : () => handleCopyVerseText(selectedVerses)} 
                                             style={{ 
                                                 padding: '3px 6px', 
-                                                background: '#f5f5f5', 
-                                                color: '#555', 
-                                                border: '1px solid #ddd', 
+                                                // 🔄 DYNAMIC COLOR
+                                                background: verseButtonMode === 'paste' ? PASTE_BUTTON_COLOR : '#f5f5f5', 
+                                                color: verseButtonMode === 'paste' ? 'white' : '#555', 
+                                                border: verseButtonMode === 'paste' ? 'none' : '1px solid #ddd', 
                                                 borderRadius: '15px', 
                                                 fontSize: '0.75rem', 
                                                 cursor: 'pointer',
                                                 whiteSpace: 'nowrap' 
                                             }}
                                         >
-                                            {copyFeedback === "Copied!" ? "Copied!" : `Copy ${book} ${chapter}:${selectedVerses[0]}${selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}`}
+                                            {/* 🔄 DYNAMIC TEXT */}
+                                            {verseButtonMode === 'paste' ? `Paste ${book} ${chapter}:${selectedVerses[0]}...` : 
+                                            (copyFeedback === "Copied!" ? "Copied!" : `Copy ${book} ${chapter}:${selectedVerses[0]}${selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}`)}
                                         </button>
                                         
                                         {/* ✅ NEW SYSTEM PASTE BUTTON */}
