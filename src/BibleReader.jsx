@@ -1114,7 +1114,16 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
             {/* 🔊 RESTORED AUDIO BUTTON HERE */}
             <button onClick={() => setShowAudio(!showAudio)} title={showAudio ? "Hide Audio" : "Show Audio"} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 5px' }}>{showAudio ? '🔊' : '🔇'}</button>
 
-            {/* Prev/Next with onMouseEnter/Leave */}
+            <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>{bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}</select>
+            <span style={{ fontSize: '0.75rem', color: '#555' }}>|</span>
+            <select value={chapter} onChange={(e) => setChapter(e.target.value)} style={{ ...compactSelectStyle, width: 'auto' }}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>)}</select>
+            <select value={version} onChange={(e) => setVersion(e.target.value)} style={{ fontSize: '0.65rem', color: theme === 'dark' ? '#888' : '#999', marginLeft: '2px', border: 'none', background: 'transparent', cursor: 'pointer' }}><option value="web" style={{color: '#333'}}>WEB</option><option value="kjv" style={{color: '#333'}}>KJV</option><option value="asv" style={{color: '#333'}}>ASV</option><option value="bbe" style={{color: '#333'}}>BBE</option></select>
+            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px' }}>
+                <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Bible Search & Concordance" style={{ padding: '6px 10px 6px 15px', borderRadius: '20px 0 0 20px', border: '1px solid #2196F3', borderRight: 'none', fontSize: '0.8rem', width: '210px', outline: 'none', backgroundColor: theme === 'dark' ? '#222' : '#fff', color: theme === 'dark' ? '#fff' : '#333', fontFamily: 'inherit' }} />
+                <button type="submit" style={{ padding: '6px 15px 6px 10px', borderRadius: '0 20px 20px 0', border: '1px solid #2196F3', borderLeft: 'none', backgroundColor: '#2196F3', color: 'white', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold' }}>🔍</button>
+            </form>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <button 
                 onClick={handlePrev} 
                 className="nav-btn" 
@@ -1129,18 +1138,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                 onMouseEnter={() => setHintText("💡 Tip: On mobile, Swipe Left ⬅️ anywhere to go Next.")}
                 onMouseLeave={() => setHintText("")}
             >Next →</button>
-            <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }} style={compactSelectStyle}>{bibleData && bibleData.map(b => <option key={b.name} value={b.name} style={{color: '#333'}}>{b.name}</option>)}</select>
-            <span style={{ fontSize: '0.75rem', color: '#555' }}>|</span>
-            <select value={chapter} onChange={(e) => setChapter(e.target.value)} style={{ ...compactSelectStyle, width: 'auto' }}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>)}</select>
-            <select value={version} onChange={(e) => setVersion(e.target.value)} style={{ fontSize: '0.65rem', color: theme === 'dark' ? '#888' : '#999', marginLeft: '2px', border: 'none', background: 'transparent', cursor: 'pointer' }}><option value="web" style={{color: '#333'}}>WEB</option><option value="kjv" style={{color: '#333'}}>KJV</option><option value="asv" style={{color: '#333'}}>ASV</option><option value="bbe" style={{color: '#333'}}>BBE</option></select>
-            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', alignItems: 'center', marginLeft: '12px' }}>
-                <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Bible Search & Concordance" style={{ padding: '6px 10px 6px 15px', borderRadius: '20px 0 0 20px', border: '1px solid #2196F3', borderRight: 'none', fontSize: '0.8rem', width: '210px', outline: 'none', backgroundColor: theme === 'dark' ? '#222' : '#fff', color: theme === 'dark' ? '#fff' : '#333', fontFamily: 'inherit' }} />
-                <button type="submit" style={{ padding: '6px 15px 6px 10px', borderRadius: '0 20px 20px 0', border: '1px solid #2196F3', borderLeft: 'none', backgroundColor: '#2196F3', color: 'white', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold' }}>🔍</button>
-            </form>
-        </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
-            <button onClick={handlePrev} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>← Prev</button>
-            <button onClick={handleNext} className="nav-btn" style={{ padding: '5px 10px', fontSize: '0.85rem' }}>Next →</button>
             
             <button 
                 onMouseEnter={() => setHintText("💡 Double Tap a verse to highlight instantly! For multiple, select first.")} 
