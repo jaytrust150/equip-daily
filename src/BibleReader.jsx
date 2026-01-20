@@ -1675,6 +1675,24 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
 
                                     {/* Right Side: Actions */}
                                     <div style={{ display: 'flex', gap: '5px', marginLeft: 'auto' }}>
+                                        {/* 🟢 SAVE BUTTON */}
+                                        <button 
+                                            onClick={saveNote} 
+                                            style={{ 
+                                                padding: '3px 6px', 
+                                                backgroundColor: SAVE_BUTTON_COLOR, // 🟢 Green
+                                                color: 'white', 
+                                                border: '1px solid #388E3C', 
+                                                borderRadius: '10px', 
+                                                cursor: 'pointer', 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: 'bold',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            Save Note
+                                        </button>
+
                                         {/* 🔴 NEW DELETE/DISCARD BUTTON */}
                                         <button 
                                             onClick={handleEditorDelete}
@@ -1692,24 +1710,6 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             }}
                                         >
                                             Delete Note
-                                        </button>
-
-                                        {/* 🟢 SAVE BUTTON */}
-                                        <button 
-                                            onClick={saveNote} 
-                                            style={{ 
-                                                padding: '3px 6px', 
-                                                backgroundColor: SAVE_BUTTON_COLOR, // 🟢 Green
-                                                color: 'white', 
-                                                border: '1px solid #388E3C', 
-                                                borderRadius: '10px', 
-                                                cursor: 'pointer', 
-                                                fontSize: '0.75rem', 
-                                                fontWeight: 'bold',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                        >
-                                            Save Note
                                         </button>
                                     </div>
                                 </div>
