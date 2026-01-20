@@ -673,9 +673,16 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
     } catch (err) {}
   };
   
-  // ✅ NEW: PASTE VERSE TEXT INTO NOTE
+  // ✅ NEW: PASTE VERSE TEXT INTO NOTE (WITH AUTO-OPEN LOGIC)
   const handlePasteVerseText = (targetVerses = selectedVerses) => {
     if (!targetVerses || targetVerses.length === 0) return;
+    
+    // If editor is closed, OPEN IT first
+    if (!isNoteMode) {
+        setIsNoteMode(true);
+        setCurrentNoteText(""); // Start fresh or keep previous? Usually fresh.
+        setEditingNoteId(null);
+    }
     
     const textBlock = targetVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
     const citation = `${book} ${chapter}:${targetVerses[0]}${targetVerses.length > 1 ? '-' + targetVerses[targetVerses.length-1] : ''} (${version.toUpperCase()})`;
@@ -683,23 +690,33 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
     // Insert into Note Text
     const fullPaste = `"${textBlock}" ${citation}`;
     
-    if (editorRef.current) {
-        const start = editorRef.current.selectionStart;
-        const end = editorRef.current.selectionEnd;
-        const current = currentNoteText;
-        const newText = current.substring(0, start) + fullPaste + current.substring(end);
-        setCurrentNoteText(newText);
-        
-        // Reset Cursor
-        setTimeout(() => {
+    // Small delay to ensure editor is rendered if it was just opened
+    setTimeout(() => {
+        if (editorRef.current) {
+            const start = editorRef.current.selectionStart;
+            const end = editorRef.current.selectionEnd;
+            const current = currentNoteText; // Use state, ref value might be stale?
+            // Actually, if we just opened it, currentNoteText is what we set above.
+            // If it was already open, we append.
+            
+            const newText = isNoteMode 
+                ? current.substring(0, start) + fullPaste + current.substring(end)
+                : fullPaste; // If we just opened, paste as new content
+
+            setCurrentNoteText(newText);
+            
+            // Focus and set cursor
             if(editorRef.current) {
+                editorRef.current.value = newText; // Direct ref update for immediate visual
                 editorRef.current.selectionStart = editorRef.current.selectionEnd = start + fullPaste.length;
                 editorRef.current.focus();
+                editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }, 0);
-    } else {
-        setCurrentNoteText(prev => prev + fullPaste);
-    }
+        } else {
+             // Fallback if ref not ready
+             setCurrentNoteText(prev => prev + fullPaste);
+        }
+    }, 50);
     
     // Reset Mode
     setVerseButtonMode('copy');
@@ -978,14 +995,14 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     <>
                     <button
                         onMouseDown={(e) => e.stopPropagation()}
-                        onClick={() => handleCopyVerseText(selectedVerses)}
-                        title="Copy Selected Verses"
+                        // 🔄 DYNAMIC HANDLER
+                        onClick={verseButtonMode === 'paste' ? () => handlePasteVerseText(selectedVerses) : () => handleCopyVerseText(selectedVerses)}
+                        title="Copy/Paste Selected Verses"
                         style={{
-                            // ✅ ORANGE for Copy Button (Requested Style)
-                            background: COPY_BUTTON_COLOR,
+                            // 🔄 DYNAMIC COLOR
+                            background: verseButtonMode === 'paste' ? PASTE_BUTTON_COLOR : COPY_BUTTON_COLOR,
                             color: 'white',
-                            // Match styling of main nav buttons
-                            border: '1px solid #e65100', 
+                            border: verseButtonMode === 'paste' ? 'none' : '1px solid #e65100', 
                             borderRadius: '10px',
                             fontSize: '0.75rem',
                             fontWeight: 'bold',
@@ -996,7 +1013,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                             whiteSpace: 'nowrap'
                         }}
                     >
-                        Copy {book} {chapter}:{selectedVerses[0]}{selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}
+                        {/* 🔄 DYNAMIC TEXT */}
+                        {verseButtonMode === 'paste' 
+                          ? `Paste ${book} ${chapter}:${selectedVerses[0]}...`
+                          : (copyFeedback === "Copied!" ? "Copied!" : `Copy ${book} ${chapter}:${selectedVerses[0]}${selectedVerses.length > 1 ? '-' + selectedVerses[selectedVerses.length-1] : ''}`)
+                        }
                     </button>
                     
                     {/* ROW 3: NEW ACTIONS IF EDITOR IS OPEN */}
@@ -1570,9 +1591,9 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             style={{ 
                                                 padding: '3px 6px', 
                                                 // 🔄 DYNAMIC COLOR
-                                                background: verseButtonMode === 'paste' ? PASTE_BUTTON_COLOR : '#f5f5f5', 
-                                                color: verseButtonMode === 'paste' ? 'white' : '#555', 
-                                                border: verseButtonMode === 'paste' ? 'none' : '1px solid #ddd', 
+                                                background: verseButtonMode === 'paste' ? PASTE_BUTTON_COLOR : COPY_BUTTON_COLOR, // 🟠 Orange default
+                                                color: 'white',
+                                                border: verseButtonMode === 'paste' ? 'none' : '1px solid #e65100', 
                                                 borderRadius: '15px', 
                                                 fontSize: '0.75rem', 
                                                 cursor: 'pointer',
@@ -1641,20 +1662,36 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                                             title={editingNoteId ? "Delete Note" : "Discard"}
                                             style={{ 
                                                 padding: '3px 6px', 
-                                                background: 'transparent', 
-                                                border: '1px solid #e53e3e', 
-                                                borderRadius: '4px', 
+                                                background: DELETE_BUTTON_COLOR, // 🔴 Red Filled
+                                                border: '1px solid #d32f2f', 
+                                                borderRadius: '10px', // Match rounded style
                                                 cursor: 'pointer', 
-                                                fontSize: '0.9rem', 
-                                                color: '#e53e3e',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                                fontSize: '0.75rem', 
+                                                color: 'white',
+                                                fontWeight: 'bold',
+                                                whiteSpace: 'nowrap'
                                             }}
                                         >
-                                            🗑️
+                                            Delete Note
                                         </button>
 
-                                        <button onClick={() => { setIsNoteMode(false); setEditingNoteId(null); setCurrentNoteText(""); setSelectedVerses([]); }} style={{ padding: '3px 6px', background: 'transparent', border: '1px solid #ccc', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: theme === 'dark' ? '#ccc' : '#555' }}>Cancel</button>
-                                        <button onClick={saveNote} style={{ padding: '3px 6px', backgroundColor: NOTE_BUTTON_COLOR, color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}>Save</button>
+                                        {/* 🟢 SAVE BUTTON */}
+                                        <button 
+                                            onClick={saveNote} 
+                                            style={{ 
+                                                padding: '3px 6px', 
+                                                backgroundColor: SAVE_BUTTON_COLOR, // 🟢 Green
+                                                color: 'white', 
+                                                border: '1px solid #388E3C', 
+                                                borderRadius: '10px', 
+                                                cursor: 'pointer', 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: 'bold',
+                                                whiteSpace: 'nowrap'
+                                            }}
+                                        >
+                                            Save Note
+                                        </button>
                                     </div>
                                 </div>
                             </div>
