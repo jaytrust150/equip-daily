@@ -427,19 +427,7 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   };
 
   const deleteNote = async (noteId) => { if (window.confirm("Are you sure?")) { try { await deleteDoc(doc(db, "notes", noteId)); } catch (e) { console.error(e); } } };
-  
-  // ✅ FIX: FIXED EDIT TO UPDATE FLOATING PANEL & SELECTION
-  const startEditingNote = (note) => { 
-      setCurrentNoteText(note.text); 
-      setEditingNoteId(note.id); 
-      setIsNoteMode(true);
-      // 🔥 FIX: Manually set selected verses so floating tool knows what's up
-      setSelectedVerses(note.verses);
-      setShowFloatingNoteTool(true); // Ensure tool is visible
-      
-      // Scroll to editor
-      setTimeout(() => { if (editorRef.current) { editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' }); editorRef.current.focus(); } }, 100);
-  };
+  const startEditingNote = (note) => { setCurrentNoteText(note.text); setEditingNoteId(note.id); setIsNoteMode(true); };
   
   // ⚡ HELPER: TRIGGER NOTE FEEDBACK (Visual only)
   const triggerNoteFeedback = (noteId, type) => {
@@ -654,72 +642,13 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
     try { 
         const textBlock = targetVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
         const citation = `${book} ${chapter}:${targetVerses[0]}${targetVerses.length > 1 ? '-' + targetVerses[targetVerses.length-1] : ''} (${version.toUpperCase()})`;
-        
-        // 📋 1. COPY TO CLIPBOARD
         await navigator.clipboard.writeText(`"${textBlock}" ${citation}`); 
         
-        // 🔄 2. TOGGLE BUTTON TO PASTE MODE (For Editor Button)
-        if (verseButtonMode === 'copy') {
-             setVerseButtonMode('paste');
-             setTimeout(() => {
-                 // Optionally revert back after 5s or stick
-             }, 5000);
-        }
-
         if (targetVerses === selectedVerses) {
             setCopyFeedback("Copied!"); 
             setTimeout(() => setCopyFeedback(""), 2000); 
         } 
     } catch (err) {}
-  };
-  
-  // ✅ NEW: PASTE VERSE TEXT INTO NOTE (WITH AUTO-OPEN LOGIC)
-  const handlePasteVerseText = (targetVerses = selectedVerses) => {
-    if (!targetVerses || targetVerses.length === 0) return;
-    
-    // If editor is closed, OPEN IT first
-    if (!isNoteMode) {
-        setIsNoteMode(true);
-        setCurrentNoteText(""); // Start fresh or keep previous? Usually fresh.
-        setEditingNoteId(null);
-    }
-    
-    const textBlock = targetVerses.map(num => { const v = verses.find(v => v.verse === num); return v ? v.text.trim() : ""; }).join(' ');
-    const citation = `${book} ${chapter}:${targetVerses[0]}${targetVerses.length > 1 ? '-' + targetVerses[targetVerses.length-1] : ''} (${version.toUpperCase()})`;
-    
-    // Insert into Note Text
-    const fullPaste = `"${textBlock}" ${citation}`;
-    
-    // Small delay to ensure editor is rendered if it was just opened
-    setTimeout(() => {
-        if (editorRef.current) {
-            const start = editorRef.current.selectionStart;
-            const end = editorRef.current.selectionEnd;
-            const current = currentNoteText; // Use state, ref value might be stale?
-            // Actually, if we just opened it, currentNoteText is what we set above.
-            // If it was already open, we append.
-            
-            const newText = isNoteMode 
-                ? current.substring(0, start) + fullPaste + current.substring(end)
-                : fullPaste; // If we just opened, paste as new content
-
-            setCurrentNoteText(newText);
-            
-            // Focus and set cursor
-            if(editorRef.current) {
-                editorRef.current.value = newText; // Direct ref update for immediate visual
-                editorRef.current.selectionStart = editorRef.current.selectionEnd = start + fullPaste.length;
-                editorRef.current.focus();
-                editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        } else {
-             // Fallback if ref not ready
-             setCurrentNoteText(prev => prev + fullPaste);
-        }
-    }, 50);
-    
-    // Reset Mode
-    setVerseButtonMode('copy');
   };
 
   // ✅ APPLY HIGHLIGHT FROM EDITOR (Handles removal via null)
@@ -903,8 +832,11 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                         onClick={() => applyHighlightColor(color)}
                         title={`Select ${color.name}`}
                         style={{ 
-                            width: '16px', height: '16px', borderRadius: '50%', // 🛠️ SLIGHTLY SMALLER DOTS
-                            backgroundColor: color.code, border: '1px solid #999', cursor: 'pointer', padding: 0 
+                            // ✅ MARKER: Simple border ring if active
+                            width: '16px', height: '16px', borderRadius: '50%', 
+                            backgroundColor: color.code, 
+                            border: activeHighlightColor.code === color.code ? '2px solid #555' : '1px solid #999', 
+                            cursor: 'pointer', padding: 0 
                         }}
                     />
                 ))}
@@ -1101,6 +1033,9 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         )}
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            {/* 🔊 RESTORED AUDIO BUTTON HERE */}
+            <button onClick={() => setShowAudio(!showAudio)} title={showAudio ? "Hide Audio" : "Show Audio"} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '0 5px' }}>{showAudio ? '🔊' : '🔇'}</button>
+
             {/* Prev/Next with onMouseEnter/Leave */}
             <button 
                 onClick={handlePrev} 
@@ -1234,13 +1169,22 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
         {showAudio && (
             <div style={{ marginBottom: '20px', padding: '10px', backgroundColor: theme === 'dark' ? '#222' : '#f8f9fa', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    {/* 📜 UPDATED: Added crossOrigin for tracks and track tag */}
                     <audio 
                         ref={audioRef} 
                         controls 
                         style={{ flex: 1, height: '40px' }}
                         onError={() => setAudioError(true)}
+                        crossOrigin="anonymous" 
                     >
                         <source src={`${AUDIO_BASE_PATH}${book}_${chapter}.mp3`} type="audio/mpeg" />
+                        <track 
+                            kind="captions" 
+                            src={`${AUDIO_BASE_PATH}${book}_${chapter}.vtt`} 
+                            srcLang="en" 
+                            label="English" 
+                            default 
+                        />
                         Your browser does not support the audio element.
                     </audio>
                     <button 
