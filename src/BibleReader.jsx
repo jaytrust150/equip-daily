@@ -17,6 +17,7 @@ const COPY_BUTTON_COLOR = '#ff9800'; // 🟠 Orange for Copy Action
 const PASTE_BUTTON_COLOR = '#9c27b0'; // 🟣 Purple for Paste Action
 const SAVE_BUTTON_COLOR = '#4caf50'; // 🟢 Green for Save
 const DELETE_BUTTON_COLOR = '#f44336'; // 🔴 Red for Delete
+const SYSTEM_PASTE_COLOR = '#009688'; // 🖌️ Teal for System Paste (New)
 const CITY_NAME = "Sebastian"; 
 
 // 🌈 PALETTE
@@ -552,6 +553,22 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
   const handleSystemPaste = async () => {
     try {
         const text = await navigator.clipboard.readText();
+        
+        // Handle "Closed Editor" case (Auto-create)
+        if (!isNoteMode) {
+             setIsNoteMode(true);
+             setCurrentNoteText(text); // Set text immediately
+             setEditingNoteId(null);
+             // Trigger feedback/focus
+             setTimeout(() => {
+                 if (editorRef.current) {
+                     editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                     editorRef.current.focus();
+                 }
+             }, 100);
+             return;
+        }
+
         if (editorRef.current) {
             const start = editorRef.current.selectionStart;
             const end = editorRef.current.selectionEnd;
@@ -1058,6 +1075,30 @@ function BibleReader({ theme, book, setBook, chapter, setChapter, onSearch, onPr
                     ) : (
                         // Save (Green) & Delete (Red) (When Editor OPEN)
                         <>
+                            {/* 📋 NEW PASTE BUTTON */}
+                            <button
+                                 onMouseDown={(e) => e.stopPropagation()}
+                                 onTouchStart={(e) => e.stopPropagation()}
+                                 onClick={handleSystemPaste} 
+                                 title="Paste from Clipboard"
+                                 style={{
+                                     background: SYSTEM_PASTE_COLOR, // 🖌️ Teal
+                                     color: 'white',
+                                     border: `1px solid ${SYSTEM_PASTE_COLOR}`, 
+                                     borderRadius: '10px',
+                                     fontSize: '0.75rem',
+                                     fontWeight: 'bold',
+                                     padding: '5px 10px',
+                                     cursor: 'pointer',
+                                     width: '100%',
+                                     textAlign: 'center',
+                                     whiteSpace: 'nowrap',
+                                     marginTop: '2px'
+                                 }}
+                            >
+                                📋 Paste
+                            </button>
+
                             <button
                                  onMouseDown={(e) => e.stopPropagation()}
                                  onTouchStart={(e) => e.stopPropagation()}
