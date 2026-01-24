@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { bibleData } from './bibleData';
+// ✅ FIXED IMPORT: Points to src/data/bibleData.js
+import { bibleData } from '../../data/bibleData';
 
 function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null }) {
   
@@ -26,7 +27,7 @@ function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null }) {
     // Note: We don't scroll to top here because this might be used inside a modal/top view
   };
 
-  // 🔙 DRILL-DOWN VIEW (Chapter Grid)
+  // 📂 DRILL-DOWN VIEW (Chapter Grid)
   if (selectedBook) {
     const bookReadCount = readChapters.filter(entry => entry.startsWith(`${selectedBook.name} `)).length;
     const bookPercent = Math.round((bookReadCount / selectedBook.chapters) * 100);
@@ -40,7 +41,7 @@ function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null }) {
                 onClick={() => setSelectedBook(null)}
                 style={{ background: 'none', border: 'none', fontSize: '1rem', cursor: 'pointer', color: '#666' }}
              >
-                ← Back
+                ⬅ Back
              </button>
              <h3 style={{ margin: 0, color: '#333' }}>{selectedBook.name}</h3>
              <div style={{ width: '50px' }}></div>

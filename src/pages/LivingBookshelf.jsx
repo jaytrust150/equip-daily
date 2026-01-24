@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from './firebase'; 
+import { auth } from '../config/firebase'; 
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import Login from './Login'; // Import your Login component
+import Login from '../components/Auth/Login'; // Import your Login component
 
 function LivingBookshelf({ theme }) {
   const [user, setUser] = useState(null);
@@ -9,6 +9,11 @@ function LivingBookshelf({ theme }) {
 
   // 1. Listen for User Login Status
   useEffect(() => {
+    // ✅ Guard against undefined auth
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);

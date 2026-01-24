@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import BibleReader from './BibleReader';
-import MemberCard from './MemberCard';
-import MemberProfile from './MemberProfile'; 
-import Login from './Login';
-import SearchWell from './SearchWell'; 
-import { auth, db } from "./firebase";
 import { signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, where, onSnapshot, arrayUnion, arrayRemove } from "firebase/firestore";
 import './App.css';
+
+// ✅ FIXED IMPORTS: Pointing to new folder structure
+import BibleStudy from './pages/BibleStudy'; 
+import MemberProfile from './pages/MemberProfile'; 
+import MemberCard from './components/Shared/MemberCard';
+import Login from './components/Auth/Login';
+import SearchWell from './components/Shared/SearchWell'; 
+import { auth, db } from "./config/firebase"; 
 
 // 📍 DEFAULT CITY
 const CITY_NAME = "Sebastian";
@@ -96,7 +98,6 @@ function App() {
   // --- 🛡️ SMART CLOSE LOGIC ---
   const handleWellClose = () => {
     setIsWellOpen(false);
-    // Memorize: "User specifically closed THIS verse"
     ignoredVerseRef.current = wellQuery;
   };
 
@@ -153,7 +154,6 @@ function App() {
       setYoutubeId(null);
       return;
     }
-    // Regex to find standard youtube links or youtu.be shortlinks
     const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
     const match = devotional.match(ytRegex);
     if (match && match[1]) {
@@ -166,11 +166,7 @@ function App() {
   const handleDevotionalInteraction = (e) => {
     if (e.target.classList.contains('verse-link')) {
       const verseRef = e.target.innerText;
-      
-      // 🛡️ 1. ZOMBIE CHECK: If we just closed this specific verse, ignore hover
       if (e.type === 'mouseover' && ignoredVerseRef.current === verseRef) return;
-
-      // 🛡️ 2. CRASH FIX: Only update state if it is DIFFERENT from current.
       if (wellQuery !== verseRef) {
           setWellQuery(verseRef);
       }
@@ -178,21 +174,18 @@ function App() {
       if (e.type === 'click' || e.type === 'mouseover') {
         if (!isWellOpen) {
             setIsWellOpen(true);
-            // If we are opening a NEW verse, clear the ignore list
             if (ignoredVerseRef.current !== verseRef) ignoredVerseRef.current = null;
         }
       }
     }
   };
 
-  // 🛡️ RESET: As soon as mouse leaves the verse, we forget it was closed.
   const handleMouseOut = (e) => {
     if (e.target.classList.contains('verse-link')) {
         ignoredVerseRef.current = null;
     }
   };
 
-  // --- SLEEP TIMER LOGIC ---
   useEffect(() => {
     if (sleepTimeLeft === null) return;
     if (sleepTimeLeft <= 0) {
@@ -221,12 +214,10 @@ function App() {
       return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  // --- AUDIO RESET & RELOAD ON DATE CHANGE ---
   useEffect(() => {
     setAudioError(false);
     if (showAudio && audioRef.current) {
         audioRef.current.load();
-        // 🛠️ FORCE CAPTIONS (Aggressive check to ensure they show)
         setTimeout(() => {
              if (audioRef.current && audioRef.current.textTracks[0]) audioRef.current.textTracks[0].mode = 'showing';
         }, 500);
@@ -316,7 +307,6 @@ function App() {
 
   return (
     <div className="app-container" style={appStyle}>
-      {/* 🎨 GLOBAL CAPTION STYLES: Makes text Yellow & Large */}
       <style>{`
         video::cue {
             font-size: 1.25rem;
@@ -386,7 +376,6 @@ function App() {
 
       <main 
         style={{ flex: 1 }}
-        // ✅ ATTACHING INTERACTION HANDLERS TO MAIN CONTENT
         onClick={handleDevotionalInteraction} 
         onMouseOver={handleDevotionalInteraction} 
         onMouseOut={handleMouseOut}
@@ -400,7 +389,7 @@ function App() {
                 previousTab={previousTab} 
             />
         ) : activeTab === 'bible' ? (
-            <BibleReader 
+            <BibleStudy 
                 theme={theme} 
                 book={bibleBook} setBook={setBibleBook} 
                 chapter={bibleChapter} setChapter={setBibleChapter} 
@@ -421,7 +410,6 @@ function App() {
                 </div>
                 
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', alignItems: 'center' }}>
-                  {/* 🎧 AUDIO BUTTON (MOVED TO FIRST) */}
                   <button onClick={() => setShowAudio(!showAudio)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title={showAudio ? "Hide Audio" : "Listen to Devotional"}>
                     {showAudio ? '🔊' : '🔇'}
                   </button>
@@ -430,7 +418,6 @@ function App() {
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
                   
-                  {/* 📅 CALENDAR BUTTON (PLACEHOLDER) */}
                   <button onClick={() => setDayOffset(0)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title="Calendar">
                     📅
                   </button>
@@ -441,15 +428,11 @@ function App() {
                 </div>
               </div>
 
-              {/* 🎧 AUDIO PLAYER CONTAINER */}
               {showAudio && (
                 <div style={{ margin: '0 auto 20px auto', maxWidth: '600px', padding: '10px', backgroundColor: theme === 'dark' ? '#222' : '#f8f9fa', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn 0.5s' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        {/* 📜 UPDATED: Added crossOrigin for tracks and track tag */}
                         <video key={`${currentDate.getMonth() + 1}.${currentDate.getDate()}`} controls ref={audioRef} onLoadedMetadata={handleTrackLoad} style={{ flex: 1, height: '140px', backgroundColor: '#2c3e50', borderRadius: '4px' }} onError={() => setAudioError(true)} playsInline>
                             <source src={`/audio/${currentDate.getMonth() + 1}.${currentDate.getDate()}-devotional.mp3`} type="audio/mpeg" />
-                            
-                            {/* 📜 CAPTIONS TRACK (Uses matching .vtt file) */}
                             <track 
                                 key={`track-${currentDate.getMonth() + 1}.${currentDate.getDate()}`}
                                 kind="captions" 
@@ -458,7 +441,6 @@ function App() {
                                 label="English" 
                                 default 
                             />
-                            
                             Your browser does not support the audio element.
                         </video>
                         <button 
@@ -485,7 +467,6 @@ function App() {
 
               <div className="devotional-content" style={{ fontSize: 'var(--devotional-font-size)', lineHeight: '1.7', textAlign: 'left', color: theme === 'dark' ? '#ccc' : '#333', backgroundColor: theme === 'dark' ? '#111' : '#fff', padding: '25px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', transition: 'font-size 0.2s ease' }} dangerouslySetInnerHTML={{ __html: processedDevotional }} />
               
-              {/* 📺 VIDEO PLAYER (AUTO-INSERTED) */}
               {youtubeId && (
                 <div className="youtube-container" style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto 0 auto' }}>
                   <iframe

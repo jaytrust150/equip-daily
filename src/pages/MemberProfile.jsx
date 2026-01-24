@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db } from "./firebase";
+// ✅ FIXED IMPORTS
+import { auth, db } from "../config/firebase"; 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
-import MemberCard from './MemberCard';
+import MemberCard from '../components/Shared/MemberCard';
 
 function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previousTab }) {
   const [currentUser] = useAuthState(auth);
@@ -27,7 +28,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
 
   // 1. FETCH PROFILE INFO
   useEffect(() => {
-    if (!targetUid) return;
+    if (!targetUid || !db) return; // ✅ Check if db exists
     const fetchProfile = async () => {
       const docRef = doc(db, "users", targetUid);
       const docSnap = await getDoc(docRef);
@@ -46,7 +47,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
 
   // 2. FETCH HISTORY & STATS
   useEffect(() => {
-    if (!targetUid) return;
+    if (!targetUid || !db) return; // ✅ Check if db exists
     
     if (!isMyProfile && !isHistoryPublic) {
         setMyReflections([]);
@@ -70,7 +71,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
 
         if (data.reactions) {
           Object.keys(data.reactions).forEach(fruitKey => {
-            const count = data.reactions[fruitKey].length;
+            const count = data.reactions[fruitKey]?.length || 0;
             totalFruit += count;
             fruitCounts[fruitKey] = (fruitCounts[fruitKey] || 0) + count;
           });
@@ -86,7 +87,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
 
   // --- ACTIONS ---
   const handleSaveProfile = async () => {
-    if (!isMyProfile) return;
+    if (!isMyProfile || !db) return; // ✅ Check if db exists
     setIsSaving(true);
     try {
       const userRef = doc(db, "users", currentUser.uid);
