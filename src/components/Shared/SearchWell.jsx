@@ -35,14 +35,32 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
     try {
         let searchVersion = DEFAULT_BIBLE_VERSION || 'd6e14a625393b4da-01'; // Default to NLT
         
-        // 🔒 Use serverless proxy to keep API key secure
-        let res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
+        // 🔒 Use serverless proxy (production) or direct API (development)
+        const isDev = import.meta.env.DEV;
+        const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+        
+        let res;
+        if (isDev && apiKey) {
+          // Development mode: direct API call
+          res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
+            headers: { 'api-key': apiKey.trim() }
+          });
+        } else {
+          // Production mode: use serverless proxy
+          res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
+        }
 
         // 🔄 Fallback to KJV if unauthorized
         if (res.status === 401 || (res.ok && (await res.clone().json()).unauthorized)) {
              if (searchVersion !== 'de4e12af7f28f599-01') {
                 searchVersion = 'de4e12af7f28f599-01';
-                res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
+                if (isDev && apiKey) {
+                  res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
+                    headers: { 'api-key': apiKey.trim() }
+                  });
+                } else {
+                  res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
+                }
              }
         }
         

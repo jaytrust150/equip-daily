@@ -78,10 +78,22 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
       try {
         const bookId = BIBLE_BOOK_IDS[book] || 'GEN';
         
-        // 🔒 Use serverless proxy to keep API key secure
-        const url = `/api/bible-chapter?bibleId=${version}&bookId=${bookId}&chapter=${chapter}`;
-
-        const response = await fetch(url);
+        // 🔒 Use serverless proxy (production) or direct API (development)
+        const isDev = import.meta.env.DEV;
+        const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+        
+        let response;
+        if (isDev && apiKey) {
+          // Development mode: direct API call
+          const url = `https://api.scripture.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapter}?content-type=json`;
+          response = await fetch(url, {
+            headers: { 'api-key': apiKey.trim() }
+          });
+        } else {
+          // Production mode: use serverless proxy
+          const url = `/api/bible-chapter?bibleId=${version}&bookId=${bookId}&chapter=${chapter}`;
+          response = await fetch(url);
+        }
 
         if (response.status === 401 || (response.ok && (await response.clone().json()).unauthorized)) {
             // 🔄 Fallback to KJV if the default version is unauthorized (likely permission issue)
