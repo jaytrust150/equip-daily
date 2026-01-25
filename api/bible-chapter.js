@@ -28,10 +28,18 @@ export default async function handler(request, response) {
     });
   }
 
-  const API_KEY = process.env.BIBLE_API_KEY;
+  // Check for API key with fallback support
+  let API_KEY = process.env.BIBLE_API_KEY;
+  
+  if (API_KEY) {
+    console.log('Found BIBLE_API_KEY');
+  } else if (process.env.VITE_BIBLE_API_KEY) {
+    API_KEY = process.env.VITE_BIBLE_API_KEY;
+    console.log('Found VITE_BIBLE_API_KEY');
+  }
   
   if (!API_KEY) {
-    console.error('BIBLE_API_KEY not configured');
+    console.error('CRITICAL ERROR: No API Key found');
     return response.status(500).json({ 
       error: 'Server configuration error: Missing API key' 
     });
