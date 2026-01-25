@@ -1,0 +1,392 @@
+[
+  {
+    "id": "06125adad2d5898a-01",
+    "abbreviation": "RV1858",
+    "name": "Reina Valera 1858",
+    "language": "spa"
+  },
+  {
+    "id": "06d0d859e632ca50-01",
+    "abbreviation": "REV",
+    "name": "REVOLVE Bible",
+    "language": "eng"
+  },
+  {
+    "id": "074ccf0e3793f8c3-01",
+    "abbreviation": "CEVUK",
+    "name": "Contemporary English Version (Anglicised) 2012",
+    "language": "eng"
+  },
+  {
+    "id": "0a3e0f74e2b0fda8-01",
+    "abbreviation": "ARVDCT",
+    "name": "Arabic Bible: Smith & Van Dyke + Concordant (NT)",
+    "language": "arb"
+  },
+  {
+    "id": "179568874c45e0d5-01",
+    "abbreviation": "WEB",
+    "name": "World English Bible",
+    "language": "eng"
+  },
+  {
+    "id": "1a6a60a044941a72-01",
+    "abbreviation": "KJVA",
+    "name": "King James Version with Apocrypha, American Edition",
+    "language": "eng"
+  },
+  {
+    "id": "1bef8b2d1c0c0c61-01",
+    "abbreviation": "RVA09",
+    "name": "Reina Valera Actualizada 2009",
+    "language": "spa"
+  },
+  {
+    "id": "2bcf166e0009ffdb-01",
+    "abbreviation": "LBLA",
+    "name": "La Biblia de las Américas",
+    "language": "spa"
+  },
+  {
+    "id": "2d568f2c51274516-01",
+    "abbreviation": "CUVS",
+    "name": "Chinese Union Version Simplified",
+    "language": "cmn"
+  },
+  {
+    "id": "3c1b7ef084f9f725-01",
+    "abbreviation": "CUVT",
+    "name": "Chinese Union Version Traditional",
+    "language": "cmn"
+  },
+  {
+    "id": "40072c4a5aba4022-01",
+    "abbreviation": "NASB2020",
+    "name": "New American Standard Bible 2020",
+    "language": "eng"
+  },
+  {
+    "id": "55212e3a5c2b18cd-01",
+    "abbreviation": "GUJTOV",
+    "name": "Gujarati Today's Version",
+    "language": "guj"
+  },
+  {
+    "id": "592420522e16049f-01",
+    "abbreviation": "ASV",
+    "name": "American Standard Version",
+    "language": "eng"
+  },
+  {
+    "id": "5bd4e2ab527e4c32-01",
+    "abbreviation": "ACV",
+    "name": "A Conservative Version",
+    "language": "eng"
+  },
+  {
+    "id": "5e0bb1adeafe5513-02",
+    "abbreviation": "NVBSE",
+    "name": "Nueva Versión Bíblica al Español",
+    "language": "spa"
+  },
+  {
+    "id": "61fd76eafa1577c2-01",
+    "abbreviation": "GNV",
+    "name": "1599 Geneva Bible",
+    "language": "eng"
+  },
+  {
+    "id": "63097d2a0a2f7db3-01",
+    "abbreviation": "NKJV",
+    "name": "New King James Version",
+    "language": "eng"
+  },
+  {
+    "id": "65eec8e0af537673-01",
+    "abbreviation": "EASY",
+    "name": "EasyEnglish Bible 2018",
+    "language": "eng"
+  },
+  {
+    "id": "68d2ee977673f08d-01",
+    "abbreviation": "OJB",
+    "name": "Orthodox Jewish Bible",
+    "language": "eng"
+  },
+  {
+    "id": "685d1470fe4d5c3b-01",
+    "abbreviation": "ASVBT",
+    "name": "American Standard Version with Bibletags",
+    "language": "eng"
+  },
+  {
+    "id": "6f11a7de016f942e-01",
+    "abbreviation": "MSG",
+    "name": "The Message",
+    "language": "eng"
+  },
+  {
+    "id": "7142879509583d59-01",
+    "abbreviation": "ERV",
+    "name": "Easy-to-Read Version",
+    "language": "eng"
+  },
+  {
+    "id": "71c6eab17ae5b667-01",
+    "abbreviation": "RSVCI",
+    "name": "Revised Standard Version Catholic Interconfessional",
+    "language": "eng"
+  },
+  {
+    "id": "78a9f6124f344018-01",
+    "abbreviation": "NIV",
+    "name": "New International Version",
+    "language": "eng"
+  },
+  {
+    "id": "7d467c1c11f57528-01",
+    "abbreviation": "RV1865",
+    "name": "Reina Valera 1865",
+    "language": "spa"
+  },
+  {
+    "id": "81aa0564f984ba11-01",
+    "abbreviation": "TLA",
+    "name": "Traducción en Lenguaje Actual",
+    "language": "spa"
+  },
+  {
+    "id": "8e8323c56da138a1-01",
+    "abbreviation": "BNP",
+    "name": "Bangla New Platform",
+    "language": "ben"
+  },
+  {
+    "id": "90f0f1bfbc527469-01",
+    "abbreviation": "ABE",
+    "name": "Afrikaans Bybel 1953 met Engelse vertalings",
+    "language": "afr"
+  },
+  {
+    "id": "926aa5efbc5e04e2-01",
+    "abbreviation": "BRG",
+    "name": "BRG Bible",
+    "language": "eng"
+  },
+  {
+    "id": "93306481890dd923-01",
+    "abbreviation": "DRB",
+    "name": "Douay-Rheims Bible",
+    "language": "eng"
+  },
+  {
+    "id": "9879dbb7cfe39e4d-01",
+    "abbreviation": "WEB",
+    "name": "World English Bible",
+    "language": "eng"
+  },
+  {
+    "id": "996e4ba52e5f5991-01",
+    "abbreviation": "ALAB",
+    "name": "الكتاب الحياة (Arabic Life Application Bible)",
+    "language": "arb"
+  },
+  {
+    "id": "9aba13bdd1dc51b7-01",
+    "abbreviation": "BT",
+    "name": "Ang Bagong Tipan: Magandang Balita Biblia",
+    "language": "tgl"
+  },
+  {
+    "id": "a561be2e2c3c746e-01",
+    "abbreviation": "ARVANDU",
+    "name": "Ketab El Hayat (NAV) + NT-Sharif (UBS)",
+    "language": "arb"
+  },
+  {
+    "id": "a5cf0564f9f9ee80-01",
+    "abbreviation": "NBG51",
+    "name": "Het Boek (NBG51)",
+    "language": "nld"
+  },
+  {
+    "id": "a5f6102b41fbbba1-01",
+    "abbreviation": "RUSBL",
+    "name": "Synodal Translation (1876)",
+    "language": "rus"
+  },
+  {
+    "id": "a761ca71e0b3ddcf-01",
+    "abbreviation": "NASB1995",
+    "name": "New American Standard Bible 1995",
+    "language": "eng"
+  },
+  {
+    "id": "a7ca8c2d35c26b6b-01",
+    "abbreviation": "WBS",
+    "name": "Webster's Bible",
+    "language": "eng"
+  },
+  {
+    "id": "aa7d9f80b8f8f1ba-01",
+    "abbreviation": "LSG",
+    "name": "Louis Segond 1910",
+    "language": "fra"
+  },
+  {
+    "id": "ab53b31f938b267e-01",
+    "abbreviation": "NHEB",
+    "name": "New Heart English Bible",
+    "language": "eng"
+  },
+  {
+    "id": "aeae687987064c9e-01",
+    "abbreviation": "CSB",
+    "name": "Christian Standard Bible",
+    "language": "eng"
+  },
+  {
+    "id": "af6006a9cf2ca74f-01",
+    "abbreviation": "LEB",
+    "name": "Lexham English Bible",
+    "language": "eng"
+  },
+  {
+    "id": "b2dbff4bf90161b4-01",
+    "abbreviation": "NTMW",
+    "name": "Northern Turkana Contemporary - Mathew",
+    "language": "nrj"
+  },
+  {
+    "id": "b38babdd-01",
+    "abbreviation": "RV1899",
+    "name": "Reina Valera 1899",
+    "language": "spa"
+  },
+  {
+    "id": "bba9f40183526463-01",
+    "abbreviation": "BSB",
+    "name": "Berean Standard Bible",
+    "language": "eng"
+  },
+  {
+    "id": "bbd27bc09ee5d3b7-01",
+    "abbreviation": "OV",
+    "name": "Oorsigbybel / Overview Bible",
+    "language": "afr"
+  },
+  {
+    "id": "c1315fa9fdf8448e-01",
+    "abbreviation": "AKJV",
+    "name": "American King James Version",
+    "language": "eng"
+  },
+  {
+    "id": "c315fa9f71d4af3a-01",
+    "abbreviation": "GNV",
+    "name": "Geneva Bible 1599",
+    "language": "eng"
+  },
+  {
+    "id": "c478735fa4206dca-01",
+    "abbreviation": "RAD",
+    "name": "Română Actualizată Dumnezeu",
+    "language": "ron"
+  },
+  {
+    "id": "cb2e6000b840be7a-01",
+    "abbreviation": "TYNDALE",
+    "name": "Tyndale Bible",
+    "language": "eng"
+  },
+  {
+    "id": "cfe535a08e5f5564-01",
+    "abbreviation": "BSB",
+    "name": "Berean Study Bible",
+    "language": "eng"
+  },
+  {
+    "id": "d19e546094837821-01",
+    "abbreviation": "NRV",
+    "name": "Nueva Biblia Viva",
+    "language": "spa"
+  },
+  {
+    "id": "d395ed3ed70139cb-01",
+    "abbreviation": "CLV",
+    "name": "Concordant Literal Version",
+    "language": "eng"
+  },
+  {
+    "id": "d6e14a625393b4da-01",
+    "abbreviation": "NLT",
+    "name": "New Living Translation",
+    "language": "eng"
+  },
+  {
+    "id": "de4e12af7f28f599-01",
+    "abbreviation": "KJV",
+    "name": "King James Version",
+    "language": "eng"
+  },
+  {
+    "id": "de4e12af7f28f599-02",
+    "abbreviation": "KJVPCE",
+    "name": "King James Version, Pure Cambridge Edition",
+    "language": "eng"
+  },
+  {
+    "id": "e3de4792c419c724-01",
+    "abbreviation": "DRA",
+    "name": "Douay-Rheims American Edition",
+    "language": "eng"
+  },
+  {
+    "id": "e5e5d9ba41fbbba1-01",
+    "abbreviation": "TR1876",
+    "name": "1876 Turkish Translation",
+    "language": "tur"
+  },
+  {
+    "id": "eb48e4a9fd0fdd87-01",
+    "abbreviation": "A21",
+    "name": "Almeida Século 21",
+    "language": "por"
+  },
+  {
+    "id": "eeb83ba2db7fb834-01",
+    "abbreviation": "ENREV",
+    "name": "English Revised Version",
+    "language": "eng"
+  },
+  {
+    "id": "f00a11a6e8e0faa1-01",
+    "abbreviation": "NET",
+    "name": "New English Translation",
+    "language": "eng"
+  },
+  {
+    "id": "f421fe261da7624f-01",
+    "abbreviation": "FreKhan",
+    "name": "French Kahn",
+    "language": "fra"
+  },
+  {
+    "id": "f72b840c855f362c-04",
+    "abbreviation": "GNT",
+    "name": "Good News Translation",
+    "language": "eng"
+  },
+  {
+    "id": "fb894b99c5ba7e0d-01",
+    "abbreviation": "YLT",
+    "name": "Young's Literal Translation",
+    "language": "eng"
+  },
+  {
+    "id": "fdc89bfb67946d8b-01",
+    "abbreviation": "UKJV",
+    "name": "Updated King James Version",
+    "language": "eng"
+  }
+]

@@ -2,7 +2,7 @@ import { db } from "../config/firebase";
 import { 
   doc, setDoc, updateDoc, deleteDoc, addDoc, getDoc, 
   collection, query, where, onSnapshot, 
-  serverTimestamp, arrayUnion, arrayRemove, writeBatch 
+  serverTimestamp, arrayUnion, arrayRemove 
 } from "firebase/firestore";
 import { CITY_NAME, DEFAULT_NOTE_COLOR } from "../config/constants";
 

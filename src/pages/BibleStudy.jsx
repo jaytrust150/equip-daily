@@ -3,11 +3,12 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 // --- IMPORTS ---
 import { bibleData } from '../data/bibleData'; 
+import { BIBLE_BOOK_IDS } from '../bibleData';
 import Login from '../components/Auth/Login'; 
+import BibleVersionPicker from '../components/BibleVersionPicker';
 import { auth } from "../config/firebase"; 
 import { 
   BIBLE_VERSIONS, 
-  USFM_MAPPING, 
   COLOR_PALETTE, 
   DEFAULT_NOTE_COLOR, 
   DEFAULT_HIGHLIGHT_DATA, 
@@ -25,33 +26,18 @@ const COPY_BUTTON_COLOR = '#ff9800';
 const SAVE_BUTTON_COLOR = '#4caf50'; 
 const DELETE_BUTTON_COLOR = '#f44336'; 
 
-// ✅ Updated Bible Versions from API Key
-const AVAILABLE_VERSIONS = [
-  { id: 'd6e14a625393b4da-01', abbreviation: 'NLT', name: 'New Living Translation' },
-  { id: '78a9f6124f344018-01', abbreviation: 'NIV', name: 'New International Version' },
-  { id: 'de4e12af7f28f599-01', abbreviation: 'KJV', name: 'King James Version' },
-  { id: '63097d2a0a2f7db3-01', abbreviation: 'NKJV', name: 'New King James Version' },
-  { id: 'a761ca71e0b3ddcf-01', abbreviation: 'NASB', name: 'New American Standard Bible' },
-  { id: 'bba9f40183526463-01', abbreviation: 'BSB', name: 'Berean Standard Bible' },
-  { id: '9879dbb7cfe39e4d-01', abbreviation: 'WEB', name: 'World English Bible' },
-  { id: '6f11a7de016f942e-01', abbreviation: 'MSG', name: 'The Message' },
-  { id: 'c315fa9f71d4af3a-01', abbreviation: 'GNV', name: 'Geneva Bible' },
-];
-
-function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick }) {
+function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   
-  // ✅ Default to NLT (or first available)
-  const [version, setVersion] = useState(() => {
-    return AVAILABLE_VERSIONS[0].id;
-  });
+  // ✅ Default to NLT from constants
+  const [version, setVersion] = useState(DEFAULT_BIBLE_VERSION);
 
   const [verses, setVerses] = useState([]);
-  const [selectedVerses, setSelectedVerses] = useState([]);
+  const [_selectedVerses, _setSelectedVerses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isChapterRead, setIsChapterRead] = useState(false);
+  const [_isChapterRead, _setIsChapterRead] = useState(false);
   
   // ✅ FEEDBACK STATES
   const [copyFeedback, setCopyFeedback] = useState("");
@@ -62,13 +48,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [userNotes, setUserNotes] = useState([]);
   
   // NOTE & STUDY MODES
-  const [showNotes, setShowNotes] = useState(false); 
-  const [isNoteMode, setIsNoteMode] = useState(false);
+  const [_showNotes, _setShowNotes] = useState(false); 
+  const [_isNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
-  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [_editingNoteId, _setEditingNoteId] = useState(null);
   
   const [fontSize, setFontSize] = useState(1.1);
-  const [showHighlightPalette, setShowHighlightPalette] = useState(false);
+  const [_showHighlightPalette, _setShowHighlightPalette] = useState(false);
   // ✅ Safe default color (prevents crash if COLOR_PALETTE is undefined)
   const [activeHighlightColor, setActiveHighlightColor] = useState(() => {
     return (COLOR_PALETTE && COLOR_PALETTE.length > 0) ? COLOR_PALETTE[0] : { code: '#ffff00', border: '#e6e600', name: 'Yellow' };
@@ -90,7 +76,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       let isSwitching = false;
 
       try {
-        const bookId = (USFM_MAPPING && USFM_MAPPING[book]) || 'GEN';
+        const bookId = BIBLE_BOOK_IDS[book] || 'GEN';
         const url = `https://api.scripture.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapter}?content-type=json`;
 
         const apiKey = import.meta.env.VITE_BIBLE_API_KEY?.trim();
@@ -318,15 +304,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
         {/* Version & Audio */}
         <div className="flex items-center gap-3">
-            <select
-                value={version}
-                onChange={(e) => setVersion(e.target.value)}
-                className={`p-2 rounded-lg border text-sm max-w-[120px] ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
-            >
-                {AVAILABLE_VERSIONS.map(v => (
-                    <option key={v.id} value={v.id}>{v.abbreviation}</option>
-                ))}
-            </select>
+            <BibleVersionPicker
+                selectedVersion={version}
+                onVersionChange={setVersion}
+                theme={theme}
+            />
 
             <button 
                 onClick={toggleAudio}

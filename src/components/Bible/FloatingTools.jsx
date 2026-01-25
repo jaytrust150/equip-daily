@@ -1,6 +1,6 @@
 import React from 'react';
 import { COLOR_PALETTE } from '../../config/constants';
-function FloatingTools({ theme, showPalette, setShowPalette, showNotebook, setShowNotebook, activeColor, onApplyColor, selectedVerses, onSaveNote }) {
+function FloatingTools({ showPalette, setShowPalette, showNotebook, setShowNotebook, onApplyColor, selectedVerses, onSaveNote }) {
   if (!showPalette && !showNotebook) return null;
   return (
     <div style={{ position: 'fixed', top: '50%', right: '20px', background: 'white', padding: '10px', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 1000 }}>

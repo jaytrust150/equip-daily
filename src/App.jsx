@@ -191,9 +191,7 @@ function App() {
     if (sleepTimeLeft === null) return;
     if (sleepTimeLeft <= 0) {
         if (audioRef.current) audioRef.current.pause();
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSleepMinutes(null);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSleepTimeLeft(null);
         return;
     }

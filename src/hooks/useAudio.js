@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-export function useAudio(src, captionsSrc) {
+export function useAudio(_src, _captionsSrc) {
   const audioRef = useRef(null);
   const [error, setError] = useState(false);
   const [sleepMinutes, setSleepMinutes] = useState(null);
@@ -18,9 +18,7 @@ export function useAudio(src, captionsSrc) {
     if (sleepTimeLeft === null) return;
     if (sleepTimeLeft <= 0) {
       if (audioRef.current) audioRef.current.pause();
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSleepMinutes(null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSleepTimeLeft(null);
       return;
     }

@@ -3,7 +3,7 @@ import { bibleData } from '../../bibleData';
 import { COLOR_PALETTE, BIBLE_VERSIONS } from '../../config/constants';
 
 function ControlBar({ 
-  theme, book, chapter, version, 
+  book, chapter, version, 
   setBook, setChapter, setVersion, 
   onNext, onPrev, 
   showNotes, setShowNotes, 

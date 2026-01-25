@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDraggableWindow } from '../../hooks/useDraggableWindow';
 import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../../config/constants';
 

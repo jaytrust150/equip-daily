@@ -1,5 +1,5 @@
 import React from 'react';
-function MemberCard({ user, thought, reactions, location, onSearch, onReact, onProfileClick, currentUserId, isOwner, onEdit, onDelete, onShare }) {
+function MemberCard({ user, thought, reactions, location, onSearch, onReact, onProfileClick, currentUserId, isOwner, onEdit, onDelete }) {
   const fruits = [{ id: 'love', label: 'Love', icon: '❤️' }, { id: 'joy', label: 'Joy', icon: '😊' }, { id: 'peace', label: 'Peace', icon: '🕊️' }, { id: 'patience', label: 'Patience', icon: '⏳' }, { id: 'kindness', label: 'Kindness', icon: '🤲' }, { id: 'goodness', label: 'Goodness', icon: '🌟' }, { id: 'faithfulness', label: 'Faithfulness', icon: '🤝' }, { id: 'gentleness', label: 'Gentleness', icon: '🧸' }, { id: 'selfControl', label: 'Self-Control', icon: '🛑' }];
   
   const renderThought = (text) => {
