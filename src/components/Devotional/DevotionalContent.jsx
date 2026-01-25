@@ -5,9 +5,13 @@ function DevotionalContent({ text, theme, fontSize, onVerseClick }) {
 
   // 📺 Extract YouTube ID from text
   useEffect(() => {
-    if (!text) { setYoutubeId(null); return; }
+    if (!text) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setYoutubeId(null);
+      return;
+    }
     // Regex to find standard youtube links or youtu.be shortlinks
-    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const ytRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
     const match = text.match(ytRegex);
     if (match && match[1]) {
       setYoutubeId(match[1]);

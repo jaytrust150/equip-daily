@@ -1,20 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDraggableWindow } from '../../hooks/useDraggableWindow';
-import { API_BIBLE_KEY, DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../../config/constants';
+import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../../config/constants';
 
 function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, historyStack = [], onGoBack }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [mobileSize, setMobileSize] = useState('half');
 
   // 🪟 DESKTOP WINDOW STATE
   const DEFAULT_WIDTH = 340;
   const [winState, setWinState] = useState({ x: 0, y: 90, w: DEFAULT_WIDTH, h: 600 });
   
-  // ✅ FIX: The hook should just return handlers, not require state passing if not designed that way.
-  // Assuming useDraggableWindow manages its own state or returns handlers. 
-  // Let's stick to the version that works:
+  // Use the hook for window dragging logic
   const { handleMouseDown } = useDraggableWindow(winState, setWinState); 
 
   useEffect(() => {
@@ -30,12 +29,34 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
   const performSearch = async (searchTerm) => {
     if (!searchTerm) return;
     setLoading(true);
+    setError(null);
     setResults([]);
 
     try {
-        const res = await fetch(`https://api.scripture.api.bible/v1/bibles/${DEFAULT_BIBLE_VERSION}/search?query=${encodeURIComponent(searchTerm)}&limit=20`, {
-            headers: { 'api-key': API_BIBLE_KEY }
+        const apiKey = import.meta.env.VITE_BIBLE_API_KEY?.trim();
+        if (!apiKey) throw new Error("Missing API Key");
+
+        let searchVersion = DEFAULT_BIBLE_VERSION || 'd6e14a625393b4da-01'; // Default to NLT
+        let res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
+            // ✅ FIX: Use the secure environment variable directly
+            headers: { 'api-key': apiKey }
         });
+
+        // 🔄 Fallback to KJV if unauthorized
+        if (res.status === 401 && searchVersion !== 'de4e12af7f28f599-01') {
+             searchVersion = 'de4e12af7f28f599-01';
+             res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
+                headers: { 'api-key': apiKey }
+            });
+        }
+        
+        if (res.status === 401) {
+            const domain = window.location.origin;
+            console.error("API Authorization Failed. Ensure this domain is whitelisted:", domain);
+            throw new Error(`Unauthorized. Please whitelist this domain in API.Bible: ${domain}`);
+        }
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+
         const data = await res.json();
         
         if (data.data && data.data.verses) {
@@ -49,13 +70,17 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
             }));
             setResults(mappedResults);
         }
-    } catch (err) { console.error("Search Error:", err); }
-    setLoading(false);
+    } catch (err) { 
+        console.error("Search Error:", err);
+        setError(err.message);
+    } finally {
+        setLoading(false);
+    }
   };
 
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
-    // ✅ FIX: Use the OSIS_TO_BOOK map we just fixed in constants.js
+    // Use the OSIS_TO_BOOK map to ensure correct book names
     const fullBookName = OSIS_TO_BOOK[r.bookId] || r.bookId;
     onJumpToVerse(fullBookName, r.chapter);
     if (window.innerWidth <= 768) onClose();
@@ -91,13 +116,24 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-        {loading ? <p style={{textAlign:'center', color:'#888'}}>Searching NLT...</p> : results.map((r) => (
+        {loading && <p style={{textAlign:'center', color:'#888'}}>Searching...</p>}
+        {error && (
+            <div style={{textAlign:'center', padding:'20px', color:'red'}}>
+                <p>⚠️ {error}</p>
+                {error.includes("whitelist") && (
+                    <p style={{fontSize:'0.85rem', color: isDark ? '#ccc' : '#666', marginTop:'10px', backgroundColor: isDark ? '#444' : '#f5f5f5', padding:'8px', borderRadius:'4px'}}>
+                        👆 Copy the URL above and add it to your API.Bible Dashboard.
+                    </p>
+                )}
+            </div>
+        )}
+        {!loading && !error && results.map((r) => (
             <div key={r.id} onClick={() => handleResultClick(r)} style={{ padding: '10px', borderRadius: '8px', backgroundColor: isDark ? '#333' : '#f9f9f9', cursor: 'pointer' }}>
                 <strong style={{ display: 'block', fontSize: '0.85rem', color: '#2196F3', marginBottom: '4px' }}>{r.reference}</strong>
                 <span style={{ fontSize: '0.9rem', color: isDark ? '#ddd' : '#333' }} dangerouslySetInnerHTML={{ __html: r.text }} />
             </div>
         ))}
-        {results.length === 0 && !loading && query && <p style={{textAlign:'center', color:'#888'}}>No results.</p>}
+        {!loading && !error && results.length === 0 && query && <p style={{textAlign:'center', color:'#888'}}>No results.</p>}
       </div>
     </div>
   );

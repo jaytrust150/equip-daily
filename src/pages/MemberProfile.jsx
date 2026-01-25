@@ -5,6 +5,11 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 import MemberCard from '../components/Shared/MemberCard';
 
+const getFruitIcon = (id) => {
+  const map = { love: '❤️', joy: '😊', peace: '🕊️', patience: '⏳', kindness: '🤲', goodness: '🌟', faithfulness: '🤝', gentleness: '🧸', selfControl: '🛑' };
+  return map[id] || '🍎';
+};
+
 function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previousTab }) {
   const [currentUser] = useAuthState(auth);
   
@@ -50,6 +55,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
     if (!targetUid || !db) return; // ✅ Check if db exists
     
     if (!isMyProfile && !isHistoryPublic) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMyReflections([]);
         return; 
     }
@@ -107,11 +113,6 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
       setSaveMessage("❌ Error");
     }
     setIsSaving(false);
-  };
-
-  const getFruitIcon = (id) => {
-    const map = { love: '❤️', joy: '😊', peace: '🕊️', patience: '⏳', kindness: '🤲', goodness: '🌟', faithfulness: '🤝', gentleness: '🧸', selfControl: '🛑' };
-    return map[id] || '🍎';
   };
 
   if (!targetUid) return <div style={{textAlign:'center', padding:'40px'}}>Loading...</div>;

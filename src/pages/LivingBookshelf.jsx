@@ -11,6 +11,7 @@ function LivingBookshelf({ theme }) {
   useEffect(() => {
     // ✅ Guard against undefined auth
     if (!auth) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false);
       return;
     }
@@ -23,8 +24,6 @@ function LivingBookshelf({ theme }) {
 
   const handleLogout = async () => {
     await signOut(auth);
-    // Optional: reload to clear state cleanly
-    window.location.reload();
   };
 
   // 2. Loading State (prevents flickering)

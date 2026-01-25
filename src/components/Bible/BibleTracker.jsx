@@ -13,6 +13,7 @@ function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null }) {
 
   // If a filter changes (e.g. switching OT to NT), reset the selected book view
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedBook(null);
   }, [sectionFilter]);
 

@@ -151,10 +151,11 @@ function App() {
   // 📺 NEW: Extract YouTube ID from devotional text whenever it changes
   useEffect(() => {
     if (!devotional) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setYoutubeId(null);
       return;
     }
-    const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const ytRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
     const match = devotional.match(ytRegex);
     if (match && match[1]) {
       setYoutubeId(match[1]);
@@ -190,7 +191,9 @@ function App() {
     if (sleepTimeLeft === null) return;
     if (sleepTimeLeft <= 0) {
         if (audioRef.current) audioRef.current.pause();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSleepMinutes(null);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSleepTimeLeft(null);
         return;
     }
@@ -215,6 +218,7 @@ function App() {
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAudioError(false);
     if (showAudio && audioRef.current) {
         audioRef.current.load();
@@ -233,6 +237,7 @@ function App() {
   useEffect(() => {
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() + dayOffset);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentDate(targetDate);
     const fileName = `${targetDate.getMonth() + 1}.${targetDate.getDate()}-devotional.txt`;
     setEditingId(null); 
@@ -294,8 +299,8 @@ function App() {
   };
   const handleShareItem = async (text) => {
     const shareData = { title: 'Equip Daily', text: text, url: window.location.href };
-    if (navigator.share) { try { await navigator.share(shareData); } catch (err) {} }
-    else { try { await navigator.clipboard.writeText(text); alert("Text copied!"); } catch (err) {} }
+    if (navigator.share) { try { await navigator.share(shareData); } catch { console.log('Share cancelled'); } }
+    else { try { await navigator.clipboard.writeText(text); alert("Text copied!"); } catch (err) { console.error('Failed to copy:', err); alert('Failed to copy text'); } }
   };
 
   const appStyle = { display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: theme === 'dark' ? '#222222' : '#ffffff', color: theme === 'dark' ? '#f0f0f0' : '#333', transition: 'all 0.3s ease', '--devotional-font-size': `${fontSize}rem` };

@@ -6,13 +6,13 @@ import { bibleData } from '../data/bibleData';
 import Login from '../components/Auth/Login'; 
 import { auth } from "../config/firebase"; 
 import { 
-  API_BIBLE_KEY, 
   BIBLE_VERSIONS, 
   USFM_MAPPING, 
   COLOR_PALETTE, 
   DEFAULT_NOTE_COLOR, 
   DEFAULT_HIGHLIGHT_DATA, 
-  AUDIO_BASE_PATH 
+  AUDIO_BASE_PATH,
+  DEFAULT_BIBLE_VERSION
 } from '../config/constants'; 
 import { 
   subscribeToNotes, saveNote, deleteNote,
@@ -25,15 +25,26 @@ const COPY_BUTTON_COLOR = '#ff9800';
 const SAVE_BUTTON_COLOR = '#4caf50'; 
 const DELETE_BUTTON_COLOR = '#f44336'; 
 
+// ✅ Updated Bible Versions from API Key
+const AVAILABLE_VERSIONS = [
+  { id: 'd6e14a625393b4da-01', abbreviation: 'NLT', name: 'New Living Translation' },
+  { id: '78a9f6124f344018-01', abbreviation: 'NIV', name: 'New International Version' },
+  { id: 'de4e12af7f28f599-01', abbreviation: 'KJV', name: 'King James Version' },
+  { id: '63097d2a0a2f7db3-01', abbreviation: 'NKJV', name: 'New King James Version' },
+  { id: 'a761ca71e0b3ddcf-01', abbreviation: 'NASB', name: 'New American Standard Bible' },
+  { id: 'bba9f40183526463-01', abbreviation: 'BSB', name: 'Berean Standard Bible' },
+  { id: '9879dbb7cfe39e4d-01', abbreviation: 'WEB', name: 'World English Bible' },
+  { id: '6f11a7de016f942e-01', abbreviation: 'MSG', name: 'The Message' },
+  { id: 'c315fa9f71d4af3a-01', abbreviation: 'GNV', name: 'Geneva Bible' },
+];
+
 function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick }) {
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   
   // ✅ Default to NLT (or first available)
   const [version, setVersion] = useState(() => {
-    const versions = BIBLE_VERSIONS || [];
-    const nlt = versions.find(v => v.abbreviation === 'NLT');
-    return nlt ? nlt.id : (versions[0]?.id || 'de4e12af7f28f599-01');
+    return AVAILABLE_VERSIONS[0].id;
   });
 
   const [verses, setVerses] = useState([]);
@@ -65,6 +76,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   // --- AUDIO STATE ---
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioError, setAudioError] = useState(false);
   const audioRef = useRef(null);
 
   // 1. 🔄 Fetch Bible Content from API
@@ -75,15 +87,32 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       setLoading(true);
       setError(null);
       setVerses([]);
+      let isSwitching = false;
 
       try {
         const bookId = (USFM_MAPPING && USFM_MAPPING[book]) || 'GEN';
         const url = `https://api.scripture.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapter}?content-type=json`;
 
+        const apiKey = import.meta.env.VITE_BIBLE_API_KEY?.trim();
+        if (!apiKey) throw new Error("Configuration Error: Missing Bible API Key.");
+
         const response = await fetch(url, {
-          headers: { 'api-key': API_BIBLE_KEY }
+          headers: { 'api-key': apiKey }
         });
 
+        if (response.status === 401) {
+            // 🔄 Fallback to KJV if the default version is unauthorized (likely permission issue)
+            if (version !== 'de4e12af7f28f599-01') {
+                console.warn("Unauthorized on current version. Switching to KJV...");
+                setVersion('de4e12af7f28f599-01');
+                isSwitching = true;
+                return; 
+            }
+
+            const domain = window.location.origin;
+            console.error("API Authorization Failed. Ensure this domain is whitelisted:", domain);
+            throw new Error(`Unauthorized. Please whitelist this domain in API.Bible: ${domain}`);
+        }
         if (!response.ok) throw new Error(`Error ${response.status}: Failed to load Bible text.`);
 
         const data = await response.json();
@@ -100,7 +129,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         console.error("Bible API Error:", err);
         setError(err.message);
       } finally {
-        setLoading(false);
+        if (!isSwitching) {
+            setLoading(false);
+        }
       }
     }
 
@@ -139,7 +170,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     if (!book || !chapter) return;
     
     // Construct local audio path (e.g., /audio/Genesis/1.mp3)
-    // Ensure spaces in book names are handled (1 Samuel -> 1_Samuel or just removed space if your files are named that way)
     const sanitizedBook = book.replace(/\s+/g, '_'); 
     const audioSrc = `${AUDIO_BASE_PATH}${sanitizedBook}/${chapter}.mp3`;
     
@@ -150,9 +180,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     
     // Reset play state when chapter changes
     setIsPlaying(false);
+    setAudioError(false);
 
     const handleEnded = () => setIsPlaying(false);
-    const handleError = () => console.warn("Audio file not found:", audioSrc);
+    const handleError = () => {
+        // console.warn("Audio file not found:", audioSrc);
+        setIsPlaying(false);
+        setAudioError(true);
+    };
 
     audioRef.current.addEventListener('ended', handleEnded);
     audioRef.current.addEventListener('error', handleError);
@@ -167,6 +202,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   }, [book, chapter]);
 
   const toggleAudio = () => {
+    if (audioError) return;
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
@@ -287,22 +323,34 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 onChange={(e) => setVersion(e.target.value)}
                 className={`p-2 rounded-lg border text-sm max-w-[120px] ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
             >
-                {(BIBLE_VERSIONS || []).map(v => (
+                {AVAILABLE_VERSIONS.map(v => (
                     <option key={v.id} value={v.id}>{v.abbreviation}</option>
                 ))}
             </select>
 
             <button 
                 onClick={toggleAudio}
-                className="p-2 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition"
-                title={isPlaying ? "Pause Audio" : "Play Audio"}
+                className={`p-2 rounded-full text-white transition ${audioError ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+                title={audioError ? "Audio not available" : (isPlaying ? "Pause Audio" : "Play Audio")}
+                disabled={audioError}
             >
-                {isPlaying ? "⏸️" : "▶️"}
+                {audioError ? "⚠️" : (isPlaying ? "⏸️" : "▶️")}
             </button>
         </div>
 
         {/* Font Size & Search */}
         <div className="flex items-center gap-2">
+            <div className="relative">
+                <input 
+                    type="text" 
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && onSearch && onSearch(searchInput)}
+                    placeholder="Search..."
+                    className={`pl-2 pr-7 py-1 rounded-lg border w-32 text-sm focus:w-48 transition-all ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
+            </div>
             <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">-A</button>
             <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">+A</button>
         </div>
@@ -329,7 +377,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <h1 className="text-2xl font-bold mb-4 text-center">{book} {chapter}</h1>
             
             {loading && <p className="text-center py-10">Loading scripture...</p>}
-            {error && <p className="text-center text-red-500 py-10">Error: {error}</p>}
+            {error && (
+                <div className="text-center py-10">
+                    <p className="text-red-500 font-bold mb-2">Error: {error}</p>
+                    {error.includes("whitelist") && (
+                        <p className="text-sm text-gray-500 bg-gray-100 p-2 rounded inline-block">
+                            👆 Copy the URL above and add it to your API.Bible Dashboard.
+                        </p>
+                    )}
+                </div>
+            )}
 
             {!loading && !error && (
                 <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>

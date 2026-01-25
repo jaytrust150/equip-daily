@@ -39,10 +39,10 @@ function Login({ theme }) {
         if (recaptchaContainer) {
             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                 'size': 'invisible',
-                'callback': (response) => {
+                'callback': () => {
                   // reCAPTCHA solved
                 },
-                'expired-callback': () => {}
+                'expired-callback': () => { console.log('reCAPTCHA expired'); }
             });
         }
       } catch (err) {
@@ -105,7 +105,7 @@ function Login({ theme }) {
       console.error(err);
       setError("Failed to send SMS. Check format (+1...)");
       if (window.recaptchaVerifier) {
-          try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch(e){}
+          try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch { console.log('recaptcha cleanup skipped'); }
       } 
     }
   };
@@ -122,6 +122,7 @@ function Login({ theme }) {
         window.location.reload();
       }
     } catch (err) {
+      console.error('Verification error:', err);
       setError("Invalid Code. Please try again.");
     }
   };

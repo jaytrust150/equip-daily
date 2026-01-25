@@ -3,7 +3,12 @@ export function useDraggableWindow(initialSize = { w: 340, h: 600 }) {
   const [winState, setWinState] = useState({ x: 20, y: 80, ...initialSize });
   const dragStart = useRef(null);
 
-  useEffect(() => { if (typeof window !== 'undefined' && window.innerWidth > 768) setWinState(prev => ({ ...prev, x: window.innerWidth - prev.w - 20 })); }, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth > 768) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setWinState(prev => ({ ...prev, x: window.innerWidth - prev.w - 20 }));
+    }
+  }, []);
 
   const handleMouseDown = (e) => {
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;

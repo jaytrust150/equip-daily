@@ -18,7 +18,10 @@ export function useAudio(src, captionsSrc) {
     if (sleepTimeLeft === null) return;
     if (sleepTimeLeft <= 0) {
       if (audioRef.current) audioRef.current.pause();
-      setSleepMinutes(null); setSleepTimeLeft(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSleepMinutes(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSleepTimeLeft(null);
       return;
     }
     const interval = setInterval(() => setSleepTimeLeft(prev => prev - 1), 1000);

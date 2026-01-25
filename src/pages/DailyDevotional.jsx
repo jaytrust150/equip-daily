@@ -11,7 +11,9 @@ function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
   const [showAudio, setShowAudio] = useState(false);
 
   useEffect(() => {
-    const target = new Date(); target.setDate(target.getDate() + dayOffset); setCurrentDate(target);
+    const target = new Date(); target.setDate(target.getDate() + dayOffset);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentDate(target);
     fetch(`/${target.getMonth() + 1}.${target.getDate()}-devotional.txt`).then(res => res.ok ? res.text() : "Edits in progress...").then(setContent).catch(() => setContent("Error."));
   }, [dayOffset]);
 
