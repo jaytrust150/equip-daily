@@ -77,16 +77,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
 
       try {
         const bookId = BIBLE_BOOK_IDS[book] || 'GEN';
-        const url = `https://api.scripture.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapter}?content-type=json`;
+        
+        // 🔒 Use serverless proxy to keep API key secure
+        const url = `/api/bible-chapter?bibleId=${version}&bookId=${bookId}&chapter=${chapter}`;
 
-        const apiKey = import.meta.env.VITE_BIBLE_API_KEY?.trim();
-        if (!apiKey) throw new Error("Configuration Error: Missing Bible API Key.");
+        const response = await fetch(url);
 
-        const response = await fetch(url, {
-          headers: { 'api-key': apiKey }
-        });
-
-        if (response.status === 401) {
+        if (response.status === 401 || (response.ok && (await response.clone().json()).unauthorized)) {
             // 🔄 Fallback to KJV if the default version is unauthorized (likely permission issue)
             if (version !== 'de4e12af7f28f599-01') {
                 console.warn("Unauthorized on current version. Switching to KJV...");
@@ -96,8 +93,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
             }
 
             const domain = window.location.origin;
-            console.error("API Authorization Failed. Ensure this domain is whitelisted:", domain);
-            throw new Error(`Unauthorized. Please whitelist this domain in API.Bible: ${domain}`);
+            console.error("API Authorization Failed. Check Vercel environment variables and API.Bible configuration");
+            throw new Error(`Unauthorized. Check API key configuration in Vercel.`);
         }
         if (!response.ok) throw new Error(`Error ${response.status}: Failed to load Bible text.`);
 

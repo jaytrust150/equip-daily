@@ -4,7 +4,9 @@ export const CITY_NAME = "Sebastian";
 export const AUDIO_BASE_PATH = "/audio/";
 
 // 🔑 OFFICIAL API KEY (API.Bible)
-export const API_BIBLE_KEY = import.meta.env.VITE_API_BIBLE_KEY;
+// Note: This is accessed directly via import.meta.env.VITE_BIBLE_API_KEY in components
+// Keeping this export for potential future use, but components use the env var directly
+export const API_BIBLE_KEY = import.meta.env.VITE_BIBLE_API_KEY;
 
 // 🎨 COLORS
 export const COLOR_PALETTE = [

@@ -33,27 +33,22 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
     setResults([]);
 
     try {
-        const apiKey = import.meta.env.VITE_BIBLE_API_KEY?.trim();
-        if (!apiKey) throw new Error("Missing API Key");
-
         let searchVersion = DEFAULT_BIBLE_VERSION || 'd6e14a625393b4da-01'; // Default to NLT
-        let res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
-            // ✅ FIX: Use the secure environment variable directly
-            headers: { 'api-key': apiKey }
-        });
+        
+        // 🔒 Use serverless proxy to keep API key secure
+        let res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
 
         // 🔄 Fallback to KJV if unauthorized
-        if (res.status === 401 && searchVersion !== 'de4e12af7f28f599-01') {
-             searchVersion = 'de4e12af7f28f599-01';
-             res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
-                headers: { 'api-key': apiKey }
-            });
+        if (res.status === 401 || (res.ok && (await res.clone().json()).unauthorized)) {
+             if (searchVersion !== 'de4e12af7f28f599-01') {
+                searchVersion = 'de4e12af7f28f599-01';
+                res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
+             }
         }
         
         if (res.status === 401) {
-            const domain = window.location.origin;
-            console.error("API Authorization Failed. Ensure this domain is whitelisted:", domain);
-            throw new Error(`Unauthorized. Please whitelist this domain in API.Bible: ${domain}`);
+            console.error("API Authorization Failed. Check Vercel environment variables");
+            throw new Error(`Unauthorized. Check API key configuration in Vercel.`);
         }
         if (!res.ok) throw new Error(`API Error: ${res.status}`);
 
