@@ -68,6 +68,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
   const [audioError, setAudioError] = useState(false);
   const audioRef = useRef(null);
 
+  // --- LONG PRESS STATE ---
+  const longPressTimer = useRef(null);
+  const [longPressVerse, setLongPressVerse] = useState(null);
+
   // 1. 🔄 Fetch Bible Content from API
   useEffect(() => {
     async function fetchBibleText() {
@@ -356,6 +360,26 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
     setTimeout(() => setCopyFeedback(""), 2000);
   };
 
+  // Long press handlers for inline note editor
+  const handleMouseDown = (verseNum) => {
+    longPressTimer.current = setTimeout(() => {
+      setLongPressVerse(verseNum);
+      setCurrentNoteText(""); // Clear any existing text
+    }, 500); // 500ms = long press threshold
+  };
+
+  const handleMouseUp = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleCancelNote = () => {
+    setLongPressVerse(null);
+    setCurrentNoteText("");
+  };
+
   const handleSaveNote = async () => {
     if (!currentNoteText.trim() || !user) return;
     
@@ -485,9 +509,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
                                     key={verse.id}
                                     onClick={() => handleVerseClick(verse.number)}
                                     onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
+                                    onMouseDown={() => handleMouseDown(verse.number)}
+                                    onMouseUp={handleMouseUp}
+                                    onMouseLeave={handleMouseUp}
+                                    onTouchStart={() => handleMouseDown(verse.number)}
+                                    onTouchEnd={handleMouseUp}
                                     className={`inline hover:underline decoration-indigo-300 decoration-2 px-1 rounded transition-colors`}
                                     style={style}
-                                    title="Click to Highlight | Double Click to Copy"
+                                    title="Click to Highlight | Double Click to Copy | Long Press for Note"
                                 >
                                     <sup className="text-xs font-bold mr-1 text-gray-400 select-none">{verse.number}</sup>
                                     {verse.text}
@@ -523,6 +552,46 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
             {copyFeedback && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
                     {copyFeedback}
+                </div>
+            )}
+            
+            {/* Long Press Note Editor */}
+            {longPressVerse && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancelNote}>
+                    <div 
+                        className={`w-full max-w-md rounded-xl shadow-2xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-lg">✏️ Note for Verse {longPressVerse}</h3>
+                            <button onClick={handleCancelNote} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+                        </div>
+                        <textarea
+                            value={currentNoteText}
+                            onChange={(e) => setCurrentNoteText(e.target.value)}
+                            placeholder={`Write your note for ${book} ${chapter}:${longPressVerse}...`}
+                            className={`w-full p-3 rounded-lg border h-40 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            autoFocus
+                        />
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => {
+                                    handleSaveNote();
+                                    setLongPressVerse(null);
+                                }}
+                                disabled={!currentNoteText.trim()}
+                                className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
+                            >
+                                Save Note
+                            </button>
+                            <button 
+                                onClick={handleCancelNote}
+                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium transition"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
