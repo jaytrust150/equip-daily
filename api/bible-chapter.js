@@ -46,7 +46,16 @@ export default async function handler(request, response) {
   }
 
   try {
-    const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/chapters/${bookId}.${chapter}?content-type=json`;
+    // Build URL with required query parameters for proper verse parsing
+    const params = new URLSearchParams({
+      'content-type': 'json',
+      'include-verse-numbers': 'true',
+      'include-titles': 'true',
+      'include-chapter-numbers': 'true',
+      'include-verse-spans': 'true'
+    });
+    
+    const url = `https://rest.api.bible/v1/bibles/${bibleId}/chapters/${bookId}.${chapter}?${params}`;
     
     const fetchResponse = await fetch(url, {
       headers: {

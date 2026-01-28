@@ -85,7 +85,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
         let response;
         if (isDev && apiKey) {
           // Development mode: direct API call
-          const url = `https://api.scripture.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapter}?content-type=json`;
+          const params = new URLSearchParams({
+            'content-type': 'json',
+            'include-verse-numbers': 'true',
+            'include-titles': 'true',
+            'include-chapter-numbers': 'true',
+            'include-verse-spans': 'true'
+          });
+          const url = `https://rest.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapter}?${params}`;
           response = await fetch(url, {
             headers: { 'api-key': apiKey.trim() }
           });

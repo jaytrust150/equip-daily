@@ -21,6 +21,10 @@ export const COLOR_PALETTE = [
 export const DEFAULT_NOTE_COLOR = '#2196F3'; 
 export const DEFAULT_HIGHLIGHT_DATA = { bg: '#ffeb3b', border: '#fbc02d' };
 
+// 📚 Licensed Bible IDs (API.Bible Commercial Plan)
+export const NLT_BIBLE_ID = 'd6e14a625393b4da-01';
+export const DEFAULT_BIBLE_VERSION = NLT_BIBLE_ID; // Always fallback to licensed NLT
+
 // 📚 Bible Versions - Expanded Popular List
 export const BIBLE_VERSIONS = [
   // --- Most Popular English Versions ---

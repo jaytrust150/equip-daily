@@ -42,7 +42,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
         let res;
         if (isDev && apiKey) {
           // Development mode: direct API call
-          res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
+          res = await fetch(`https://rest.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
             headers: { 'api-key': apiKey.trim() }
           });
         } else {
@@ -55,7 +55,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
              if (searchVersion !== 'de4e12af7f28f599-01') {
                 searchVersion = 'de4e12af7f28f599-01';
                 if (isDev && apiKey) {
-                  res = await fetch(`https://api.scripture.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
+                  res = await fetch(`https://rest.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
                     headers: { 'api-key': apiKey.trim() }
                   });
                 } else {

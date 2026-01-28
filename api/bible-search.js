@@ -46,7 +46,7 @@ export default async function handler(request, response) {
   }
 
   try {
-    const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/search?query=${encodeURIComponent(query)}&limit=${limit}`;
+    const url = `https://rest.api.bible/v1/bibles/${bibleId}/search?query=${encodeURIComponent(query)}&limit=${limit}`;
     
     const fetchResponse = await fetch(url, {
       headers: {
