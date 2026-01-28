@@ -382,7 +382,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
              onChange={(e) => { setBook(e.target.value); setChapter(1); }}
              className={`p-2 rounded-lg border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
            >
-             {bibleData && Object.keys(bibleData).map(b => <option key={b} value={b}>{b}</option>)}
+             {bibleData && bibleData.map(bookData => (
+               <option key={bookData.name} value={bookData.name}>{bookData.name}</option>
+             ))}
            </select>
 
            <select 
@@ -390,7 +392,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
              onChange={(e) => setChapter(Number(e.target.value))}
              className={`p-2 rounded-lg border w-20 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
            >
-             {bibleData && bibleData[book] && [...Array(bibleData[book]).keys()].map(i => (
+             {bibleData && bibleData.find(b => b.name === book) && [...Array(bibleData.find(b => b.name === book).chapters).keys()].map(i => (
                <option key={i+1} value={i+1}>{i+1}</option>
              ))}
            </select>
