@@ -57,6 +57,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
   const [showNoteMenu, setShowNoteMenu] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const noteEditorRef = useRef(null);
   
   const [fontSize, setFontSize] = useState(1.1);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
@@ -467,9 +469,38 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     await saveNote(user.uid, book, chapter, currentNoteText, DEFAULT_NOTE_COLOR);
     setCurrentNoteText("");
     setIsNoteMode(false);
+    setEditingNoteId(null);
     setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
     setTimeout(() => setNoteFeedback({}), 2000);
   };
+
+  const handleEditNote = (note) => {
+    setEditingNoteId(note.id);
+    setCurrentNoteText(note.text);
+    setIsNoteMode(true);
+  };
+
+  const handleDeleteNote = async () => {
+    if (!editingNoteId || !user) return;
+    await deleteNote(user.uid, book, chapter, editingNoteId);
+    setEditingNoteId(null);
+    setCurrentNoteText("");
+    setIsNoteMode(false);
+  };
+
+  const handleCancelEditNote = () => {
+    setEditingNoteId(null);
+    setCurrentNoteText("");
+    setIsNoteMode(false);
+  };
+
+  // Auto-focus note editor
+  useEffect(() => {
+    if ((isNoteMode || editingNoteId) && noteEditorRef.current) {
+      noteEditorRef.current.focus();
+      noteEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isNoteMode, editingNoteId]);
 
   // --- RENDER ---
   if (!user) return <Login />;
@@ -652,6 +683,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                               : { cursor: 'pointer' };
                             const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
                             const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
+                            const showEditorHere = (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
+                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]);
                             
                             return (
                                 <div key={verse.id} style={{ marginBottom: '1rem' }}>
@@ -670,25 +703,48 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
                                         <span>{verse.text}</span>
                                     </div>
+
+                                    {/* Inline Note Editor */}
+                                    {showEditorHere && (
+                                        <div className={`ml-6 mt-3 p-4 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}>
+                                            <div className="text-xs font-semibold mb-2 text-gray-500">
+                                                {editingNoteId ? "Editing Note" : "New Note"}
+                                            </div>
+                                            <textarea
+                                                ref={noteEditorRef}
+                                                value={currentNoteText}
+                                                onChange={(e) => setCurrentNoteText(e.target.value)}
+                                                placeholder="Type your note here..."
+                                                className={`w-full h-20 p-2 rounded border resize-none focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                            />
+                                            <div className="flex gap-2 mt-2 justify-end">
+                                                <button onClick={handleSaveNote} className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">Save</button>
+                                                {editingNoteId && <button onClick={handleDeleteNote} className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">Delete</button>}
+                                                <button onClick={handleCancelEditNote} className="px-3 py-1 border border-gray-400 text-gray-600 text-sm rounded hover:bg-gray-100">Cancel</button>
+                                            </div>
+                                        </div>
+                                    )}
                                     
                                     {/* Inline Notes Below Verse */}
                                     {showNotes && verseNotes.length > 0 && verseNotes.map(note => (
-                                        <div 
-                                            key={note.id} 
-                                            className={`ml-6 mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
-                                            style={{ fontSize: '0.9rem' }}
-                                        >
-                                            <p className="text-sm mb-1">{note.text}</p>
-                                            <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
-                                                <span>{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
-                                                <button 
-                                                    onClick={() => deleteNote(user.uid, book, chapter, note.id)}
-                                                    className="text-red-500 hover:text-red-700 text-xs"
-                                                >
-                                                    Delete
-                                                </button>
+                                        note.id !== editingNoteId && (
+                                            <div 
+                                                key={note.id} 
+                                                className={`ml-6 mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
+                                                style={{ fontSize: '0.9rem' }}
+                                            >
+                                                <p className="text-sm mb-1 whitespace-pre-wrap">{note.text}</p>
+                                                <div className="flex justify-between items-center text-xs mt-2">
+                                                    <button 
+                                                        onClick={() => handleEditNote(note)}
+                                                        className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <span className="text-gray-500">{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                                </div>
                                             </div>
-                                        </div>
+                                        )
                                     ))}
                                 </div>
                             );
