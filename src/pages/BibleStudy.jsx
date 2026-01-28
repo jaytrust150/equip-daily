@@ -437,6 +437,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     await saveNote(user, book, chapter, selectedVerses, currentNoteText);
     setSelectedVerses([]);
     setShowNotebook(false);
+    setIsNoteMode(false);
     setCurrentNoteText("");
     setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
     setTimeout(() => setNoteFeedback({}), 2000);
@@ -683,7 +684,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                               : { cursor: 'pointer' };
                             const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
                             const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
-                            const showEditorHere = (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
+                            const showEditorHere = (showNotebook && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
+                                                   (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
                                                    (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]);
                             
                             return (
