@@ -643,7 +643,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
             {!loading && !error && (
                 <>
-                    {/* Main Version Text */}
+                    {/* Main Version Text - Verse by Line */}
                     <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>
                         {verses.map((verse) => {
                             const isSelected = selectedVerses.includes(verse.number);
@@ -651,24 +651,46 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                               ? { backgroundColor: highlightsMap[verse.number].bg, cursor: 'pointer' }
                               : { cursor: 'pointer' };
                             const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
+                            const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
                             
                             return (
-                                <span 
-                                    key={verse.id}
-                                    onClick={() => handleVerseClick(verse.number)}
-                                    onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
-                                    onMouseDown={() => handleMouseDown(verse.number)}
-                                    onMouseUp={handleMouseUp}
-                                    onMouseLeave={handleMouseUp}
-                                    onTouchStart={() => handleMouseDown(verse.number)}
-                                    onTouchEnd={handleMouseUp}
-                                    className={`inline hover:underline decoration-indigo-300 decoration-2 px-1 rounded transition-colors`}
-                                    style={{ ...style, ...selectionStyle }}
-                                    title="Click to Highlight | Double Click to Copy | Long Press for Note"
-                                >
-                                    <sup className="text-xs font-bold mr-1 text-gray-400 select-none">{verse.number}</sup>
-                                    {verse.text}
-                                </span>
+                                <div key={verse.id} style={{ marginBottom: '1rem' }}>
+                                    <div 
+                                        onClick={() => handleVerseClick(verse.number)}
+                                        onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
+                                        onMouseDown={() => handleMouseDown(verse.number)}
+                                        onMouseUp={handleMouseUp}
+                                        onMouseLeave={handleMouseUp}
+                                        onTouchStart={() => handleMouseDown(verse.number)}
+                                        onTouchEnd={handleMouseUp}
+                                        className={`block hover:bg-opacity-80 p-2 rounded transition-colors`}
+                                        style={{ ...style, ...selectionStyle }}
+                                        title="Click to Highlight | Double Click to Copy | Long Press for Note"
+                                    >
+                                        <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
+                                        <span>{verse.text}</span>
+                                    </div>
+                                    
+                                    {/* Inline Notes Below Verse */}
+                                    {showNotes && verseNotes.length > 0 && verseNotes.map(note => (
+                                        <div 
+                                            key={note.id} 
+                                            className={`ml-6 mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
+                                            style={{ fontSize: '0.9rem' }}
+                                        >
+                                            <p className="text-sm mb-1">{note.text}</p>
+                                            <div className="flex justify-between items-center text-xs text-gray-500 mt-2">
+                                                <span>{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                                <button 
+                                                    onClick={() => deleteNote(user.uid, book, chapter, note.id)}
+                                                    className="text-red-500 hover:text-red-700 text-xs"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             );
                         })}
                     </div>
