@@ -524,13 +524,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       {!user && (
         <div className="max-w-4xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
           <p className="text-sm text-blue-800">
-            👋 <strong>Welcome!</strong> You're reading as a guest. 
-            <button 
-              onClick={() => window.location.reload()} 
-              className="ml-2 text-blue-600 underline font-semibold hover:text-blue-800"
-            >
-              Sign in
-            </button> to save highlights, notes, and join the community.
+            👋 <strong>Welcome!</strong> You're reading as a guest. You can read the Bible, but 
+            <strong> sign in to save highlights, notes, and join the community</strong>.
           </p>
         </div>
       )}
