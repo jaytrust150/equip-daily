@@ -6,6 +6,7 @@ import { bibleData } from '../data/bibleData';
 import { BIBLE_BOOK_IDS } from '../bibleData';
 import Login from '../components/Auth/Login'; 
 import BibleVersionPicker from '../components/BibleVersionPicker';
+import CommunityFeed from '../components/Shared/CommunityFeed';
 import { auth } from "../config/firebase"; 
 import { 
   BIBLE_VERSIONS, 
@@ -27,7 +28,7 @@ const COPY_BUTTON_COLOR = '#ff9800';
 const SAVE_BUTTON_COLOR = '#4caf50'; 
 const DELETE_BUTTON_COLOR = '#f44336'; 
 
-function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
+function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick }) {
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   
@@ -51,10 +52,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
   const [userNotes, setUserNotes] = useState([]);
   
   // NOTE & STUDY MODES
-  const [_showNotes, _setShowNotes] = useState(false); 
-  const [_isNoteMode] = useState(false);
+  const [showNotes, setShowNotes] = useState(true); 
+  const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
-  const [_editingNoteId, _setEditingNoteId] = useState(null);
+  const [showNoteMenu, setShowNoteMenu] = useState(false);
   
   const [fontSize, setFontSize] = useState(1.1);
   const [_showHighlightPalette, _setShowHighlightPalette] = useState(false);
@@ -71,6 +72,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
   // --- LONG PRESS STATE ---
   const longPressTimer = useRef(null);
   const [longPressVerse, setLongPressVerse] = useState(null);
+  const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
 
   // 1. 🔄 Fetch Bible Content from API
   useEffect(() => {
@@ -296,6 +299,36 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
     setIsPlaying(!isPlaying);
   };
 
+  const getBookIndex = () => bibleData.findIndex(b => b.name === book);
+  const getChapterCount = () => bibleData.find(b => b.name === book)?.chapters || 1;
+
+  const goToPrevChapter = () => {
+    const bookIndex = getBookIndex();
+    if (chapter > 1) {
+      setChapter(chapter - 1);
+      return;
+    }
+    if (bookIndex > 0) {
+      const prevBook = bibleData[bookIndex - 1];
+      setBook(prevBook.name);
+      setChapter(prevBook.chapters);
+    }
+  };
+
+  const goToNextChapter = () => {
+    const chapterCount = getChapterCount();
+    const bookIndex = getBookIndex();
+    if (chapter < chapterCount) {
+      setChapter(chapter + 1);
+      return;
+    }
+    if (bookIndex < bibleData.length - 1) {
+      const nextBook = bibleData[bookIndex + 1];
+      setBook(nextBook.name);
+      setChapter(1);
+    }
+  };
+
   // 3. 🔥 Firebase Subscriptions (Notes & Highlights)
   useEffect(() => {
     if (!user) return;
@@ -380,6 +413,27 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
     setCurrentNoteText("");
   };
 
+  const handleTouchStart = (e) => {
+    if (!e.touches || e.touches.length === 0) return;
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const deltaX = endX - touchStartX.current;
+    const deltaY = endY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) goToNextChapter();
+      else goToPrevChapter();
+    }
+  };
+
   const handleSaveNote = async () => {
     if (!currentNoteText.trim() || !user) return;
     
@@ -460,11 +514,56 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
             </div>
             <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">-A</button>
             <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">+A</button>
+          <button 
+            onClick={() => setShowNoteMenu((open) => !open)}
+            className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNoteMenu ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+            title="Notes & Modes"
+          >
+            📝
+          </button>
         </div>
       </div>
 
+      {/* Chapter Navigation */}
+      <div className="flex flex-col items-center gap-2 mb-4">
+        <div className="flex items-center gap-2">
+          <button onClick={goToPrevChapter} className="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">← Previous</button>
+          <button onClick={goToNextChapter} className="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Next →</button>
+        </div>
+        <p className="text-xs text-gray-500">Tip: Swipe left/right to change chapters.</p>
+      </div>
+
+        {/* Floating Notes / Modes Panel */}
+        {showNoteMenu && (
+        <div className={`fixed right-4 top-24 z-50 w-56 p-4 rounded-xl shadow-xl border ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-800'}`}>
+          <div className="text-xs uppercase tracking-wide font-semibold mb-3 text-gray-400">Reading & Study</div>
+          <div className="flex gap-2 mb-3">
+            <button 
+              onClick={() => { setShowNotes(false); setShowNoteMenu(false); }}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${!showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-gray-100 border-gray-200 text-gray-700')}`}
+            >
+              Reading Mode
+            </button>
+            <button 
+              onClick={() => { setShowNotes(true); setShowNoteMenu(false); }}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-gray-100 border-gray-200 text-gray-700')}`}
+            >
+              Study Mode
+            </button>
+          </div>
+          <p className="text-[11px] text-gray-400 mb-3">Tip: Study mode shows notes + reflections.</p>
+          <button 
+            onClick={() => setShowNoteMenu(false)}
+            className={`w-full py-2 rounded-lg text-xs font-semibold border ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-gray-100 border-gray-200 text-gray-700'}`}
+          >
+            Close
+          </button>
+        </div>
+        )}
+
       {/* 🔴 COLOR PALETTE */}
-      <div className="flex gap-2 justify-center mb-6">
+      <div className="flex flex-col items-center gap-2 mb-6">
+        <div className="flex gap-2 justify-center">
         {(COLOR_PALETTE || []).map((color) => (
             <button
                 key={color.name}
@@ -474,13 +573,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
                 title={color.name}
             />
         ))}
+        </div>
+        <p className="text-xs text-gray-500">Tip: Double click to highlight.</p>
       </div>
 
       {/* 📖 MAIN CONTENT */}
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
+      <div className={`max-w-4xl mx-auto grid grid-cols-1 ${showNotes ? 'md:grid-cols-[1fr_300px]' : ''} gap-6`}>
         
         {/* LEFT: Bible Text */}
-        <div className={`p-6 rounded-2xl shadow-sm border min-h-[500px] ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-white'}`}>
+        <div 
+          className={`p-6 rounded-2xl shadow-sm border min-h-[500px] ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-white'}`}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
             <h1 className="text-2xl font-bold mb-4 text-center">{book} {chapter}</h1>
             
             {loading && <p className="text-center py-10">Loading scripture...</p>}
@@ -597,6 +702,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
         </div>
 
         {/* RIGHT: Notes & Tools */}
+        {showNotes && (
         <div className="space-y-4">
             
             {/* Note Editor */}
@@ -639,6 +745,20 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
             </div>
 
         </div>
+        )}
+      </div>
+
+      {/* Reflections */}
+      <div className="max-w-4xl mx-auto mt-10">
+        <CommunityFeed
+          queryField="chapter"
+          queryValue={`${book} ${chapter}`}
+          user={user}
+          theme={theme}
+          onSearch={onSearch}
+          onProfileClick={onProfileClick}
+          title="Reflections from the Body"
+        />
       </div>
     </div>
   );
