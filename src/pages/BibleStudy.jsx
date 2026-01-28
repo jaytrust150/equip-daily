@@ -112,7 +112,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           response = await fetch(url);
         }
 
-        if (response.status === 401 || (response.ok && (await response.clone().json()).unauthorized)) {
+        if (response.status === 401 || response.status === 403 || (response.ok && (await response.clone().json()).unauthorized)) {
             // 🔄 Fallback to KJV if the default version is unauthorized (likely permission issue)
             if (version !== 'de4e12af7f28f599-01') {
                 console.warn("Unauthorized on current version. Switching to KJV...");
