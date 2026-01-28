@@ -29,6 +29,76 @@
     "hasAudio": false
   },
   {
+    "id": "a81b73293d3080c9-01",
+    "abbreviation": "AMP",
+    "name": "Amplified Bible",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "bba9f40183526463-01",
+    "abbreviation": "BSB",
+    "name": "Berean Standard Bible",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "b8ee27bcd1cae43a-01",
+    "abbreviation": "NASB95",
+    "name": "New American Standard Bible 1995",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "a761ca71e0b3ddcf-01",
+    "abbreviation": "NASB",
+    "name": "New American Standard Bible 2020",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "78a9f6124f344018-01",
+    "abbreviation": "NIV",
+    "name": "New International Version 2011",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "b907c8622b59a1f7-01",
+    "abbreviation": "NLTCE",
+    "name": "New Living Translation Catholic Edition",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "43e315b442a7c862-01",
+    "abbreviation": "NLTUK",
+    "name": "New Living Translation, Anglicised",
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "e3f420b9665abaeb-01",
+    "abbreviation": "LBLA",
+    "name": "La Biblia de las Américas",
+    "language": "Spanish",
+    "hasAudio": false
+  },
+  {
+    "id": "ce11b813f9a27e20-01",
+    "abbreviation": "NBLA",
+    "name": "Nueva Biblia de las Américas",
+    "language": "Spanish",
+    "hasAudio": false
+  },
+  {
+    "id": "abc55ec4a92a291d-01",
+    "abbreviation": "NVI-S",
+    "name": "Nueva Versión Internacional (Spanish) 2015",
+    "language": "Spanish",
+    "hasAudio": false
+  },
+  {
     "id": "65eec8e0b60e656b-01",
     "abbreviation": "MSG",
     "name": "The Message",
