@@ -7,6 +7,7 @@ import { BIBLE_BOOK_IDS } from '../bibleData';
 import Login from '../components/Auth/Login'; 
 import BibleVersionPicker from '../components/BibleVersionPicker';
 import CommunityFeed from '../components/Shared/CommunityFeed';
+import FloatingTools from '../components/Bible/FloatingTools';
 import { auth } from "../config/firebase"; 
 import { 
   BIBLE_VERSIONS, 
@@ -58,7 +59,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [showNoteMenu, setShowNoteMenu] = useState(false);
   
   const [fontSize, setFontSize] = useState(1.1);
-  const [_showHighlightPalette, _setShowHighlightPalette] = useState(false);
+  const [showHighlightPalette, setShowHighlightPalette] = useState(false);
+  const [showNotebook, setShowNotebook] = useState(false);
+  const [selectedVerses, setSelectedVerses] = useState([]);
   // ✅ Safe default color (prevents crash if COLOR_PALETTE is undefined)
   const [activeHighlightColor, setActiveHighlightColor] = useState(() => {
     return (COLOR_PALETTE && COLOR_PALETTE.length > 0) ? COLOR_PALETTE[0] : { code: '#ffff00', border: '#e6e600', name: 'Yellow' };
@@ -359,6 +362,15 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const handleVerseClick = async (verseNum) => {
     if (!user) return;
 
+    if (showNotebook) {
+      setSelectedVerses((prev) =>
+        prev.includes(verseNum)
+          ? prev.filter((v) => v !== verseNum)
+          : [...prev, verseNum]
+      );
+      return;
+    }
+
     // Toggle Highlight logic
     const currentHighlight = highlightsMap[verseNum];
     let newHighlight = null;
@@ -411,6 +423,21 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const handleCancelNote = () => {
     setLongPressVerse(null);
     setCurrentNoteText("");
+  };
+
+  const handleApplyColor = (color) => {
+    if (color) setActiveHighlightColor(color);
+    setShowHighlightPalette(false);
+  };
+
+  const handleSaveSelectedNote = async () => {
+    if (!user || selectedVerses.length === 0 || !currentNoteText.trim()) return;
+    await saveNote(user, book, chapter, selectedVerses, currentNoteText);
+    setSelectedVerses([]);
+    setShowNotebook(false);
+    setCurrentNoteText("");
+    setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
+    setTimeout(() => setNoteFeedback({}), 2000);
   };
 
   const handleTouchStart = (e) => {
@@ -514,6 +541,20 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             </div>
             <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">-A</button>
             <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">+A</button>
+            <button
+              onClick={() => setShowHighlightPalette((open) => !open)}
+              className={`px-2 py-1 rounded-lg border text-sm font-medium transition ${showHighlightPalette ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+              title="Highlight Tools"
+            >
+              🎨
+            </button>
+            <button
+              onClick={() => { setShowNotebook((open) => !open); if (!showNotebook) setSelectedVerses([]); }}
+              className={`px-2 py-1 rounded-lg border text-sm font-medium transition ${showNotebook ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+              title="Note Tools"
+            >
+              📌
+            </button>
           <button 
             onClick={() => setShowNoteMenu((open) => !open)}
             className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNoteMenu ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
@@ -605,9 +646,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     {/* Main Version Text */}
                     <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>
                         {verses.map((verse) => {
+                            const isSelected = selectedVerses.includes(verse.number);
                             const style = highlightsMap[verse.number] 
-                                ? { backgroundColor: highlightsMap[verse.number].bg, cursor: 'pointer' }
-                                : { cursor: 'pointer' };
+                              ? { backgroundColor: highlightsMap[verse.number].bg, cursor: 'pointer' }
+                              : { cursor: 'pointer' };
+                            const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
                             
                             return (
                                 <span 
@@ -620,7 +663,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                     onTouchStart={() => handleMouseDown(verse.number)}
                                     onTouchEnd={handleMouseUp}
                                     className={`inline hover:underline decoration-indigo-300 decoration-2 px-1 rounded transition-colors`}
-                                    style={style}
+                                    style={{ ...style, ...selectionStyle }}
                                     title="Click to Highlight | Double Click to Copy | Long Press for Note"
                                 >
                                     <sup className="text-xs font-bold mr-1 text-gray-400 select-none">{verse.number}</sup>
@@ -760,6 +803,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           title="Reflections from the Body"
         />
       </div>
+
+      <FloatingTools
+        showPalette={showHighlightPalette}
+        setShowPalette={setShowHighlightPalette}
+        showNotebook={showNotebook}
+        setShowNotebook={setShowNotebook}
+        onApplyColor={handleApplyColor}
+        selectedVerses={selectedVerses}
+        onSaveNote={handleSaveSelectedNote}
+      />
     </div>
   );
 }
