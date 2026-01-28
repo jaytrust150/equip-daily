@@ -13,7 +13,8 @@ import {
   DEFAULT_NOTE_COLOR, 
   DEFAULT_HIGHLIGHT_DATA, 
   AUDIO_BASE_PATH,
-  DEFAULT_BIBLE_VERSION
+  DEFAULT_BIBLE_VERSION,
+  AUDIO_FALLBACK_VERSION
 } from '../config/constants'; 
 import { 
   subscribeToNotes, saveNote, deleteNote,
@@ -32,6 +33,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
   
   // ✅ Default to NLT from constants
   const [version, setVersion] = useState(DEFAULT_BIBLE_VERSION);
+  const [audioVersion, setAudioVersion] = useState(null); // Track which version audio is from
+  const [audioVerses, setAudioVerses] = useState([]); // Store fallback version text
 
   const [verses, setVerses] = useState([]);
   const [_selectedVerses, _setSelectedVerses] = useState([]);
@@ -167,9 +170,58 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
     return extractedVerses;
   };
 
-  // 2. 🎧 Audio Player Effect
+  // 2. 🎧 Audio Player Effect with Fallback to WEB
   useEffect(() => {
     if (!book || !chapter) return;
+    
+    // For NLT, audio is not available - use WEB as fallback
+    const needsAudioFallback = version === DEFAULT_BIBLE_VERSION;
+    const effectiveAudioVersion = needsAudioFallback ? AUDIO_FALLBACK_VERSION : version;
+    
+    // If using fallback, fetch the audio version text
+    if (needsAudioFallback) {
+      setAudioVersion('WEB'); // Set display name
+      
+      // Fetch WEB text for audio synchronization
+      async function fetchAudioVersionText() {
+        try {
+          const bookId = BIBLE_BOOK_IDS[book] || 'GEN';
+          const isDev = import.meta.env.DEV;
+          const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+          
+          let response;
+          if (isDev && apiKey) {
+            const params = new URLSearchParams({
+              'content-type': 'json',
+              'include-verse-numbers': 'true',
+              'include-titles': 'true',
+              'include-chapter-numbers': 'true',
+              'include-verse-spans': 'true'
+            });
+            const url = `https://rest.api.bible/v1/bibles/${AUDIO_FALLBACK_VERSION}/chapters/${bookId}.${chapter}?${params}`;
+            response = await fetch(url, {
+              headers: { 'api-key': apiKey.trim() }
+            });
+          } else {
+            response = await fetch(`/api/bible-chapter?bibleId=${AUDIO_FALLBACK_VERSION}&chapterId=${bookId}.${chapter}`);
+          }
+          
+          if (response.ok) {
+            const data = await response.json();
+            const extractedVerses = extractVerses(data.data.content);
+            setAudioVerses(extractedVerses);
+          }
+        } catch (err) {
+          console.warn('Failed to fetch audio version text:', err);
+          setAudioVerses([]);
+        }
+      }
+      
+      fetchAudioVersionText();
+    } else {
+      setAudioVersion(null);
+      setAudioVerses([]);
+    }
     
     // Construct local audio path (e.g., /audio/Genesis/1.mp3)
     const sanitizedBook = book.replace(/\s+/g, '_'); 
@@ -201,7 +253,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
         audioRef.current.removeEventListener('error', handleError);
       }
     };
-  }, [book, chapter]);
+  }, [book, chapter, version]);
 
   const toggleAudio = () => {
     if (audioError) return;
@@ -326,14 +378,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
                 theme={theme}
             />
 
-            <button 
-                onClick={toggleAudio}
-                className={`p-2 rounded-full text-white transition ${audioError ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'}`}
-                title={audioError ? "Audio not available" : (isPlaying ? "Pause Audio" : "Play Audio")}
-                disabled={audioError}
-            >
-                {audioError ? "⚠️" : (isPlaying ? "⏸️" : "▶️")}
-            </button>
+            <div className="flex flex-col items-center">
+                <button 
+                    onClick={toggleAudio}
+                    className={`p-2 rounded-full text-white transition ${audioError ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+                    title={audioError ? "Audio not available" : (isPlaying ? "Pause Audio" : "Play Audio")}
+                    disabled={audioError}
+                >
+                    {audioError ? "⚠️" : (isPlaying ? "⏸️" : "▶️")}
+                </button>
+                {audioVersion && (
+                    <span className="text-xs text-gray-500 mt-1">{audioVersion} Audio</span>
+                )}
+            </div>
         </div>
 
         {/* Font Size & Search */}
@@ -387,27 +444,51 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
             )}
 
             {!loading && !error && (
-                <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>
-                    {verses.map((verse) => {
-                        const style = highlightsMap[verse.number] 
-                            ? { backgroundColor: highlightsMap[verse.number].bg, cursor: 'pointer' }
-                            : { cursor: 'pointer' };
-                        
-                        return (
-                            <span 
-                                key={verse.id}
-                                onClick={() => handleVerseClick(verse.number)}
-                                onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
-                                className={`inline hover:underline decoration-indigo-300 decoration-2 px-1 rounded transition-colors`}
-                                style={style}
-                                title="Click to Highlight | Double Click to Copy"
-                            >
-                                <sup className="text-xs font-bold mr-1 text-gray-400 select-none">{verse.number}</sup>
-                                {verse.text}
-                            </span>
-                        );
-                    })}
-                </div>
+                <>
+                    {/* Main Version Text */}
+                    <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>
+                        {verses.map((verse) => {
+                            const style = highlightsMap[verse.number] 
+                                ? { backgroundColor: highlightsMap[verse.number].bg, cursor: 'pointer' }
+                                : { cursor: 'pointer' };
+                            
+                            return (
+                                <span 
+                                    key={verse.id}
+                                    onClick={() => handleVerseClick(verse.number)}
+                                    onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
+                                    className={`inline hover:underline decoration-indigo-300 decoration-2 px-1 rounded transition-colors`}
+                                    style={style}
+                                    title="Click to Highlight | Double Click to Copy"
+                                >
+                                    <sup className="text-xs font-bold mr-1 text-gray-400 select-none">{verse.number}</sup>
+                                    {verse.text}
+                                </span>
+                            );
+                        })}
+                    </div>
+
+                    {/* Audio Version Text (Fallback) */}
+                    {audioVersion && audioVerses.length > 0 && (
+                        <div className={`mt-8 pt-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="text-sm font-semibold text-indigo-600">🎧 Audio Version ({audioVersion})</span>
+                                <span className="text-xs text-gray-500">- Audio not available for NLT</span>
+                            </div>
+                            <div style={{ fontSize: `${fontSize * 0.95}rem`, lineHeight: '1.8' }} className="text-gray-600">
+                                {audioVerses.map((verse) => (
+                                    <span 
+                                        key={verse.id}
+                                        className="inline"
+                                    >
+                                        <sup className="text-xs font-bold mr-1 text-gray-400 select-none">{verse.number}</sup>
+                                        {verse.text}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
             
             {/* Copy Feedback Toast */}

@@ -23,6 +23,8 @@ export const DEFAULT_HIGHLIGHT_DATA = { bg: '#ffeb3b', border: '#fbc02d' };
 
 // 📚 Licensed Bible IDs (API.Bible Commercial Plan)
 export const NLT_BIBLE_ID = 'd6e14a625393b4da-01';
+export const WEB_BIBLE_ID = '9879dbb7cfe39e4d-01'; // World English Bible (has audio)
+export const AUDIO_FALLBACK_VERSION = WEB_BIBLE_ID; // Use when primary version lacks audio
 export const DEFAULT_BIBLE_VERSION = NLT_BIBLE_ID; // Always fallback to licensed NLT
 
 // 📚 Bible Versions - Expanded Popular List
