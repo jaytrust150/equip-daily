@@ -3,61 +3,71 @@
     "id": "d6e14a625393b4da-01",
     "abbreviation": "NLT",
     "name": "New Living Translation",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
   },
   {
     "id": "de4e12af7f28f599-01",
     "abbreviation": "KJV",
     "name": "King James Version",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
   },
   {
     "id": "9879dbb7cfe39e4d-01",
     "abbreviation": "WEB",
     "name": "World English Bible",
     "language": "English",
-    "hasAudio": true
+    "hasAudio": true,
+    "audioId": "105a06b6146d11e7-01"
   },
   {
-    "id": "02d1e5e375bccc80-02",
+    "id": "1c49f0a0419e4c6b-01",
     "abbreviation": "NKJV",
     "name": "New King James Version",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
   },
   {
-    "id": "daabc80181d30fb8-01",
-    "abbreviation": "ESV",
-    "name": "English Standard Version",
-    "language": "English"
+    "id": "65eec8e0b60e656b-01",
+    "abbreviation": "MSG",
+    "name": "The Message",
+    "language": "English",
+    "hasAudio": false
   },
   {
     "id": "f52f62bcc0fb5959-01",
     "abbreviation": "NASB",
     "name": "New American Standard Bible",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
   },
   {
     "id": "f52f62a7c0fb5959-01",
     "abbreviation": "NASB95",
     "name": "NASB 1995",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
   },
   {
     "id": "c00aeeaa26180fb8-01",
     "abbreviation": "CSB",
     "name": "Christian Standard Bible",
-    "language": "English"
-  },
-  {
-    "id": "bf1d92969fb48505-01",
-    "abbreviation": "NIV",
-    "name": "New International Version",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
   },
   {
     "id": "0aad59b4b21a31e8-01",
     "abbreviation": "NRSV",
     "name": "New Revised Standard Version",
-    "language": "English"
+    "language": "English",
+    "hasAudio": false
+  },
+  {
+    "id": "d199679f805f5b29-01",
+    "abbreviation": "ARV",
+    "name": "American Revised Version",
+    "language": "English",
+    "hasAudio": false
   }
 ]
