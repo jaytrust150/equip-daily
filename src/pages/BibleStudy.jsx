@@ -144,30 +144,56 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
   }, [book, chapter, version]);
 
   // Helper to parse the complex JSON from API.Bible
+  // API.Bible returns nested structure: para → verse (with attrs) → text nodes
   const parseBibleContent = (content) => {
-    let extractedVerses = [];
-    
-    // Recursive function to walk through the JSON tree
-    const traverse = (node) => {
-      if (node.type === 'verse' && node.number) {
-        // Found a verse start
-        extractedVerses.push({ 
-          id: node.number, 
-          number: node.number, 
-          text: "" // Will accumulate text
-        });
-      } else if (node.text && extractedVerses.length > 0) {
-        // Append text to the current verse
-        extractedVerses[extractedVerses.length - 1].text += node.text;
+    const verses = [];
+    let currentVerseNumber = null;
+    let currentVerseTexts = [];
+
+    const processNode = (node) => {
+      // Check if this is a verse marker (node.name === 'verse' with attrs.number)
+      if (node.name === 'verse' && node.attrs?.number) {
+        // Save previous verse if any
+        if (currentVerseNumber !== null && currentVerseTexts.length > 0) {
+          verses.push({
+            number: currentVerseNumber,
+            text: currentVerseTexts.join('').trim(),
+            id: currentVerseNumber
+          });
+        }
+        // Start new verse
+        currentVerseNumber = node.attrs.number;
+        currentVerseTexts = [];
       }
-      
-      if (node.items) {
-        node.items.forEach(traverse);
+      // If node has text, add to current verse
+      else if (node.text && currentVerseNumber !== null) {
+        currentVerseTexts.push(node.text);
+      }
+      // Recursively process child items
+      else if (node.items && Array.isArray(node.items)) {
+        node.items.forEach(processNode);
       }
     };
 
-    content.forEach(traverse);
-    return extractedVerses;
+    // Process all content items (typically paragraphs)
+    if (Array.isArray(content)) {
+      content.forEach(para => {
+        if (para.items && Array.isArray(para.items)) {
+          para.items.forEach(processNode);
+        }
+      });
+    }
+
+    // Save final verse if any
+    if (currentVerseNumber !== null && currentVerseTexts.length > 0) {
+      verses.push({
+        number: currentVerseNumber,
+        text: currentVerseTexts.join('').trim(),
+        id: currentVerseNumber
+      });
+    }
+
+    return verses;
   };
 
   // 2. 🎧 Audio Player Effect with Fallback to WEB
@@ -208,7 +234,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch }) {
           
           if (response.ok) {
             const data = await response.json();
-            const extractedVerses = extractVerses(data.data.content);
+            const extractedVerses = parseBibleContent(data.data.content);
             setAudioVerses(extractedVerses);
           }
         } catch (err) {
