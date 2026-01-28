@@ -465,18 +465,18 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     touchStartX.current = null;
     touchStartY.current = null;
 
-    if (Muser) {
-      alert('Please sign in to save notes.');
-      return;
-    }
-    if (!currentNoteText.trim()s(deltaX) > Math.abs(deltaY)) {
+    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
       if (deltaX < 0) goToNextChapter();
       else goToPrevChapter();
     }
   };
 
   const handleSaveNote = async () => {
-    if (!currentNoteText.trim() || !user) return;
+    if (!user) {
+      alert('Please sign in to save notes.');
+      return;
+    }
+    if (!currentNoteText.trim()) return;
     
     await saveNote(user.uid, book, chapter, currentNoteText, DEFAULT_NOTE_COLOR);
     setCurrentNoteText("");
@@ -883,16 +883,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     {noteFeedback.msg && <p className="text-green-500 text-sm mt-2 text-center">{noteFeedback.msg}</p>}
                   </>
                 )}
-            </div>
-
-            {/* Saved Notes List - Only show if logged in */}
-            {user && (
-              <div className="space-y-3">
-                    className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
-                >
-                    Save Note
-                </button>
-                {noteFeedback.msg && <p className="text-green-500 text-sm mt-2 text-center">{noteFeedback.msg}</p>}
             </div>
 
             {/* Saved Notes List - Only show if logged in */}
