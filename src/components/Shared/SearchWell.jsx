@@ -72,16 +72,37 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
 
         const data = await res.json();
         
+        // Debug: log the response structure
+        console.log('Search API Response:', data);
+        
         if (data.data && data.data.verses) {
-            const mappedResults = data.data.verses.map(v => ({
-                id: v.id,
-                reference: v.reference,
-                text: v.text,
-                bookId: v.bookId,
-                chapter: v.chapterId.split('.')[1],
-                verse: v.id.split('.')[2]
-            }));
+            const mappedResults = data.data.verses.map(v => {
+                // Extract chapter from chapterId (e.g., "1CO.13" -> "13")
+                const chapterMatch = v.chapterId.match(/\.(\d+)$/);
+                const chapter = chapterMatch ? chapterMatch[1] : '1';
+                
+                // Map OSIS code to book name using OSIS_TO_BOOK
+                const fullBookName = OSIS_TO_BOOK[v.bookId] || v.bookId;
+                
+                // Extract verse number from id (e.g., "1CO.13.7" -> "7")
+                const verseMatch = v.id.match(/\.(\d+)$/);
+                const verse = verseMatch ? verseMatch[1] : '1';
+                
+                return {
+                  id: v.id,
+                  reference: v.reference,
+                  text: v.text,
+                  bookId: v.bookId,
+                  fullBookName: fullBookName,
+                  chapter: chapter,
+                  verse: verse
+                };
+            });
             setResults(mappedResults);
+        } else {
+            // If no verses found, log for debugging
+            console.warn('No verses found in response:', data);
+            setResults([]);
         }
     } catch (err) { 
         console.error("Search Error:", err);
@@ -93,9 +114,8 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
 
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
-    // Use the OSIS_TO_BOOK map to ensure correct book names
-    const fullBookName = OSIS_TO_BOOK[r.bookId] || r.bookId;
-    onJumpToVerse(fullBookName, r.chapter);
+    // Use the pre-mapped full book name
+    onJumpToVerse(r.fullBookName, r.chapter);
     if (window.innerWidth <= 768) onClose();
   };
 
