@@ -105,6 +105,4 @@ export const USFM_MAPPING = {
 
 export const getBookId = (bookName) => USFM_MAPPING[bookName] || "GEN";
 
-export const DEFAULT_BIBLE_VERSION = 'd6e14a625393b4da-01'; // NLT
-
 export const OSIS_TO_BOOK = Object.fromEntries(Object.entries(USFM_MAPPING).map(([k, v]) => [v, k]));
