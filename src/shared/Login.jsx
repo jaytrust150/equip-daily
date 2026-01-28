@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // ✅ FIXED IMPORT: Points to src/config/firebase.js
-import { auth } from '../../config/firebase';
+import { auth } from '../config/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 

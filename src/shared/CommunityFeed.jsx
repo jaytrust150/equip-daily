@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import MemberCard from './MemberCard';
-import { subscribeToReflections, saveReflection, deleteReflection, toggleFruitReaction } from '../../services/firestoreService';
-import { CITY_NAME } from '../../config/constants';
+import { subscribeToReflections, saveReflection, deleteReflection, toggleFruitReaction } from '../services/firestoreService';
+import { CITY_NAME } from '../config/constants';
 
 function CommunityFeed({ queryField, queryValue, user, theme, onSearch, onProfileClick, title }) {
   const [reflections, setReflections] = useState([]);

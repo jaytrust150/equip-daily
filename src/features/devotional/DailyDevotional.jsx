@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import DevotionalContent from '../components/Devotional/DevotionalContent';
-import CommunityFeed from '../components/Shared/CommunityFeed';
-import AudioPlayer from '../components/Shared/AudioPlayer';
-import { AUDIO_BASE_PATH } from '../config/constants';
+import DevotionalContent from './DevotionalContent';
+import CommunityFeed from '../../shared/CommunityFeed';
+import AudioPlayer from '../../shared/AudioPlayer';
+import { AUDIO_BASE_PATH } from '../../config/constants';
 
 function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
   const [currentDate, setCurrentDate] = useState(new Date());

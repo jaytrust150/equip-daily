@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAudio } from '../../hooks/useAudio';
+import { useAudio } from '../hooks/useAudio';
 function AudioPlayer({ src, captionsSrc, theme }) {
   const { audioRef, error, setError, handleTrackLoad, toggleSleepTimer, sleepMinutes, sleepTimeLeft, formatTimeLeft } = useAudio(src, captionsSrc);
   return (

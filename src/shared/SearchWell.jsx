@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useDraggableWindow } from '../../hooks/useDraggableWindow';
-import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../../config/constants';
+import { useDraggableWindow } from '../hooks/useDraggableWindow';
+import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../config/constants';
 
 function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, historyStack = [], onGoBack }) {
   const [query, setQuery] = useState("");

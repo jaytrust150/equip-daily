@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuthState } from "react-firebase-hooks/auth";
 
 // --- IMPORTS ---
-import { bibleData } from '../data/bibleData'; 
-import { BIBLE_BOOK_IDS } from '../bibleData';
-import Login from '../components/Auth/Login'; 
-import BibleVersionPicker from '../components/BibleVersionPicker';
-import CommunityFeed from '../components/Shared/CommunityFeed';
-import FloatingTools from '../components/Bible/FloatingTools';
-import { auth } from "../config/firebase"; 
+import { bibleData } from '../../data/bibleData'; 
+import { BIBLE_BOOK_IDS } from '../../bibleData';
+import Login from '../../shared/Login'; 
+import BibleVersionPicker from './BibleVersionPicker';
+import CommunityFeed from '../../shared/CommunityFeed';
+import FloatingTools from './FloatingTools';
+import { auth } from "../../config/firebase"; 
 import { 
   BIBLE_VERSIONS, 
   COLOR_PALETTE, 
@@ -17,11 +17,11 @@ import {
   AUDIO_BASE_PATH,
   DEFAULT_BIBLE_VERSION,
   AUDIO_FALLBACK_VERSION
-} from '../config/constants'; 
+} from '../../config/constants'; 
 import { 
   subscribeToNotes, saveNote, deleteNote,
   subscribeToUserProfile, updateUserHighlight
-} from '../services/firestoreService';
+} from '../../services/firestoreService';
 
 // 🎨 COLORS
 const NOTE_BUTTON_COLOR = '#2196F3'; 
@@ -362,14 +362,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   // 4. 🖱️ Interaction Handlers
   const handleVerseClick = async (verseNum) => {
-    if (!user) return;
-
+    // ✅ Allow verse selection for notebooks without login
     if (showNotebook) {
       setSelectedVerses((prev) =>
         prev.includes(verseNum)
           ? prev.filter((v) => v !== verseNum)
           : [...prev, verseNum]
       );
+      return;
+    }
+
+    // ⚠️ Highlighting requires login
+    if (!user) {
+      alert('Please sign in to highlight verses and save your progress.');
       return;
     }
 
@@ -404,6 +409,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     const textToCopy = `${book} ${chapter}:${verseNum} - ${text}`;
     navigator.clipboard.writeText(textToCopy);
     setCopyFeedback(`Copied Verse ${verseNum}!`);
+    if (!user) return; // ⚠️ Notes require login
+    
     setTimeout(() => setCopyFeedback(""), 2000);
   };
 
@@ -458,7 +465,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     touchStartX.current = null;
     touchStartY.current = null;
 
-    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (Muser) {
+      alert('Please sign in to save notes.');
+      return;
+    }
+    if (!currentNoteText.trim()s(deltaX) > Math.abs(deltaY)) {
       if (deltaX < 0) goToNextChapter();
       else goToPrevChapter();
     }
@@ -504,10 +515,25 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   }, [isNoteMode, editingNoteId]);
 
   // --- RENDER ---
-  if (!user) return <Login />;
+  // ✅ Allow Bible reading without login - only require login for saving features
 
   return (
     <div className={`min-h-screen p-4 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      
+      {/* ⚠️ Login Banner for Guest Users */}
+      {!user && (
+        <div className="max-w-4xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
+          <p className="text-sm text-blue-800">
+            👋 <strong>Welcome!</strong> You're reading as a guest. 
+            <button 
+              onClick={() => window.location.reload()} 
+              className="ml-2 text-blue-600 underline font-semibold hover:text-blue-800"
+            >
+              Sign in
+            </button> to save highlights, notes, and join the community.
+          </p>
+        </div>
+      )}
       
       {/* 🟢 TOP CONTROLS */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4 bg-white/5 p-4 rounded-xl shadow-sm border border-gray-200/20">
@@ -833,15 +859,35 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
                     ✏️ Personal Notes
                 </h3>
-                <textarea
-                    value={currentNoteText}
-                    onChange={(e) => setCurrentNoteText(e.target.value)}
-                    placeholder="Type a reflection here..."
-                    className={`w-full p-3 rounded-lg border h-32 mb-2 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}
-                />
-                <button 
-                    onClick={handleSaveNote}
-                    disabled={!currentNoteText.trim()}
+                
+                {!user ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-500 mb-3">Sign in to save personal notes and track your study progress.</p>
+                    <Login theme={theme} />
+                  </div>
+                ) : (
+                  <>
+                    <textarea
+                        value={currentNoteText}
+                        onChange={(e) => setCurrentNoteText(e.target.value)}
+                        placeholder="Type a reflection here..."
+                        className={`w-full p-3 rounded-lg border h-32 mb-2 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}
+                    />
+                    <button 
+                        onClick={handleSaveNote}
+                        disabled={!currentNoteText.trim()}
+                        className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
+                    >
+                        Save Note
+                    </button>
+                    {noteFeedback.msg && <p className="text-green-500 text-sm mt-2 text-center">{noteFeedback.msg}</p>}
+                  </>
+                )}
+            </div>
+
+            {/* Saved Notes List - Only show if logged in */}
+            {user && (
+              <div className="space-y-3">
                     className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
                 >
                     Save Note
@@ -849,8 +895,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 {noteFeedback.msg && <p className="text-green-500 text-sm mt-2 text-center">{noteFeedback.msg}</p>}
             </div>
 
-            {/* Saved Notes List */}
-            <div className="space-y-3">
+            {/* Saved Notes List - Only show if logged in */}
+            {user && (
+              <div className="space-y-3">
                 {userNotes.map(note => (
                     <div key={note.id} className={`p-3 rounded-lg border relative group ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-yellow-50 border-yellow-200'}`}>
                         <p className="text-sm mb-2">{note.text}</p>
@@ -865,7 +912,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         </div>
                     </div>
                 ))}
-            </div>
+              </div>
+            )}
 
         </div>
         )}

@@ -5,11 +5,11 @@ import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, 
 import './App.css';
 
 // ✅ FIXED IMPORTS: Pointing to new folder structure
-import BibleStudy from './pages/BibleStudy'; 
-import MemberProfile from './pages/MemberProfile'; 
-import MemberCard from './components/Shared/MemberCard';
-import Login from './components/Auth/Login';
-import SearchWell from './components/Shared/SearchWell'; 
+import BibleStudy from './features/bible/BibleStudy'; 
+import MemberProfile from './shared/MemberProfile'; 
+import MemberCard from './shared/MemberCard';
+import Login from './shared/Login';
+import SearchWell from './shared/SearchWell'; 
 import { auth, db } from "./config/firebase"; 
 
 // 📍 DEFAULT CITY

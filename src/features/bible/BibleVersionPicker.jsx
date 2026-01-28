@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BIBLE_VERSIONS } from '../config/constants';
+import { BIBLE_VERSIONS } from '../../config/constants';
 
 /**
  * BibleVersionPicker - A searchable dropdown component for selecting Bible translations

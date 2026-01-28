@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { auth, db } from "../config/firebase"; 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
-import MemberCard from '../components/Shared/MemberCard';
+import MemberCard from './MemberCard';
 
 const getFruitIcon = (id) => {
   const map = { love: '❤️', joy: '😊', peace: '🕊️', patience: '⏳', kindness: '🤲', goodness: '🌟', faithfulness: '🤝', gentleness: '🧸', selfControl: '🛑' };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../config/firebase'; 
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import Login from '../components/Auth/Login'; // Import your Login component
+import Login from './Login'; // Import your Login component
 
 function LivingBookshelf({ theme }) {
   const [user, setUser] = useState(null);
