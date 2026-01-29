@@ -1,7 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { COLOR_PALETTE } from '../../config/constants';
 
-function FloatingTools({ showPalette, setShowPalette, showNotebook, setShowNotebook, onApplyColor, selectedVerses, onSaveNote }) {
+function FloatingTools({ 
+  showPalette, setShowPalette, 
+  showNotebook, setShowNotebook, 
+  onApplyColor, 
+  selectedVerses, 
+  onSaveNote,
+  onCopyVerses,
+  onPasteVerses,
+  onDeleteNote,
+  theme = 'light'
+}) {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight / 2 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -40,23 +50,155 @@ function FloatingTools({ showPalette, setShowPalette, showNotebook, setShowNoteb
         position: 'fixed', 
         left: `${position.x}px`, 
         top: `${position.y}px`, 
-        background: 'white', 
-        padding: '10px', 
-        borderRadius: '10px', 
-        boxShadow: '0 4px 10px rgba(0,0,0,0.2)', 
+        background: theme === 'dark' ? '#1a1a1a' : 'white', 
+        padding: '12px', 
+        borderRadius: '12px', 
+        boxShadow: '0 4px 15px rgba(0,0,0,0.3)', 
         display: 'flex', 
         flexDirection: 'column', 
-        gap: '5px', 
+        gap: '8px', 
         zIndex: 1000,
-        cursor: isDragging ? 'grabbing' : 'grab',
-        userSelect: 'none'
+        userSelect: 'none',
+        border: theme === 'dark' ? '1px solid #444' : '1px solid #ddd'
       }}
       onMouseDown={handleMouseDown}
     >
-      {showPalette && COLOR_PALETTE.map(c => <button key={c.code} onClick={() => onApplyColor(c)} style={{ width: '20px', height: '20px', background: c.code, borderRadius: '50%', border: '1px solid #ccc' }} />)}
-      {showPalette && <button onClick={() => onApplyColor(null)}>🚫</button>}
-      {showNotebook && selectedVerses.length > 0 && <button onClick={onSaveNote}>Save Note ({selectedVerses.length})</button>}
-      <button onClick={() => { setShowPalette(false); setShowNotebook(false); }}>✕</button>
+      {/* Color Palette (Reading Mode) */}
+      {showPalette && (
+        <>
+          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {COLOR_PALETTE.map(c => (
+              <button 
+                key={c.code} 
+                onClick={() => onApplyColor(c)} 
+                title={c.name}
+                style={{ 
+                  width: '24px', 
+                  height: '24px', 
+                  background: c.code, 
+                  borderRadius: '50%', 
+                  border: '2px solid #999',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s'
+                }}
+              />
+            ))}
+            <button 
+              onClick={() => onApplyColor(null)}
+              title="Remove highlight"
+              style={{ 
+                width: '24px', 
+                height: '24px', 
+                borderRadius: '50%', 
+                border: '2px solid #999',
+                background: 'white',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          {showNotebook && <hr style={{ margin: '4px 0', borderColor: theme === 'dark' ? '#444' : '#ddd' }} />}
+        </>
+      )}
+
+      {/* Study Mode Options */}
+      {showNotebook && (
+        <>
+          <div style={{ 
+            fontSize: '0.8rem', 
+            color: theme === 'dark' ? '#aaa' : '#666',
+            fontWeight: 'bold'
+          }}>
+            {selectedVerses.length} verse{selectedVerses.length !== 1 ? 's' : ''} selected
+          </div>
+
+          <button 
+            onClick={onCopyVerses}
+            disabled={selectedVerses.length === 0}
+            style={{ 
+              padding: '6px 10px', 
+              fontSize: '0.85rem',
+              background: selectedVerses.length > 0 ? '#4caf50' : '#ccc',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: selectedVerses.length > 0 ? 'pointer' : 'not-allowed',
+              fontWeight: 'bold'
+            }}
+          >
+            📋 Copy Verses
+          </button>
+
+          <button 
+            onClick={onPasteVerses}
+            style={{ 
+              padding: '6px 10px', 
+              fontSize: '0.85rem',
+              background: '#2196F3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            📌 Paste Ref
+          </button>
+
+          <button 
+            onClick={onSaveNote}
+            disabled={selectedVerses.length === 0}
+            style={{ 
+              padding: '6px 10px', 
+              fontSize: '0.85rem',
+              background: selectedVerses.length > 0 ? '#276749' : '#ccc',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: selectedVerses.length > 0 ? 'pointer' : 'not-allowed',
+              fontWeight: 'bold'
+            }}
+          >
+            💾 Save Note
+          </button>
+
+          <button 
+            onClick={onDeleteNote}
+            style={{ 
+              padding: '6px 10px', 
+              fontSize: '0.85rem',
+              background: '#f44336',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold'
+            }}
+          >
+            🗑️ Delete Note
+          </button>
+        </>
+      )}
+
+      {/* Close Button */}
+      <button 
+        onClick={() => { setShowPalette(false); setShowNotebook(false); }}
+        style={{ 
+          padding: '6px 10px', 
+          fontSize: '0.85rem',
+          background: theme === 'dark' ? '#444' : '#f0f0f0',
+          color: theme === 'dark' ? '#fff' : '#333',
+          border: 'none',
+          borderRadius: '6px',
+          cursor: 'pointer',
+          fontWeight: 'bold'
+        }}
+      >
+        ✕ Close
+      </button>
     </div>
   );
 }

@@ -537,6 +537,47 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     setTimeout(() => setNoteFeedback({}), 2000);
   };
 
+  const handleCopyVerses = async () => {
+    if (selectedVerses.length === 0) return;
+    try {
+      const verseRefs = selectedVerses.map(v => `${book} ${chapter}:${v}`).join(', ');
+      const verseTexts = selectedVerses
+        .map(v => chapter_data?.verses?.find(vrs => vrs.number === v)?.text || '')
+        .filter(t => t)
+        .join(' ');
+      
+      const textToCopy = `${verseTexts}\n\n— ${verseRefs}`;
+      await navigator.clipboard.writeText(textToCopy);
+      
+      setNoteFeedback({ type: 'success', msg: `Copied ${selectedVerses.length} verse${selectedVerses.length !== 1 ? 's' : ''}` });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
+      setNoteFeedback({ type: 'error', msg: 'Failed to copy verses' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    }
+  };
+
+  const handlePasteVerses = () => {
+    if (selectedVerses.length === 0) {
+      setNoteFeedback({ type: 'error', msg: 'No verses selected' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+      return;
+    }
+    const verseRefs = selectedVerses.map(v => `${book} ${chapter}:${v}`).join(', ');
+    setNoteFeedback({ type: 'info', msg: `Reference: ${verseRefs}` });
+    setTimeout(() => setNoteFeedback({}), 3000);
+  };
+
+  const handleClearNote = () => {
+    setCurrentNoteText("");
+    setSelectedVerses([]);
+    setShowNotebook(false);
+    setIsNoteMode(false);
+    setNoteFeedback({ type: 'success', msg: 'Note cleared' });
+    setTimeout(() => setNoteFeedback({}), 2000);
+  };
+
   const handleTouchStart = (e) => {
     if (!e.touches || e.touches.length === 0) return;
     touchStartX.current = e.touches[0].clientX;
@@ -716,7 +757,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               });
             }}
             className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
-            title={showNotes ? "Switch to Reading Mode" : "Switch to Study Mode"}
+            title={showNotes ? "Switch to Reading Mode (highlights only)" : "Switch to Study Mode (long press verses to add notes)"}
           >
             {showNotes ? '📖 Reading' : '📝 Study'}
           </button>
@@ -786,7 +827,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
                             const showEditorHere = (showNotebook && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
                                                    (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
-                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]);
+                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]) ||
+                                                   (longPressVerse === verse.number);
                             
                             return (
                                 <div key={verse.id} style={{ marginBottom: '1rem' }}>
@@ -800,7 +842,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         onTouchEnd={handleMouseUp}
                                         className={`block hover:bg-opacity-80 p-2 rounded transition-colors`}
                                         style={{ ...style, ...selectionStyle }}
-                                        title="Click to Highlight | Double Click to Copy | Long Press for Note"
+                                        title="Click to highlight • Double-click to copy • Long press to add a note"
                                     >
                                         <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
                                         <span>{verse.text}</span>
@@ -999,6 +1041,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         onApplyColor={handleApplyColor}
         selectedVerses={selectedVerses}
         onSaveNote={handleSaveSelectedNote}
+        onCopyVerses={handleCopyVerses}
+        onPasteVerses={handlePasteVerses}
+        onDeleteNote={handleClearNote}
+        theme={theme}
       />
     </div>
   );
