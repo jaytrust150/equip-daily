@@ -1056,8 +1056,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         style={{ ...style, ...selectionStyle }}
                                         title="Click to highlight • Double-click to copy • Long press to add a note"
                                     >
-                                        <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
-                                        <span style={{ display: 'inline', textAlign: 'left' }}>{verse.text}</span>
+                                        <span style={{ display: 'block', textAlign: 'left' }}>
+                                            <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
+                                            {verse.text}
+                                        </span>
                                     </div>
 
                                     {/* Inline Note Editor */}
@@ -1283,6 +1285,60 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           title={`Reflections for ${book} ${chapter}`}
         />
       </div>
+
+      {/* 📚 Your Living Bookshelf - Bible Reading Tracker */}
+      {user && showBibleTracker && (
+        <div className="max-w-4xl mx-auto mt-10 mb-10 bg-white/5 p-4 rounded-xl shadow-sm border border-gray-200/20">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-bold" style={{ color: theme === 'dark' ? '#fff' : '#333' }}>📚 Your Living Bookshelf</h3>
+            <button 
+              onClick={() => setShowBibleTracker(false)}
+              className="text-gray-500 hover:text-gray-700 text-xl"
+            >
+              ✕
+            </button>
+          </div>
+          
+          {/* Testament Tabs */}
+          <div className="flex gap-2 mb-4 justify-center">
+            <button
+              onClick={() => setTestamentFilter(testamentFilter === 'OT' ? null : 'OT')}
+              style={{ padding: '5px 15px', fontSize: '0.85rem', borderRadius: '8px' }}
+              className={`font-medium transition ${
+                testamentFilter === 'OT' 
+                  ? 'bg-indigo-600 text-white' 
+                  : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+              }`}
+            >
+              Old Testament
+            </button>
+            <button
+              onClick={() => setTestamentFilter(testamentFilter === 'NT' ? null : 'NT')}
+              style={{ padding: '5px 15px', fontSize: '0.85rem', borderRadius: '8px' }}
+              className={`font-medium transition ${
+                testamentFilter === 'NT' 
+                  ? 'bg-indigo-600 text-white' 
+                  : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+              }`}
+            >
+              New Testament
+            </button>
+          </div>
+
+          {/* Bible Tracker Component */}
+          <BibleTracker
+            readChapters={readChapters}
+            onNavigate={(bookName, chapterNum) => {
+              setBook(bookName);
+              setChapter(chapterNum);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onToggleRead={toggleChapterRead}
+            sectionFilter={testamentFilter}
+            theme={theme}
+          />
+        </div>
+      )}
 
       <FloatingTools
         showPalette={showHighlightPalette}
