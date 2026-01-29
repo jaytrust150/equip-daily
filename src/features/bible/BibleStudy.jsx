@@ -49,7 +49,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [_selectedVerses, _setSelectedVerses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [_isChapterRead, _setIsChapterRead] = useState(false);
+  
+  // Calculate if current chapter is read
+  const isChapterRead = readChapters.includes(`${book} ${chapter}`);
   
   // ✅ FEEDBACK STATES
   const [copyFeedback, setCopyFeedback] = useState("");
