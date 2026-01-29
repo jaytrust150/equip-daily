@@ -921,11 +921,20 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     const readCount = readChapters.filter(entry => entry.startsWith(`${bookData.name} `)).length;
                     const percent = Math.round((readCount / bookData.chapters) * 100);
                     const isComplete = percent === 100;
+                    let bookClickTimeoutRef;
+                    
+                    const handleBookClick = () => {
+                      if (bookClickTimeoutRef) return;
+                      bookClickTimeoutRef = setTimeout(() => {
+                        setTestamentDrillBook(bookData);
+                        bookClickTimeoutRef = null;
+                      }, 250);
+                    };
                     
                     return (
                       <button
                         key={bookData.name}
-                        onClick={() => setTestamentDrillBook(bookData)}
+                        onClick={handleBookClick}
                         className="text-sm font-medium px-3 py-1.5 rounded-lg transition"
                         style={{
                           background: isComplete 
@@ -1377,10 +1386,54 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             value={currentNoteText}
                             onChange={(e) => setCurrentNoteText(e.target.value)}
                             placeholder={`Write your note for ${book} ${chapter}:${longPressVerse}...`}
-                            className={`w-full p-3 rounded-lg border mb-4 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            className={`w-full p-3 rounded-lg border mb-3 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
                             style={{ height: '200px', minHeight: '200px' }}
                             autoFocus
                         />
+                        
+                        {/* Color Palette - Small, inline with buttons */}
+                        <div className="mb-3 p-2 rounded-lg flex flex-wrap gap-2 items-center justify-center" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
+                            {COLOR_PALETTE.map(c => {
+                                const isSelected = activeHighlightColor && activeHighlightColor.code === c.code;
+                                return (
+                                    <button 
+                                        key={c.code} 
+                                        onClick={() => handleApplyColor(c)} 
+                                        title={c.name}
+                                        style={{ 
+                                            width: '20px', 
+                                            height: '20px', 
+                                            background: c.code, 
+                                            borderRadius: '50%', 
+                                            border: isSelected ? '2px solid #000' : '1px solid #666',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            transform: isSelected ? 'scale(1.2)' : 'scale(1)',
+                                            boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.3)' : 'none'
+                                        }}
+                                    />
+                                );
+                            })}
+                            <button 
+                                onClick={() => handleApplyColor(null)}
+                                title="Remove highlight"
+                                style={{ 
+                                    width: '20px', 
+                                    height: '20px', 
+                                    borderRadius: '50%', 
+                                    border: '1px solid #666',
+                                    background: 'white',
+                                    cursor: 'pointer',
+                                    fontSize: '11px',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                ✕
+                            </button>
+                        </div>
                         
                         {/* Study Mode Buttons - Same as FloatingTools */}
                         <div className="grid grid-cols-2 gap-2 mb-4">
