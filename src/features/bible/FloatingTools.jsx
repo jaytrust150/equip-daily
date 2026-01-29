@@ -57,6 +57,28 @@ function FloatingTools({
     }
   };
 
+  const getNoteReferenceLabel = () => {
+    if (!selectedVerses || selectedVerses.length === 0) return `${book} ${chapter}`;
+    const sortedVerses = [...new Set(selectedVerses)].sort((a, b) => a - b);
+    const segments = [];
+    let start = sortedVerses[0];
+    let end = sortedVerses[0];
+
+    for (let i = 1; i < sortedVerses.length; i++) {
+      const current = sortedVerses[i];
+      if (current === end + 1) {
+        end = current;
+      } else {
+        segments.push(start === end ? `${start}` : `${start}-${end}`);
+        start = current;
+        end = current;
+      }
+    }
+    segments.push(start === end ? `${start}` : `${start}-${end}`);
+
+    return `${book} ${chapter}:${segments.join(';')}`;
+  };
+
   // Reset copied state when selection changes
   React.useEffect(() => {
     if (setVersesCopied) {
@@ -160,6 +182,13 @@ function FloatingTools({
       {/* Study Mode Options */}
       {showNotebook && (
         <>
+          <div style={{
+            fontSize: '0.85rem',
+            color: theme === 'dark' ? '#ddd' : '#333',
+            fontWeight: 'bold'
+          }}>
+            Note on {getNoteReferenceLabel()}
+          </div>
           <div style={{ 
             fontSize: '0.8rem', 
             color: theme === 'dark' ? '#aaa' : '#666',

@@ -845,6 +845,30 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
   };
 
+  const getNoteReferenceLabel = (fallbackVerse) => {
+    const verses = selectedVerses.length > 0 ? selectedVerses : (fallbackVerse ? [fallbackVerse] : []);
+    if (verses.length === 0) return `${book} ${chapter}`;
+
+    const sorted = [...new Set(verses)].sort((a, b) => a - b);
+    const segments = [];
+    let start = sorted[0];
+    let end = sorted[0];
+
+    for (let i = 1; i < sorted.length; i++) {
+      const current = sorted[i];
+      if (current === end + 1) {
+        end = current;
+      } else {
+        segments.push(start === end ? `${start}` : `${start}-${end}`);
+        start = current;
+        end = current;
+      }
+    }
+    segments.push(start === end ? `${start}` : `${start}-${end}`);
+
+    return `${book} ${chapter}:${segments.join(';')}`;
+  };
+
   const handleCancelEditNote = () => {
     setEditingNoteId(null);
     setCurrentNoteText("");
@@ -1381,62 +1405,22 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                     {showEditorHere && (
                                       <div
                                         className={`mt-3 p-4 rounded-lg border-l-4 w-full ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}
-                                        style={{ maxWidth: '100%' }}
+                                        style={{ width: '100%', maxWidth: '100%' }}
                                       >
                                             <div className="text-xs font-semibold mb-2 text-gray-500">
-                                                {editingNoteId ? "Editing Note" : "New Note"}
+                                          {editingNoteId ? `Editing Note on ${getNoteReferenceLabel(verse.number)}` : `Note on ${getNoteReferenceLabel(verse.number)}`}
                                             </div>
                                             <textarea
                                                 ref={noteEditorRef}
                                                 value={currentNoteText}
                                                 onChange={(e) => setCurrentNoteText(e.target.value)}
-                                                placeholder="Type your note here..."
-                                                className={`w-full h-20 p-2 rounded border resize-none focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                          placeholder={`Type your note on ${getNoteReferenceLabel(verse.number)} here...`}
+                                              className={`w-full h-20 p-2 rounded border resize-none focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                                             />
                                             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
-                                              <div className="flex items-center gap-1">
-                                                {COLOR_PALETTE.map((c) => {
-                                                  const isSelected = activeHighlightColor && activeHighlightColor.code === c.code;
-                                                  return (
-                                                    <button
-                                                      key={c.code}
-                                                      onClick={() => handleApplyColor(c)}
-                                                      title={c.name}
-                                                      style={{
-                                                        width: '12px',
-                                                        height: '12px',
-                                                        background: c.code,
-                                                        borderRadius: '50%',
-                                                        border: isSelected ? '2px solid #000' : '1px solid #666',
-                                                        cursor: 'pointer'
-                                                      }}
-                                                    />
-                                                  );
-                                                })}
-                                                <button
-                                                  onClick={() => handleApplyColor(null)}
-                                                  title="Remove highlight"
-                                                  style={{
-                                                    width: '12px',
-                                                    height: '12px',
-                                                    borderRadius: '50%',
-                                                    border: '1px solid #666',
-                                                    background: 'white',
-                                                    cursor: 'pointer',
-                                                    fontSize: '8px',
-                                                    fontWeight: 'bold',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center'
-                                                  }}
-                                                >
-                                                  ✕
-                                                </button>
-                                              </div>
                                               <div className="flex flex-wrap gap-2 ml-auto">
                                                 <button onClick={() => handleCopyVerse(verse.text, verse.number)} className="px-2 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700">Copy</button>
                                                 <button onClick={handlePasteVerses} className="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700">Paste Ref</button>
-                                                <button onClick={() => handleShareVerseNote({ text: currentNoteText || '', verses: [verse.number] })} className="px-2 py-1 bg-sky-600 text-white text-xs rounded hover:bg-sky-700">Share</button>
                                                 <button onClick={handleSaveNote} className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Save</button>
                                                 {editingNoteId && <button onClick={handleDeleteNote} className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">Delete</button>}
                                                 <button onClick={handleCancelEditNote} className="px-2 py-1 border border-gray-400 text-gray-600 text-xs rounded hover:bg-gray-100">Cancel</button>
