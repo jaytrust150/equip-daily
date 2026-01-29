@@ -8,7 +8,9 @@ import Login from '../../shared/Login';
 import BibleVersionPicker from './BibleVersionPicker';
 import CommunityFeed from '../../shared/CommunityFeed';
 import FloatingTools from './FloatingTools';
-import { auth } from "../../config/firebase"; 
+import { auth } from "../../config/firebase";
+import { db } from "../../config/firebase";
+import { doc, getDoc, updateDoc } from "firebase/firestore"; 
 import { 
   COLOR_PALETTE, 
   DEFAULT_NOTE_COLOR, 
@@ -32,11 +34,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   
-  // ✅ Default to NLT from constants
+  // ✅ Load user's default Bible version or use constant default
   const [version, setVersion] = useState(DEFAULT_BIBLE_VERSION);
+  const [userDefaultVersion, setUserDefaultVersion] = useState(null);
   const [bibleVersions, setBibleVersions] = useState([]);
   const [audioVersion, setAudioVersion] = useState(null); // Track which version audio is from
   const [audioVerses, setAudioVerses] = useState([]); // Store fallback version text
+  const [readChapters, setReadChapters] = useState([]); // Track read chapters
 
   const [verses, setVerses] = useState([]);
   const [_selectedVerses, _setSelectedVerses] = useState([]);
@@ -79,6 +83,26 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [longPressVerse, setLongPressVerse] = useState(null);
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
+
+  // 0️⃣ LOAD USER'S DEFAULT BIBLE VERSION & READ HISTORY
+  useEffect(() => {
+    if (!user || !db) return;
+    const loadUserSettings = async () => {
+      const userRef = doc(db, "users", user.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const data = userSnap.data();
+        if (data.defaultBibleVersion) {
+          setUserDefaultVersion(data.defaultBibleVersion);
+          setVersion(data.defaultBibleVersion);
+        }
+        if (data.readChapters && Array.isArray(data.readChapters)) {
+          setReadChapters(data.readChapters);
+        }
+      }
+    };
+    loadUserSettings();
+  }, [user]);
 
   // 1. 🔄 Fetch Bible Content from API
   useEffect(() => {
@@ -137,6 +161,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         if (data && data.data && data.data.content) {
             const parsedVerses = parseBibleContent(data.data.content);
             setVerses(parsedVerses);
+            
+            // 📖 Track this chapter as read
+            trackChapterRead(book, chapter);
         } else {
             setVerses([]);
         }
@@ -199,6 +226,23 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     fetchBibleVersions();
     return () => { isMounted = false; };
   }, []);
+
+  // 📖 Track chapter as read in Firestore
+  const trackChapterRead = async (bookName, chapterNum) => {
+    if (!user || !db) return;
+    const chapterKey = `${bookName} ${chapterNum}`;
+    if (readChapters.includes(chapterKey)) return; // Already tracked
+    
+    const updatedChapters = [...readChapters, chapterKey];
+    setReadChapters(updatedChapters);
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { readChapters: updatedChapters });
+    } catch (err) {
+      console.error("Error tracking read chapter:", err);
+    }
+  };
 
   // Helper to parse the complex JSON from API.Bible
   // API.Bible returns nested structure: para → verse (with attrs) → text nodes

@@ -21,7 +21,10 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
   const [profileData, setProfileData] = useState(null);
   const [location, setLocation] = useState("");
   const [homeChurch, setHomeChurch] = useState(""); 
-  const [isHistoryPublic, setIsHistoryPublic] = useState(true); 
+  const [isHistoryPublic, setIsHistoryPublic] = useState(true);
+  const [defaultBibleVersion, setDefaultBibleVersion] = useState("");
+  const [bibleVersions, setBibleVersions] = useState([]);
+  const [versionsLoading, setVersionsLoading] = useState(false); 
   
   // --- EDITING STATE ---
   const [isSaving, setIsSaving] = useState(false);
@@ -43,12 +46,17 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
         setLocation(data.location || "Sebastian");
         setHomeChurch(data.homeChurch || ""); 
         setIsHistoryPublic(data.isHistoryPublic !== undefined ? data.isHistoryPublic : true);
+        setDefaultBibleVersion(data.defaultBibleVersion || "");
       } else {
         setLocation("Sebastian"); 
       }
     };
     fetchProfile();
-  }, [targetUid]);
+    // Fetch Bible versions if this is my profile
+    if (isMyProfile) {
+      fetchBibleVersions();
+    }
+  }, [targetUid, isMyProfile]);
 
   // 2. FETCH HISTORY & STATS
   useEffect(() => {
@@ -92,6 +100,23 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
   }, [targetUid, isMyProfile, isHistoryPublic]);
 
   // --- ACTIONS ---
+  // 📖 Fetch available Bible versions from /api/bibles
+  const fetchBibleVersions = async () => {
+    setVersionsLoading(true);
+    try {
+      const res = await fetch('/api/bibles');
+      if (!res.ok) throw new Error('Failed to load Bible versions');
+      const data = await res.json();
+      if (data.data && Array.isArray(data.data)) {
+        setBibleVersions(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching Bible versions:', err);
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
+
   const handleSaveProfile = async () => {
     if (!isMyProfile || !db) return; // ✅ Check if db exists
     setIsSaving(true);
@@ -101,6 +126,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
         location: location,
         homeChurch: homeChurch, 
         isHistoryPublic: isHistoryPublic,
+        defaultBibleVersion: defaultBibleVersion,
         displayName: currentUser.displayName,
         photoURL: currentUser.photoURL,
         email: currentUser.email
@@ -171,6 +197,28 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
                             placeholder="e.g. Coastal Church" 
                             style={{ padding: '8px', borderRadius: '8px', border: '1px solid #ccc', fontSize: '0.9rem', width: '180px', backgroundColor: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} 
                         />
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '0.9rem', width: '90px', textAlign: 'right' }}>Bible Ver.:</span>
+                        <select 
+                            value={defaultBibleVersion} 
+                            onChange={(e) => setDefaultBibleVersion(e.target.value)}
+                            disabled={versionsLoading || bibleVersions.length === 0}
+                            style={{ 
+                              padding: '8px', 
+                              borderRadius: '8px', 
+                              border: '1px solid #ccc', 
+                              fontSize: '0.9rem', 
+                              width: '180px',
+                              backgroundColor: theme === 'dark' ? '#333' : '#fff',
+                              color: theme === 'dark' ? '#fff' : '#333'
+                            }}
+                        >
+                            <option value="">Default Version</option>
+                            {bibleVersions.map(v => (
+                              <option key={v.id} value={v.id}>{v.abbreviation || v.name}</option>
+                            ))}
+                        </select>
                     </label>
                 </div>
 
