@@ -882,7 +882,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                           alignItems: 'center',
                           justifyContent: 'center',
                           boxShadow: isRead ? '0 2px 5px rgba(76, 175, 80, 0.3)' : 'none',
-                          fontSize: '0.85rem'
+                          fontSize: '0.75rem'
                         }}
                       >
                         {chapterNum}
