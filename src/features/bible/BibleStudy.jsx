@@ -268,7 +268,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   }, []);
 
   // Function to toggle chapter read status
-  const markChapterAsRead = async (bookName, chapterNum) => {
+  const markChapterAsRead = async (bookName = book, chapterNum = chapter) => {
     if (!user) {
       alert('Please sign in to track your reading progress.');
       return;
@@ -931,7 +931,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                       e.stopPropagation();
                       setBook(testamentDrillBook.name);
                       setChapter(chapterNum);
-                      setShowTestamentNav(null);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     };
                     
@@ -1155,7 +1154,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           {/* 10. Mark Chapter as Read Button */}
           {user && (
             <button
-              onClick={markChapterAsRead}
+              onClick={() => markChapterAsRead(book, chapter)}
               style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid', display: 'flex', alignItems: 'center', gap: '5px' }}
               className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
               title={isChapterRead ? "Chapter marked as read" : "Mark chapter as read"}
