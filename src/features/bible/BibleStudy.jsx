@@ -929,48 +929,18 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     
                     const handleChapterClick = (e) => {
                       e.stopPropagation();
-                      // If double-click just happened, don't run single-click
-                      if (doubleClickFlags.current[chapterNum]) {
-                        doubleClickFlags.current[chapterNum] = false;
-                        return;
-                      }
-                      // Prevent double-click from triggering single-click navigation
-                      if (chapterClickTimeouts.current[chapterNum]) return;
-                      
-                      chapterClickTimeouts.current[chapterNum] = setTimeout(() => {
-                        setBook(testamentDrillBook.name);
-                        setChapter(chapterNum);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        delete chapterClickTimeouts.current[chapterNum];
-                      }, 250);
-                    };
-                    
-                    const handleChapterDoubleClick = async (e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
-                      // Set flag to prevent single-click from running
-                      doubleClickFlags.current[chapterNum] = true;
-                      
-                      // Cancel the pending single click
-                      if (chapterClickTimeouts.current[chapterNum]) {
-                        clearTimeout(chapterClickTimeouts.current[chapterNum]);
-                        delete chapterClickTimeouts.current[chapterNum];
-                      }
-                      
-                      if (user) {
-                        await markChapterAsRead(testamentDrillBook.name, chapterNum);
-                      } else {
-                        alert('Please sign in to mark chapters as read.');
-                      }
+                      setBook(testamentDrillBook.name);
+                      setChapter(chapterNum);
+                      setShowTestamentNav(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     };
                     
                     return (
                       <button
                         key={chapterNum}
                         onClick={handleChapterClick}
-                        onDoubleClick={handleChapterDoubleClick}
                         className="font-bold transition flex-shrink-0"
-                        title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''} - Double-click to ${isRead ? 'unmark' : 'mark'} read`}
+                        title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''}`}
                         style={{
                           width: '32px',
                           height: '32px',
@@ -1186,11 +1156,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           {user && (
             <button
               onClick={markChapterAsRead}
-              style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid' }}
+              style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid', display: 'flex', alignItems: 'center', gap: '5px' }}
               className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
               title={isChapterRead ? "Chapter marked as read" : "Mark chapter as read"}
             >
-              {isChapterRead ? '✓' : '☐'}
+              <span>{isChapterRead ? '✓' : '☐'}</span>
+              <span>{isChapterRead ? 'Read' : 'Mark as Read'}</span>
             </button>
           )}
 
