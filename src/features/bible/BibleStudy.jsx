@@ -54,6 +54,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   
   // Calculate if current chapter is read
   const isChapterRead = readChapters.includes(`${book} ${chapter}`);
+
+  const drillReadCount = testamentDrillBook
+    ? readChapters.filter(entry => entry.startsWith(`${testamentDrillBook.name} `)).length
+    : 0;
+  const drillPercent = testamentDrillBook
+    ? Math.round((drillReadCount / testamentDrillBook.chapters) * 100)
+    : 0;
   
   // ✅ FEEDBACK STATES
   const [copyFeedback, setCopyFeedback] = useState("");
@@ -565,38 +572,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
 
   // 4. 🖱️ Interaction Handlers
-  const handleVerseClick = async (verseNum) => {
-    // 🔍 Check if in Study Mode (for selection) or Reading Mode (for highlighting only)
+  const handleVerseClick = async (verseNum, allowHighlight = true) => {
+    // 🔍 Check if in Study Mode (for selection) or Reading Mode
     const inStudyMode = showNotes || isNoteMode || showNotebook;
     
-    // In reading mode, only allow highlighting (not selection)
+    // In reading mode, only allow highlighting if explicitly allowed
     if (!inStudyMode) {
-      // ⚠️ Highlighting requires login even in reading mode
-      if (!user) {
-        alert('Please sign in to highlight verses and save your progress.');
-        return;
-      }
-      
-      // Toggle highlight only (no selection)
-      const currentHighlight = highlightsMap[verseNum];
-      let newHighlight = null;
-
-      if (!currentHighlight) {
-          newHighlight = { bg: activeHighlightColor.code, border: activeHighlightColor.border };
-      } else if (currentHighlight.bg !== activeHighlightColor.code) {
-          newHighlight = { bg: activeHighlightColor.code, border: activeHighlightColor.border };
-      } else {
-          newHighlight = null;
-      }
-
-      setHighlightsMap(prev => {
-          const next = { ...prev };
-          if (newHighlight) next[verseNum] = newHighlight;
-          else delete next[verseNum];
-          return next;
-      });
-
-      await updateUserHighlight(user.uid, book, chapter, verseNum, newHighlight);
+      if (!allowHighlight) return;
+      await handleVerseHighlight(verseNum);
       return;
     }
     
@@ -610,6 +593,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       return;
     }
 
+    // If in study mode and not selecting verses, do nothing here.
+  };
+
+  const handleVerseHighlight = async (verseNum) => {
     // ⚠️ Highlighting requires login
     if (!user) {
       alert('Please sign in to highlight verses and save your progress.');
@@ -799,6 +786,65 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     setIsNoteMode(false);
   };
 
+  const handleDeleteNoteById = async (noteId) => {
+    if (!noteId || !user) return;
+    try {
+      await deleteNote(noteId);
+      if (editingNoteId === noteId) {
+        setEditingNoteId(null);
+        setCurrentNoteText("");
+        setIsNoteMode(false);
+      }
+    } catch (error) {
+      console.error('Error deleting note:', error);
+    }
+  };
+
+  const formatNoteDate = (note) => {
+    const dateValue = note?.createdAt?.seconds
+      ? new Date(note.createdAt.seconds * 1000)
+      : note?.createdAt?.toDate
+        ? note.createdAt.toDate()
+        : note?.timestamp?.seconds
+          ? new Date(note.timestamp.seconds * 1000)
+          : note?.timestamp?.toDate
+            ? note.timestamp.toDate()
+            : null;
+
+    if (!dateValue || Number.isNaN(dateValue.getTime())) return 'Just now';
+    return dateValue.toLocaleDateString();
+  };
+
+  const handleShareVerseNote = async (note) => {
+    const verses = Array.isArray(note?.verses) ? note.verses : [];
+    const verseRefs = verses.length > 0
+      ? verses.map((v) => `${book} ${chapter}:${v}`).join(', ')
+      : `${book} ${chapter}`;
+    const verseTexts = verses.length > 0
+      ? verses
+          .map((v) => chapter_data?.verses?.find((vrs) => vrs.number === v)?.text || '')
+          .filter(Boolean)
+          .join(' ')
+      : '';
+    const text = `${verseTexts ? `${verseTexts}\n\n` : ''}Note: ${note.text}\n— ${verseRefs}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Equip Daily', text, url: window.location.href });
+      } catch (error) {
+        console.log('Share cancelled', error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(text);
+        setNoteFeedback({ type: 'success', msg: 'Note copied for sharing' });
+        setTimeout(() => setNoteFeedback({}), 2000);
+      } catch (error) {
+        console.error('Share copy failed:', error);
+      }
+    }
+  };
+
   const handleCancelEditNote = () => {
     setEditingNoteId(null);
     setCurrentNoteText("");
@@ -893,7 +939,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
         {/* Compact Testament Navigation */}
         {showTestamentNav && bibleData && (
-          <div className="mb-3 p-3 rounded-lg" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
+          <div
+            className="mb-3 p-3 rounded-lg"
+            style={{
+              background: theme === 'dark' ? '#1a1a1a' : 'white',
+              border: theme === 'dark' ? '1px solid #444' : '1px solid #eee'
+            }}
+          >
             
             {/* Book Drill-Down: Show Chapters */}
             {testamentDrillBook ? (
@@ -911,14 +963,28 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     ← Back
                   </button>
                   <div className="text-sm font-bold" style={{ color: theme === 'dark' ? '#fff' : '#333' }}>
-                    {testamentDrillBook.name}
+                    {testamentDrillBook.name}{' '}
                     <span className="ml-2 text-xs font-normal" style={{ color: theme === 'dark' ? '#999' : '#666' }}>
-                      {(() => {
-                        const readCount = readChapters.filter(entry => entry.startsWith(`${testamentDrillBook.name} `)).length;
-                        const percent = Math.round((readCount / testamentDrillBook.chapters) * 100);
-                        return `${percent}% complete`;
-                      })()}
+                      {drillPercent}%
                     </span>
+                  </div>
+                </div>
+
+                {/* Book Progress Bar (Match Bottom Tracker) */}
+                <div style={{ marginBottom: '16px', padding: '0 10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: theme === 'dark' ? '#999' : '#888', marginBottom: '5px' }}>
+                    <span>Progress</span>
+                    <span>{drillPercent}%</span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: theme === 'dark' ? '#333' : '#f0f0f0', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${drillPercent}%`,
+                        height: '100%',
+                        background: drillPercent === 100 ? '#ffd700' : '#4caf50',
+                        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    ></div>
                   </div>
                 </div>
 
@@ -933,11 +999,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                       setChapter(chapterNum);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     };
+
+                    const handleChapterDoubleClick = (e) => {
+                      e.stopPropagation();
+                      if (!user) return;
+                      const chapterKey = `${testamentDrillBook.name} ${chapterNum}`;
+                      toggleChapterRead(chapterKey);
+                    };
                     
                     return (
                       <button
                         key={chapterNum}
                         onClick={handleChapterClick}
+                        onDoubleClick={handleChapterDoubleClick}
                         className="font-bold transition flex-shrink-0"
                         title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''}`}
                         style={{
@@ -989,9 +1063,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         style={{
                           background: isComplete 
                             ? '#ffd700' 
-                            : `linear-gradient(to right, #b3e5fc ${percent}%, ${theme === 'dark' ? '#2a2a2a' : '#f5f5f5'} ${percent}%)`,
-                          border: isComplete ? '1px solid #e6c200' : `1px solid ${theme === 'dark' ? '#444' : '#ddd'}`,
-                          color: isComplete ? '#555' : (theme === 'dark' ? '#ddd' : '#333'),
+                            : `linear-gradient(to right, #b3e5fc ${percent}%, #f5f5f5 ${percent}%)`,
+                          border: isComplete ? '1px solid #e6c200' : '1px solid #ddd',
+                          color: isComplete ? '#555' : '#333',
                           fontWeight: isComplete ? 'bold' : 'normal',
                           cursor: 'pointer',
                           minWidth: '80px',
@@ -1167,7 +1241,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         </div>
 
         {/* Hint Text Below */}
-        <p className="text-xs text-gray-500 text-center mt-2">Tip: Swipe left/right to change chapters • Long press verses to add notes</p>
+        <p className="text-xs text-gray-500 text-center mt-2">💡 Tip: Swipe left/right to change chapters • Double-click to highlight • Long-press verses to add notes</p>
       </div>
 
       {/* 📚 BIBLE TRACKER MODAL */}
@@ -1240,7 +1314,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               />
           ))}
           </div>
-          <p className="text-xs text-gray-500">Tip: Double click to highlight.</p>
+          <p className="text-xs text-gray-500">Tip: Double-click to highlight.</p>
         </div>
       )}
 
@@ -1286,8 +1360,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             return (
                                 <div key={verse.id} style={{ marginBottom: '1rem' }} id={`verse-${verse.number}`}>
                                     <div 
-                                        onClick={() => handleVerseClick(verse.number)}
-                                        onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
+                                      onClick={() => handleVerseClick(verse.number, false)}
+                                      onDoubleClick={() => handleVerseHighlight(verse.number)}
                                         onMouseDown={() => handleMouseDown(verse.number)}
                                         onMouseUp={handleMouseUp}
                                         onMouseLeave={handleMouseUp}
@@ -1295,7 +1369,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         onTouchEnd={handleMouseUp}
                                         className={`block hover:bg-opacity-80 p-2 rounded transition-colors`}
                                         style={{ ...style, ...selectionStyle }}
-                                        title="Click to highlight • Double-click to copy • Long press to add a note"
+                                      title="Double-click to highlight • Long press verses to add notes"
                                     >
                                         <span style={{ display: 'block', textAlign: 'left' }}>
                                             <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
@@ -1305,7 +1379,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
                                     {/* Inline Note Editor */}
                                     {showEditorHere && (
-                                        <div className={`ml-6 mt-3 p-4 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}>
+                                      <div
+                                        className={`mt-3 p-4 rounded-lg border-l-4 w-full ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}
+                                        style={{ maxWidth: '100%' }}
+                                      >
                                             <div className="text-xs font-semibold mb-2 text-gray-500">
                                                 {editingNoteId ? "Editing Note" : "New Note"}
                                             </div>
@@ -1316,10 +1393,54 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                 placeholder="Type your note here..."
                                                 className={`w-full h-20 p-2 rounded border resize-none focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                                             />
-                                            <div className="flex gap-2 mt-2 justify-end">
-                                                <button onClick={handleSaveNote} className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">Save</button>
-                                                {editingNoteId && <button onClick={handleDeleteNote} className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">Delete</button>}
-                                                <button onClick={handleCancelEditNote} className="px-3 py-1 border border-gray-400 text-gray-600 text-sm rounded hover:bg-gray-100">Cancel</button>
+                                            <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+                                              <div className="flex items-center gap-1">
+                                                {COLOR_PALETTE.map((c) => {
+                                                  const isSelected = activeHighlightColor && activeHighlightColor.code === c.code;
+                                                  return (
+                                                    <button
+                                                      key={c.code}
+                                                      onClick={() => handleApplyColor(c)}
+                                                      title={c.name}
+                                                      style={{
+                                                        width: '12px',
+                                                        height: '12px',
+                                                        background: c.code,
+                                                        borderRadius: '50%',
+                                                        border: isSelected ? '2px solid #000' : '1px solid #666',
+                                                        cursor: 'pointer'
+                                                      }}
+                                                    />
+                                                  );
+                                                })}
+                                                <button
+                                                  onClick={() => handleApplyColor(null)}
+                                                  title="Remove highlight"
+                                                  style={{
+                                                    width: '12px',
+                                                    height: '12px',
+                                                    borderRadius: '50%',
+                                                    border: '1px solid #666',
+                                                    background: 'white',
+                                                    cursor: 'pointer',
+                                                    fontSize: '8px',
+                                                    fontWeight: 'bold',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                  }}
+                                                >
+                                                  ✕
+                                                </button>
+                                              </div>
+                                              <div className="flex flex-wrap gap-2 ml-auto">
+                                                <button onClick={() => handleCopyVerse(verse.text, verse.number)} className="px-2 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700">Copy</button>
+                                                <button onClick={handlePasteVerses} className="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700">Paste Ref</button>
+                                                <button onClick={() => handleShareVerseNote({ text: currentNoteText || '', verses: [verse.number] })} className="px-2 py-1 bg-sky-600 text-white text-xs rounded hover:bg-sky-700">Share</button>
+                                                <button onClick={handleSaveNote} className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Save</button>
+                                                {editingNoteId && <button onClick={handleDeleteNote} className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">Delete</button>}
+                                                <button onClick={handleCancelEditNote} className="px-2 py-1 border border-gray-400 text-gray-600 text-xs rounded hover:bg-gray-100">Cancel</button>
+                                              </div>
                                             </div>
                                         </div>
                                     )}
@@ -1331,20 +1452,34 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         {showNotes && verseNotes.map(note => (
                                             note.id !== editingNoteId && (
                                                 <div 
-                                                    key={note.id} 
-                                                    className={`ml-6 mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
+                                                  key={note.id} 
+                                                  className={`mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
                                                     style={{ fontSize: '0.9rem' }}
                                                 >
                                                     <p className="text-sm mb-1 whitespace-pre-wrap">{note.text}</p>
-                                                    <div className="flex justify-between items-center text-xs mt-2">
-                                                        <button 
-                                                            onClick={() => handleEditNote(note)}
-                                                            className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                                                        >
-                                                            Edit
-                                                        </button>
-                                                        <span className="text-gray-500">{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
-                                                    </div>
+                                                  <div className="flex flex-wrap items-center gap-3 text-xs mt-2">
+                                                    <button 
+                                                      onClick={() => handleEditNote(note)}
+                                                      className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                                                    >
+                                                      Edit
+                                                    </button>
+                                                    <button
+                                                      onClick={() => handleDeleteNoteById(note.id)}
+                                                      className="text-red-600 hover:text-red-800 font-semibold"
+                                                      title="Delete note"
+                                                    >
+                                                      🗑️
+                                                    </button>
+                                                    <button
+                                                      onClick={() => handleShareVerseNote(note)}
+                                                      className="text-emerald-600 hover:text-emerald-800 font-semibold"
+                                                      title="Share verse & note"
+                                                    >
+                                                      🔗 Share
+                                                    </button>
+                                                    <span className="text-gray-500 ml-auto">{formatNoteDate(note)}</span>
+                                                  </div>
                                                 </div>
                                             )
                                         ))}
@@ -1352,7 +1487,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         {/* READING MODE: Show note pills */}
                                         {!showNotes && verseNotes.map(note => (
                                             note.id !== editingNoteId && (
-                                                <div key={note.id} className="ml-6 mt-2">
+                                                <div key={note.id} className="mt-2">
                                                     <button
                                                         onClick={() => setExpandedNotes(prev => ({ ...prev, [note.id]: !prev[note.id] }))}
                                                         className={`inline-block px-3 py-1 rounded-full text-xs font-semibold transition-all ${
@@ -1376,7 +1511,23 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                                     ✕
                                                                 </button>
                                                             </div>
-                                                            <span className="text-xs text-gray-500">{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                                          <div className="flex flex-wrap items-center gap-3 text-xs mt-2">
+                                                            <button
+                                                              onClick={() => handleShareVerseNote(note)}
+                                                              className="text-emerald-600 hover:text-emerald-800 font-semibold"
+                                                              title="Share verse & note"
+                                                            >
+                                                              🔗 Share
+                                                            </button>
+                                                            <button
+                                                              onClick={() => handleDeleteNoteById(note.id)}
+                                                              className="text-red-600 hover:text-red-800 font-semibold"
+                                                              title="Delete note"
+                                                            >
+                                                              🗑️
+                                                            </button>
+                                                            <span className="text-gray-500 ml-auto">{formatNoteDate(note)}</span>
+                                                          </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1417,168 +1568,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce">
                     {copyFeedback}
                 </div>
-            )}
-            
-            {/* Long Press Note Editor */}
-            {longPressVerse && (
-                <>
-                    {/* Backdrop */}
-                    <div className="fixed inset-0 bg-black/30 z-40" onClick={handleCancelNote} />
-                    {/* Floating Note Editor */}
-                    <div 
-                        ref={modalRef}
-                        className={`fixed rounded-xl shadow-2xl p-6 z-50 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                            left: `${editorPosition.x}px`,
-                            top: `${editorPosition.y}px`,
-                            width: '600px',
-                            maxHeight: '80vh',
-                            overflowY: 'auto',
-                            cursor: isEditorDragging ? 'grabbing' : 'default'
-                        }}
-                    >
-                        <div 
-                            className="flex items-center justify-between mb-4 rounded-t-lg -m-6 mb-4 p-4 cursor-grab active:cursor-grabbing"
-                            style={{ background: theme === 'dark' ? '#333' : '#f5f5f5' }}
-                            onMouseDown={handleEditorMouseDown}
-                        >
-                            <h3 className="font-semibold text-lg">✏️ Note for {book} {chapter}:{longPressVerse}</h3>
-                            <button onClick={handleCancelNote} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
-                        </div>
-                        
-
-                        <textarea
-                            ref={noteEditorRef}
-                            value={currentNoteText}
-                            onChange={(e) => setCurrentNoteText(e.target.value)}
-                            placeholder={`Write your note for ${book} ${chapter}:${longPressVerse}...`}
-                            className={`w-full p-3 rounded-lg border mb-3 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
-                            style={{ height: '100px', minHeight: '100px' }}
-                            autoFocus
-                        />
-                        
-                        {/* Color Palette - Small, inline with buttons */}
-                        <div className="mb-3 p-2 rounded-lg flex flex-wrap gap-2 items-center justify-center" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
-                            {COLOR_PALETTE.map(c => {
-                                const isSelected = activeHighlightColor && activeHighlightColor.code === c.code;
-                                return (
-                                    <button 
-                                        key={c.code} 
-                                        onClick={() => handleApplyColor(c)} 
-                                        title={c.name}
-                                        style={{ 
-                                            width: '20px', 
-                                            height: '20px', 
-                                            background: c.code, 
-                                            borderRadius: '50%', 
-                                            border: isSelected ? '2px solid #000' : '1px solid #666',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            transform: isSelected ? 'scale(1.2)' : 'scale(1)',
-                                            boxShadow: isSelected ? '0 2px 6px rgba(0,0,0,0.3)' : 'none'
-                                        }}
-                                    />
-                                );
-                            })}
-                            <button 
-                                onClick={() => handleApplyColor(null)}
-                                title="Remove highlight"
-                                style={{ 
-                                    width: '20px', 
-                                    height: '20px', 
-                                    borderRadius: '50%', 
-                                    border: '1px solid #666',
-                                    background: 'white',
-                                    cursor: 'pointer',
-                                    fontSize: '11px',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                            >
-                                ✕
-                            </button>
-                        </div>
-                        
-                        {/* Study Mode Buttons - Same as FloatingTools */}
-                        <div className="grid grid-cols-2 gap-2 mb-4">
-                            <button 
-                                onClick={handleCopyVerses}
-                                style={{ 
-                                    padding: '8px 12px', 
-                                    fontSize: '0.85rem',
-                                    background: '#4caf50',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold',
-                                    whiteSpace: 'nowrap'
-                                }}
-                                title={`Copy ${book} ${chapter}:${longPressVerse}`}
-                            >
-                                📋 Copy Verse
-                            </button>
-                            
-                            <button 
-                                onClick={handlePasteVerses}
-                                disabled={!versesCopied}
-                                style={{ 
-                                    padding: '8px 12px', 
-                                    fontSize: '0.85rem',
-                                    background: versesCopied ? '#9c27b0' : '#ccc',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: versesCopied ? 'pointer' : 'not-allowed',
-                                    fontWeight: 'bold',
-                                    whiteSpace: 'nowrap'
-                                }}
-                                title={versesCopied ? 'Paste reference to note' : 'Copy verses first'}
-                            >
-                                📌 Paste Ref
-                            </button>
-                        </div>
-                        
-                        <div className="flex gap-2">
-                            <button 
-                                onClick={() => {
-                                    handleSaveNote();
-                                    setLongPressVerse(null);
-                                }}
-                                disabled={!currentNoteText.trim()}
-                                className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
-                            >
-                                💾 Save Note
-                            </button>
-                            <button 
-                                onClick={() => {
-                                    handleDeleteNote();
-                                    setLongPressVerse(null);
-                                }}
-                                style={{ 
-                                    padding: '8px 12px',
-                                    background: '#f44336',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                🗑️ Delete
-                            </button>
-                            <button 
-                                onClick={handleCancelNote}
-                                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 font-medium transition"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </>
             )}
         </div>
 
@@ -1621,6 +1610,20 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         )}
       </div>
 
+      {/* Reflections */}
+      <div className="max-w-4xl mx-auto mt-10">
+        <CommunityFeed
+          queryField="chapter"
+          queryValue={`${book} ${chapter}`}
+          user={user}
+          theme={theme}
+          onSearch={onSearch}
+          onProfileClick={onProfileClick}
+          title={`Reflections for ${book} ${chapter}`}
+          placeholder={`What is the Spirit saying to you about ${book} ${chapter}?`}
+        />
+      </div>
+
       {/* 📚 Bible Tracker */}
       {user && (
         <div className="max-w-4xl mx-auto mt-10 mb-10">
@@ -1635,20 +1638,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           />
         </div>
       )}
-
-      {/* Reflections */}
-      <div className="max-w-4xl mx-auto mt-10">
-        <CommunityFeed
-          queryField="chapter"
-          queryValue={`${book} ${chapter}`}
-          user={user}
-          theme={theme}
-          onSearch={onSearch}
-          onProfileClick={onProfileClick}
-          title={`Reflections for ${book} ${chapter}`}
-          placeholder={`What is the Spirit saying to you about ${book} ${chapter}?`}
-        />
-      </div>
 
       {/* 📚 Your Living Bookshelf - Bible Reading Tracker */}
       {user && showBibleTracker && (
