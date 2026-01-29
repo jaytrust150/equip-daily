@@ -774,11 +774,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <div className="flex flex-col items-center">
                 <button 
                     onClick={toggleAudio}
-                    className={`p-2 rounded-full text-white transition ${audioError ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+                    className={`p-2 rounded-full text-white transition ${audioError ? 'bg-gray-400' : 'bg-indigo-500 hover:bg-indigo-600'}`}
                     title={audioError ? "Audio not available" : (isPlaying ? "Pause Audio" : "Play Audio")}
-                    disabled={audioError}
                 >
-                    {audioError ? "⚠️" : (isPlaying ? "⏸️" : "▶️")}
+                    {audioError ? "🔇" : (isPlaying ? "⏸️" : "🔊")}
                 </button>
                 {audioVersion && (
                     <span className="text-xs text-gray-500 mt-1">{audioVersion} Audio</span>
