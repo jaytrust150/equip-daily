@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuthState } from "react-firebase-hooks/auth";
+import confetti from 'canvas-confetti';
 
 // --- IMPORTS ---
 import { bibleData } from '../../data/bibleData'; 
@@ -41,6 +42,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [audioVersion, setAudioVersion] = useState(null); // Track which version audio is from
   const [audioVerses, setAudioVerses] = useState([]); // Store fallback version text
   const [readChapters, setReadChapters] = useState([]); // Track read chapters
+  const [showBibleTracker, setShowBibleTracker] = useState(false); // Show/hide Bible tracker modal
+  const [testamentFilter, setTestamentFilter] = useState(null); // 'OT' or 'NT' or null
 
   const [verses, setVerses] = useState([]);
   const [_selectedVerses, _setSelectedVerses] = useState([]);
@@ -246,6 +249,112 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     fetchBibleVersions();
     return () => { isMounted = false; };
   }, []);
+
+  // Function to mark current chapter as read with confetti
+  const markChapterAsRead = async () => {
+    if (!user) {
+      alert('Please sign in to track your reading progress.');
+      return;
+    }
+    
+    const chapterKey = `${book} ${chapter}`;
+    if (readChapters.includes(chapterKey)) {
+      alert('Chapter already marked as read! ✓');
+      return;
+    }
+    
+    const updatedChapters = [...readChapters, chapterKey];
+    setReadChapters(updatedChapters);
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { readChapters: updatedChapters });
+      
+      // 🎉 Trigger confetti!
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      console.log(`✅ Chapter marked as read: ${chapterKey}`);
+    } catch (err) {
+      console.error('Error marking chapter as read:', err);
+    }
+  };
+
+  // Function to toggle chapter read status (for Bible Tracker double-click)
+  const toggleChapterRead = async (chapterKey) => {
+    if (!user) return;
+    
+    const isCurrentlyRead = readChapters.includes(chapterKey);
+    const updatedChapters = isCurrentlyRead
+      ? readChapters.filter(key => key !== chapterKey)
+      : [...readChapters, chapterKey];
+    
+    setReadChapters(updatedChapters);
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { readChapters: updatedChapters });
+      console.log(`${isCurrentlyRead ? '❌ Unmarked' : '✅ Marked'} as read: ${chapterKey}`);
+    } catch (err) {
+      console.error('Error toggling chapter read status:', err);
+    }
+  };
+
+  // Function to mark current chapter as read with confetti
+  const markChapterAsRead = async () => {
+    if (!user) {
+      alert('Please sign in to track your reading progress.');
+      return;
+    }
+    
+    const chapterKey = `${book} ${chapter}`;
+    if (readChapters.includes(chapterKey)) {
+      alert('Chapter already marked as read! ✓');
+      return;
+    }
+    
+    const updatedChapters = [...readChapters, chapterKey];
+    setReadChapters(updatedChapters);
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { readChapters: updatedChapters });
+      
+      // 🎉 Trigger confetti!
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      console.log(`✅ Chapter marked as read: ${chapterKey}`);
+    } catch (err) {
+      console.error('Error marking chapter as read:', err);
+    }
+  };
+
+  // Function to toggle chapter read status (for Bible Tracker double-click)
+  const toggleChapterRead = async (chapterKey) => {
+    if (!user) return;
+    
+    const isCurrentlyRead = readChapters.includes(chapterKey);
+    const updatedChapters = isCurrentlyRead
+      ? readChapters.filter(key => key !== chapterKey)
+      : [...readChapters, chapterKey];
+    
+    setReadChapters(updatedChapters);
+    
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, { readChapters: updatedChapters });
+      console.log(`${isCurrentlyRead ? '❌ Unmarked' : '✅ Marked'} as read: ${chapterKey}`);
+    } catch (err) {
+      console.error('Error toggling chapter read status:', err);
+    }
+  };
 
   // 📖 Track chapter as read in Firestore
   const trackChapterRead = async (bookName, chapterNum) => {
@@ -841,11 +950,86 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             />
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
           </div>
+
+          {/* 10. Bible Tracker Button */}
+          <button
+            onClick={() => setShowBibleTracker(!showBibleTracker)}
+            style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid' }}
+            className={`font-medium transition ${showBibleTracker ? 'bg-purple-600 text-white border-purple-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+            title="Bible Reading Tracker"
+          >
+            📚
+          </button>
+
+          {/* 11. Mark Read Checkbox Button */}
+          <button
+            onClick={markChapterAsRead}
+            style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }}
+            className={`font-medium transition ${readChapters.includes(`${book} ${chapter}`) ? 'bg-green-600 text-white' : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-green-700' : 'bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white')}`}
+            title={readChapters.includes(`${book} ${chapter}`) ? 'Chapter marked as read ✓' : 'Mark chapter as read'}
+          >
+            {readChapters.includes(`${book} ${chapter}`) ? '✓' : '☐'}
+          </button>
         </div>
 
         {/* Hint Text Below */}
         <p className="text-xs text-gray-500 text-center mt-2">Tip: Swipe left/right to change chapters • Long press verses to add notes</p>
       </div>
+
+      {/* 📚 BIBLE TRACKER MODAL */}
+      {showBibleTracker && (
+        <div className="mb-6 bg-white/5 p-4 rounded-xl shadow-sm border border-gray-200/20">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-bold" style={{ color: theme === 'dark' ? '#fff' : '#333' }}>Bible Reading Tracker</h3>
+            <button 
+              onClick={() => setShowBibleTracker(false)}
+              className="text-gray-500 hover:text-gray-700 text-xl"
+            >
+              ✕
+            </button>
+          </div>
+          
+          {/* Testament Tabs */}
+          <div className="flex gap-2 mb-4 justify-center">
+            <button
+              onClick={() => setTestamentFilter(testamentFilter === 'OT' ? null : 'OT')}
+              style={{ padding: '5px 15px', fontSize: '0.85rem', borderRadius: '8px' }}
+              className={`font-medium transition ${
+                testamentFilter === 'OT' 
+                  ? 'bg-indigo-600 text-white' 
+                  : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+              }`}
+            >
+              Old Testament
+            </button>
+            <button
+              onClick={() => setTestamentFilter(testamentFilter === 'NT' ? null : 'NT')}
+              style={{ padding: '5px 15px', fontSize: '0.85rem', borderRadius: '8px' }}
+              className={`font-medium transition ${
+                testamentFilter === 'NT' 
+                  ? 'bg-indigo-600 text-white' 
+                  : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300')
+              }`}
+            >
+              New Testament
+            </button>
+          </div>
+
+          {/* Bible Tracker Component */}
+          <BibleTracker
+            readChapters={readChapters}
+            onNavigate={(bookName, chapterNum) => {
+              setBook(bookName);
+              setChapter(chapterNum);
+              setShowBibleTracker(false);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onToggleRead={toggleChapterRead}
+            sectionFilter={testamentFilter}
+            theme={theme}
+          />
+        </div>
+      )}
 
         
 
