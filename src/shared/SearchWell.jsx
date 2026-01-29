@@ -44,6 +44,14 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     }
   }, [isOpen, initialQuery, selectedVersion]);
 
+  // Update search when initialQuery changes (for clicking different verse links)
+  useEffect(() => {
+    if (isOpen && initialQuery && selectedVersion && initialQuery !== query) {
+      setQuery(initialQuery);
+      performSearch(initialQuery);
+    }
+  }, [initialQuery]);
+
   // 📖 Fetch available Bible versions from /api/bibles
   const fetchBibleVersions = async () => {
     setVersionsLoading(true);
