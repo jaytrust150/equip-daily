@@ -849,8 +849,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   </div>
                 </div>
 
-                {/* Chapter Pills */}
-                <div className="flex flex-wrap gap-2 justify-center">
+                {/* Chapter Pills - More Compact Layout */}
+                <div className="flex flex-wrap gap-1 justify-start" style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }}>
                   {Array.from({ length: testamentDrillBook.chapters }, (_, i) => i + 1).map(chapterNum => {
                     const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
                     return (
@@ -859,23 +859,30 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         onClick={() => {
                           setBook(testamentDrillBook.name);
                           setChapter(chapterNum);
-                          setShowTestamentNav(null);
-                          setTestamentDrillBook(null);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
+                        onDoubleClick={async () => {
+                          if (user) {
+                            await markChapterAsRead();
+                          } else {
+                            alert('Please sign in to mark chapters as read.');
+                          }
+                        }}
                         className="font-bold transition"
+                        title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''} - Double-click to mark read`}
                         style={{
-                          width: '40px',
-                          height: '40px',
+                          width: '35px',
+                          height: '35px',
                           borderRadius: '50%',
-                          border: 'none',
+                          border: isRead ? '2px solid #4caf50' : `1px solid ${theme === 'dark' ? '#444' : '#ddd'}`,
                           backgroundColor: isRead ? '#4caf50' : (theme === 'dark' ? '#2a2a2a' : '#f0f0f0'),
                           color: isRead ? 'white' : (theme === 'dark' ? '#aaa' : '#555'),
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          boxShadow: isRead ? '0 2px 5px rgba(76, 175, 80, 0.4)' : 'none'
+                          boxShadow: isRead ? '0 2px 5px rgba(76, 175, 80, 0.3)' : 'none',
+                          fontSize: '0.85rem'
                         }}
                       >
                         {chapterNum}
