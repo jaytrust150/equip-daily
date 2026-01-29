@@ -906,7 +906,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           <button
             onClick={() => setShowHighlightPalette((open) => !open)}
             style={{ backgroundColor: activeHighlightColor.code, borderColor: showHighlightPalette ? '#4f46e5' : activeHighlightColor.border, padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', borderWidth: '2px', borderStyle: 'solid' }}
-            className={`px-2 py-1 rounded-lg border-2 text-sm font-medium transition ${showHighlightPalette ? 'border-indigo-600' : (theme === 'dark' ? 'border-gray-700' : 'border-gray-300')}`}
+            className={`transition ${showHighlightPalette ? 'border-indigo-600' : (theme === 'dark' ? 'border-gray-700' : 'border-gray-300')}`}
             title={`Highlight Tools - Current: ${activeHighlightColor.name}`}
           >
             🎨
@@ -932,7 +932,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 return next;
               });
             }}
-            className={`px-2 py-1 rounded-lg border text-sm font-medium transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+            style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid' }}
+            className={`font-medium transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
             title={showNotes ? "Switch to Reading Mode (highlights only)" : "Switch to Study Mode (long press verses to add notes)"}
           >
             {showNotes ? '📖' : '📝'}
@@ -946,7 +947,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && onSearch && onSearch(searchInput)}
               placeholder="Search..."
-              className={`pl-2 pr-7 py-1 rounded-lg border w-24 text-sm focus:w-36 transition-all ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
+              style={{ padding: '5px 8px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid' }}
+              className={`pr-7 w-24 focus:w-36 transition-all ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
             />
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
           </div>
@@ -961,15 +963,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             📚
           </button>
 
-          {/* 11. Mark Read Checkbox Button */}
-          <button
-            onClick={markChapterAsRead}
-            style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }}
-            className={`font-medium transition ${readChapters.includes(`${book} ${chapter}`) ? 'bg-green-600 text-white' : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-green-700' : 'bg-gray-200 text-gray-700 hover:bg-green-500 hover:text-white')}`}
-            title={readChapters.includes(`${book} ${chapter}`) ? 'Chapter marked as read ✓' : 'Mark chapter as read'}
-          >
-            {readChapters.includes(`${book} ${chapter}`) ? '✓' : '☐'}
-          </button>
+
         </div>
 
         {/* Hint Text Below */}
@@ -1105,7 +1099,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         title="Click to highlight • Double-click to copy • Long press to add a note"
                                     >
                                         <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
-                                        <span>{verse.text}</span>
+                                        <span style={{ display: 'inline', textAlign: 'left' }}>{verse.text}</span>
                                     </div>
 
                                     {/* Inline Note Editor */}

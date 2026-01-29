@@ -114,22 +114,27 @@ function FloatingTools({
       {showPalette && (
         <>
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {COLOR_PALETTE.map(c => (
-              <button 
-                key={c.code} 
-                onClick={() => onApplyColor(c)} 
-                title={c.name}
-                style={{ 
-                  width: '24px', 
-                  height: '24px', 
-                  background: c.code, 
-                  borderRadius: '50%', 
-                  border: '2px solid #999',
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s'
-                }}
-              />
-            ))}
+            {COLOR_PALETTE.map(c => {
+              const isSelected = activeColor && activeColor.code === c.code;
+              return (
+                <button 
+                  key={c.code} 
+                  onClick={() => onApplyColor(c)} 
+                  title={c.name}
+                  style={{ 
+                    width: '24px', 
+                    height: '24px', 
+                    background: c.code, 
+                    borderRadius: '50%', 
+                    border: isSelected ? '3px solid #000' : '2px solid #999',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                    boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.4)' : 'none'
+                  }}
+                />
+              );
+            })}
             <button 
               onClick={() => onApplyColor(null)}
               title="Remove highlight"

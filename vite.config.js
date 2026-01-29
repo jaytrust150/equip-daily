@@ -7,16 +7,36 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',  // Changed from autoUpdate to prompt user
+      devOptions: {
+        enabled: true,
+        type: 'module'
+      },
       workbox: {
         cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*/,
+            urlPattern: /^https:\/\/api\.bible\/.*/,  // Only cache API.Bible calls
             handler: 'NetworkFirst',
-            options: { cacheName: 'api-cache', expiration: { maxEntries: 50, maxAgeSeconds: 300 } }
+            options: { 
+              cacheName: 'bible-api-cache', 
+              expiration: { maxEntries: 50, maxAgeSeconds: 3600 },
+              cacheableResponse: { statuses: [0, 200] }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.firebaseio\.com\/.*/,  // Cache Firebase
+            handler: 'NetworkFirst',
+            options: { 
+              cacheName: 'firebase-cache', 
+              expiration: { maxEntries: 20, maxAgeSeconds: 300 }
+            }
           }
-        ]
+        ],
+        // Exclude development and hot reload files from cache
+        navigateFallbackDenylist: [/^\/api/, /^\/__/]
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
