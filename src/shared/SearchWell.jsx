@@ -154,9 +154,19 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
       try {
         const bookCode = USFM_MAPPING[verseRef.bookName];
         const chapterId = `${bookCode}.${verseRef.chapter}`;
-        const res = await fetch(`/api/bible-chapter?bibleId=${selectedVersion}&chapterId=${chapterId}`);
         
-        if (!res.ok) throw new Error(`Failed to fetch chapter`);
+        // Try selected version first
+        let res = await fetch(`/api/bible-chapter?bibleId=${selectedVersion}&chapterId=${chapterId}`);
+        
+        // If 400 error, try fallback to default version (NLT)
+        if (!res.ok && res.status === 400 && selectedVersion !== DEFAULT_BIBLE_VERSION) {
+          console.warn(`Chapter not found in selected version, trying ${DEFAULT_BIBLE_VERSION}`);
+          res = await fetch(`/api/bible-chapter?bibleId=${DEFAULT_BIBLE_VERSION}&chapterId=${chapterId}`);
+        }
+        
+        if (!res.ok) {
+          throw new Error(`Chapter not available in this Bible version. Try searching keywords instead.`);
+        }
         
         const data = await res.json();
         
