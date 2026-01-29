@@ -850,7 +850,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 </div>
 
                 {/* Chapter Pills - Compact Grid Layout */}
-                <div className="flex flex-wrap justify-center" style={{ gap: '4px', maxHeight: '240px', overflowY: 'auto', paddingRight: '5px' }}>
+                <div className="flex flex-wrap justify-center" style={{ gap: '4px', maxHeight: '240px', overflowY: 'auto', paddingRight: '5px', width: '100%', flexDirection: 'row' }}>
                   {Array.from({ length: testamentDrillBook.chapters }, (_, i) => i + 1).map(chapterNum => {
                     const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
                     return (
