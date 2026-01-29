@@ -1,23 +1,19 @@
 import React, { useMemo, useEffect, useState } from 'react';
 
 function DevotionalContent({ text, theme, fontSize, onVerseClick }) {
-  const [youtubeId, setYoutubeId] = useState(null);
+  const [youtubeIds, setYoutubeIds] = useState([]);
 
   // 📺 Extract YouTube ID from text
   useEffect(() => {
     if (!text) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setYoutubeId(null);
+      setYoutubeIds([]);
       return;
     }
     // Regex to find standard youtube links or youtu.be shortlinks
-    const ytRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
-    const match = text.match(ytRegex);
-    if (match && match[1]) {
-      setYoutubeId(match[1]);
-    } else {
-      setYoutubeId(null);
-    }
+    const ytRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/g;
+    const matches = Array.from(text.matchAll(ytRegex)).map((m) => m[1]).filter(Boolean);
+    setYoutubeIds([...new Set(matches)]);
   }, [text]);
 
   // 📝 Process Text (Add Links to Verses)
@@ -53,18 +49,21 @@ function DevotionalContent({ text, theme, fontSize, onVerseClick }) {
       />
       
       {/* 📺 VIDEO PLAYER (AUTO-INSERTED) */}
-      {youtubeId && (
-        <div className="youtube-container" style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto 0 auto' }}>
-          <iframe
-            width="100%"
-            height="315"
-            src={`https://www.youtube.com/embed/${youtubeId}`}
-            title="Devotional Video"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-          ></iframe>
+      {youtubeIds.length > 0 && (
+        <div className="youtube-container" style={{ marginTop: '30px', maxWidth: '600px', margin: '30px auto 0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          {youtubeIds.map((id, index) => (
+            <iframe
+              key={`${id}-${index}`}
+              width="100%"
+              height="315"
+              src={`https://www.youtube.com/embed/${id}`}
+              title={`Devotional Video ${index + 1}`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+            ></iframe>
+          ))}
         </div>
       )}
     </div>
