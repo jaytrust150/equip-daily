@@ -756,7 +756,18 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       
       {/* 🟢 TOP CONTROLS */}
       <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20">
-        {/* Single Row with All Controls */}
+        {/* Bible Reading Tracker - Top Row */}
+        <div className="flex items-center justify-center mb-3">
+          <button
+            onClick={() => setShowBibleTracker(!showBibleTracker)}
+            style={{ padding: '8px 16px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
+            className={`font-medium transition shadow-sm ${showBibleTracker ? 'bg-purple-600 text-white border-purple-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')}`}
+            title="Bible Reading Tracker"
+          >
+            📚 Bible Reading Tracker
+          </button>
+        </div>
+
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
           
           {/* 1. Audio Button */}
@@ -899,16 +910,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             />
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
           </div>
-
-          {/* 10. Bible Tracker Button */}
-          <button
-            onClick={() => setShowBibleTracker(!showBibleTracker)}
-            style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid' }}
-            className={`font-medium transition ${showBibleTracker ? 'bg-purple-600 text-white border-purple-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
-            title="Bible Reading Tracker"
-          >
-            📚
-          </button>
 
 
         </div>
