@@ -20,7 +20,8 @@ import {
   AUDIO_BASE_PATH,
   DEFAULT_BIBLE_VERSION,
   AUDIO_FALLBACK_VERSION,
-  USFM_MAPPING
+  USFM_MAPPING,
+  hasAudioSupport
 } from '../../config/constants'; 
 import { 
   subscribeToNotes, saveNote, deleteNote,
@@ -1344,10 +1345,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           onTouchEnd={handleTouchEnd}
         >
             <div className="flex items-center gap-2 mb-4">
-              {/* Speaker Icon (matches devotional style) */}
-              <button onClick={toggleAudio} title={isPlaying ? "Pause Audio" : "Play Audio"}>
-                {isPlaying ? '🔇' : '🔊'}
-              </button>
+              {/* Speaker Icon (only show if audio is supported for this Bible version) */}
+              {hasAudioSupport(version) && (
+                <button onClick={toggleAudio} title={isPlaying ? "Pause Audio" : "Play Audio"}>
+                  {isPlaying ? '🔇' : '🔊'}
+                </button>
+              )}
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
                 onClick={() => {
@@ -1532,8 +1535,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                     {/* Inline Note Editor */}
                                     {showEditorHere && (
                                       <div
-                                        className={`mt-3 p-4 rounded-lg border-l-4 w-full ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}
-                                        style={{ width: '100%', maxWidth: '896px' }}
+                                        className={`mt-3 p-4 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}
+                                        style={{ width: '100%' }}
                                       >
                                             <div className="text-xs font-semibold mb-2 text-gray-500">
                                           {editingNoteId ? `Editing Note on ${getNoteReferenceLabel(verse.number)}` : `Note on ${getNoteReferenceLabel(verse.number)}`}
@@ -1544,7 +1547,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                 onChange={(e) => setCurrentNoteText(e.target.value)}
                                           placeholder={`Type your note on ${getNoteReferenceLabel(verse.number)} here...`}
                                               className={`w-full p-3 rounded border resize-y focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                              style={{ minHeight: '200px', maxHeight: '400px' }}
+                                              style={{ minHeight: '100px', maxHeight: '300px' }}
                                             />
                                             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                                               <div className="flex flex-wrap gap-2 ml-auto">
