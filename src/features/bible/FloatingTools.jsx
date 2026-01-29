@@ -23,37 +23,28 @@ function FloatingTools({
   // Helper function to format verse references intelligently with abbreviations
   const getVerseReference = () => {
     if (!selectedVerses || selectedVerses.length === 0) return '';
-    
+
     // Get abbreviated book name from USFM_MAPPING
     const bookAbbr = USFM_MAPPING[book] || book;
-    
-    const sortedVerses = [...selectedVerses].sort((a, b) => a - b);
-    
-    // If single verse
-    if (sortedVerses.length === 1) {
-      return `${bookAbbr} ${chapter}:${sortedVerses[0]}`;
-    }
-    
-    // Check if verses are consecutive
-    let isConsecutive = true;
+
+    const sortedVerses = [...new Set(selectedVerses)].sort((a, b) => a - b);
+    const segments = [];
+    let start = sortedVerses[0];
+    let end = sortedVerses[0];
+
     for (let i = 1; i < sortedVerses.length; i++) {
-      if (sortedVerses[i] !== sortedVerses[i - 1] + 1) {
-        isConsecutive = false;
-        break;
+      const current = sortedVerses[i];
+      if (current === end + 1) {
+        end = current;
+      } else {
+        segments.push(start === end ? `${start}` : `${start}-${end}`);
+        start = current;
+        end = current;
       }
     }
-    
-    // If consecutive, show as range
-    if (isConsecutive) {
-      return `${bookAbbr} ${chapter}:${sortedVerses[0]}-${sortedVerses[sortedVerses.length - 1]}`;
-    }
-    
-    // If not consecutive, show as list (limit to first few if many)
-    if (sortedVerses.length <= 3) {
-      return `${bookAbbr} ${chapter}:${sortedVerses.join(', ')}`;
-    } else {
-      return `${bookAbbr} ${chapter}:${sortedVerses[0]}, ${sortedVerses[1]}, ... ${sortedVerses[sortedVerses.length - 1]}`;
-    }
+    segments.push(start === end ? `${start}` : `${start}-${end}`);
+
+    return `${bookAbbr} ${chapter}:${segments.join(', ')}`;
   };
 
   const getNoteReferenceLabel = () => {
@@ -216,7 +207,7 @@ function FloatingTools({
             title={(versesCopied && selectedVerses.length > 0) ? `Paste reference: ${getVerseReference()}` : 'Copy verses first'}
           >
             {(versesCopied && selectedVerses.length > 0)
-              ? `📌 Paste ${getVerseReference()}` 
+              ? '📌 Paste reference of verses'
               : '📌 Paste Ref'}
           </button>
 

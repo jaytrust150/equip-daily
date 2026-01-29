@@ -19,7 +19,8 @@ import {
   DEFAULT_HIGHLIGHT_DATA, 
   AUDIO_BASE_PATH,
   DEFAULT_BIBLE_VERSION,
-  AUDIO_FALLBACK_VERSION
+  AUDIO_FALLBACK_VERSION,
+  USFM_MAPPING
 } from '../../config/constants'; 
 import { 
   subscribeToNotes, saveNote, deleteNote,
@@ -35,6 +36,7 @@ const DELETE_BUTTON_COLOR = '#f44336';
 function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onProfileClick }) {
     // Search well visibility state
     const [showSearchWell, setShowSearchWell] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [user] = useAuthState(auth);
   const [searchInput, setSearchInput] = useState("");
   
@@ -74,7 +76,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [userNotes, setUserNotes] = useState([]);
   
   // NOTE & STUDY MODES
-  const [showNotes, setShowNotes] = useState(true); 
+  const [showNotes, setShowNotes] = useState(false); // Default to Reading Mode
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
   const [expandedNotes, setExpandedNotes] = useState({}); // Track which notes are expanded in reading mode
@@ -326,6 +328,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, { readChapters: updatedChapters });
+      
+      // 🎉 Trigger confetti when marking as read
+      if (!isCurrentlyRead) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+      
       console.log(`${isCurrentlyRead ? '❌ Unmarked' : '✅ Marked'} as read: ${chapterKey}`);
     } catch (err) {
       console.error('Error toggling chapter read status:', err);
@@ -585,26 +597,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       return;
     }
     
-    // ✅ Allow verse selection for notebooks without login
-    if (showNotebook) {
-      setSelectedVerses((prev) =>
-        prev.includes(verseNum)
-          ? prev.filter((v) => v !== verseNum)
-          : [...prev, verseNum]
-      );
-      return;
-    }
-
-    // If in study mode and not selecting verses, do nothing here.
+    // ✅ In study mode: Single click selects verses (does NOT open editor)
+    // Long press will open the inline editor
+    setSelectedVerses((prev) =>
+      prev.includes(verseNum)
+        ? prev.filter((v) => v !== verseNum)
+        : [...prev, verseNum]
+    );
   };
 
   const handleVerseHighlight = async (verseNum) => {
-    // ⚠️ Highlighting requires login
-    if (!user) {
-      alert('Please sign in to highlight verses and save your progress.');
-      return;
-    }
-
     // Toggle Highlight logic
     const currentHighlight = highlightsMap[verseNum];
     let newHighlight = null;
@@ -628,17 +630,37 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         return next;
     });
 
-    // Save to Firebase
-    await updateUserHighlight(user.uid, book, chapter, verseNum, newHighlight);
+    // Save to Firebase (only if user is logged in)
+    if (user) {
+      await updateUserHighlight(user.uid, book, chapter, verseNum, newHighlight);
+    }
   };
 
-  const handleCopyVerse = (text, verseNum) => {
-    const textToCopy = `${book} ${chapter}:${verseNum} - ${text}`;
-    navigator.clipboard.writeText(textToCopy);
-    setCopyFeedback(`Copied Verse ${verseNum}!`);
-    if (!user) return; // ⚠️ Notes require login
+  const handleCopyFromEditor = async () => {
+    // If verses are selected, copy all of them with proper formatting
+    // Otherwise, copy just the verse being edited
+    const versesToCopy = selectedVerses.length > 0 ? selectedVerses : (longPressVerse ? [longPressVerse] : []);
     
-    setTimeout(() => setCopyFeedback(""), 2000);
+    if (versesToCopy.length === 0) return;
+    
+    try {
+      const verseRefs = formatVerseReference(versesToCopy);
+      const verseTexts = versesToCopy
+        .map(v => chapter_data?.verses?.find(vrs => vrs.number === v)?.text || '')
+        .filter(t => t)
+        .join(' ');
+      
+      const textToCopy = `${verseTexts}\n\n— ${verseRefs}`;
+      await navigator.clipboard.writeText(textToCopy);
+      
+      setVersesCopied(true); // Mark as copied
+      setNoteFeedback({ type: 'success', msg: `Copied ${versesToCopy.length} verse${versesToCopy.length !== 1 ? 's' : ''}` });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    } catch (err) {
+      console.error('Copy from editor failed:', err);
+      setNoteFeedback({ type: 'error', msg: 'Failed to copy verses' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    }
   };
 
   // Long press handlers for inline note editor
@@ -690,7 +712,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const handleCopyVerses = async () => {
     if (selectedVerses.length === 0) return;
     try {
-      const verseRefs = selectedVerses.map(v => `${book} ${chapter}:${v}`).join(', ');
+      const verseRefs = formatVerseReference(selectedVerses);
       const verseTexts = selectedVerses
         .map(v => chapter_data?.verses?.find(vrs => vrs.number === v)?.text || '')
         .filter(t => t)
@@ -709,13 +731,36 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
   };
 
+  const formatVerseReference = (verses, useAbbrev = false) => {
+    if (!verses || verses.length === 0) return '';
+    const sorted = [...new Set(verses)].sort((a, b) => a - b);
+    const segments = [];
+    let start = sorted[0];
+    let end = sorted[0];
+
+    for (let i = 1; i < sorted.length; i++) {
+      const current = sorted[i];
+      if (current === end + 1) {
+        end = current;
+      } else {
+        segments.push(start === end ? `${start}` : `${start}-${end}`);
+        start = current;
+        end = current;
+      }
+    }
+    segments.push(start === end ? `${start}` : `${start}-${end}`);
+
+    const bookLabel = useAbbrev ? (USFM_MAPPING[book] || book) : book;
+    return `${bookLabel} ${chapter}:${segments.join(', ')}`;
+  };
+
   const handlePasteVerses = () => {
     if (selectedVerses.length === 0) {
       setNoteFeedback({ type: 'error', msg: 'No verses selected' });
       setTimeout(() => setNoteFeedback({}), 2000);
       return;
     }
-    const verseRefs = selectedVerses.map(v => `${book} ${chapter}:${v}`).join(', ');
+    const verseRefs = formatVerseReference(selectedVerses);
     setNoteFeedback({ type: 'info', msg: `Reference: ${verseRefs}` });
     setTimeout(() => setNoteFeedback({}), 3000);
   };
@@ -875,6 +920,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     setEditingNoteId(null);
     setCurrentNoteText("");
     setIsNoteMode(false);
+    setLongPressVerse(null); // Close long-press inline editor
   };
 
   // Auto-focus note editor and position modal correctly
@@ -929,39 +975,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       
       {/* 🟢 TOP CONTROLS */}
       <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20">
-        <div className="flex justify-center mb-3">
-          {/* Bible Version Picker (centered, tiny functional dropdown) */}
-          <select
-            value={version}
-            onChange={e => setVersion(e.target.value)}
-            style={{
-              fontSize: '0.7rem',
-              padding: '0 2px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              background: theme === 'dark' ? '#333' : '#f5f5f5',
-              color: theme === 'dark' ? '#aaa' : '#666',
-              fontWeight: 600,
-              minWidth: 0,
-              maxWidth: '90px',
-              height: '24px',
-              lineHeight: 1,
-              textAlign: 'center',
-              appearance: 'none',
-              outline: 'none',
-              margin: 0,
-              display: 'inline-block',
-              verticalAlign: 'middle',
-            }}
-            title="Bible Version"
-          >
-            {bibleVersions.map(v => (
-              <option key={v.id} value={v.id} style={{fontSize: '0.7rem'}}>{v.abbreviation}</option>
-            ))}
-          </select>
-        </div>
         {/* Testament Navigation Buttons + Version Selector */}
-        <div className="flex gap-2 mb-3 justify-center items-center">
+        <div className="flex gap-1 mb-3 justify-center items-center flex-nowrap">
           {/* Bible Version Picker (tiny, functional dropdown) */}
           <select
             value={version}
@@ -975,7 +990,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               color: theme === 'dark' ? '#aaa' : '#666',
               fontWeight: 600,
               minWidth: 0,
-              maxWidth: '90px',
+              maxWidth: '80px',
               height: '24px',
               lineHeight: 1,
               textAlign: 'center',
@@ -996,7 +1011,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
               setTestamentDrillBook(null);
             }}
-            style={{ padding: '8px 20px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
+            style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
             className={`font-medium transition shadow-sm ${
               showTestamentNav === 'OT'
                 ? 'bg-indigo-600 text-white border-indigo-600' 
@@ -1011,7 +1026,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
               setTestamentDrillBook(null);
             }}
-            style={{ padding: '8px 20px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
+            style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
             className={`font-medium transition shadow-sm ${
               showTestamentNav === 'NT'
                 ? 'bg-indigo-600 text-white border-indigo-600' 
@@ -1021,14 +1036,73 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           >
             ✝️ New Testament
           </button>
-          {/* Magnifying glass search button */}
-          <button
-            onClick={() => setShowSearchWell(v => !v)}
-            style={{ padding: '4px 8px', fontSize: '1.1rem', borderRadius: '50%', border: '1px solid #ccc', background: theme === 'dark' ? '#222' : '#f5f5f5', color: theme === 'dark' ? '#aaa' : '#666', marginLeft: '4px', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            title="Search"
-          >
-            <span role="img" aria-label="search">🔍</span>
-          </button>
+          {/* Search Input or Icon - Inline */}
+          {!showSearchWell ? (
+            <button
+              onClick={() => setShowSearchWell(v => !v)}
+              style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
+              className={`font-medium transition shadow-sm ${
+                theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+              }`}
+              title="Search"
+            >
+              🔍
+            </button>
+          ) : (
+            <div className="flex gap-2 items-center">
+              <input
+                type="text"
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && onSearch && searchInput.trim()) {
+                    onSearch(searchInput);
+                    setSearchInput('');  // Clear after searching
+                    setShowSearchWell(false);
+                  }
+                  if (e.key === 'Escape') {
+                    setSearchInput('');  // Clear on cancel
+                    setShowSearchWell(false);
+                  }
+                }}
+                placeholder="Search scripture or keywords..."
+                style={{ 
+                  padding: '6px 12px', 
+                  fontSize: '0.85rem', 
+                  borderRadius: '10px', 
+                  border: '1px solid #ccc', 
+                  width: '200px',
+                  background: theme === 'dark' ? '#333' : '#f5f5f5',
+                  color: theme === 'dark' ? '#fff' : '#333'
+                }}
+                autoFocus
+              />
+              <button
+                onClick={() => {
+                  if (onSearch && searchInput.trim()) {
+                    onSearch(searchInput);
+                    setSearchInput('');  // Clear after searching
+                    setShowSearchWell(false);
+                  }
+                }}
+                disabled={!searchInput.trim()}
+                style={{ padding: '6px 10px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid #ccc', background: searchInput.trim() ? (theme === 'dark' ? '#2196F3' : '#2196F3') : '#ddd', color: searchInput.trim() ? '#fff' : '#999', cursor: searchInput.trim() ? 'pointer' : 'not-allowed' }}
+                title="Search"
+              >
+                ✓
+              </button>
+              <button
+                onClick={() => {
+                  setSearchInput('');  // Clear on cancel
+                  setShowSearchWell(false);
+                }}
+                style={{ padding: '6px 10px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid #ccc', background: theme === 'dark' ? '#333' : '#f5f5f5', color: '#c00', cursor: 'pointer' }}
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Compact Testament Navigation */}
@@ -1177,184 +1251,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         )}
 
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
-          {/* 2. Book Selector (next to audio) */}
-          <select 
-            value={book} 
-            onChange={(e) => { setBook(e.target.value); setChapter(1); }}
-            style={{ 
-              border: 'none', 
-              background: 'transparent', 
-              fontWeight: 'bold', 
-              fontSize: '1.15rem', 
-              color: theme === 'dark' ? '#f0f0f0' : '#2c3e50', 
-              cursor: 'pointer', 
-              appearance: 'none', 
-              outline: 'none', 
-              fontFamily: 'inherit', 
-              padding: 0, 
-              margin: 0,
-              textAlign: 'left',
-              minWidth: '80px',
-              marginRight: '2px'
-            }}
-          >
-            {bibleData && bibleData.map(bookData => (
-              <option key={bookData.name} value={bookData.name} style={{color: '#333'}}>{bookData.name}</option>
-            ))}
-          </select>
-
-          {/* 3. Chapter Selector */}
-          <select 
-            value={chapter} 
-            onChange={(e) => setChapter(Number(e.target.value))}
-            style={{ 
-              border: 'none', 
-              background: 'transparent', 
-              fontWeight: 'bold', 
-              fontSize: '1.25rem', 
-              color: theme === 'dark' ? '#f0f0f0' : '#2c3e50', 
-              cursor: 'pointer', 
-              appearance: 'none', 
-              outline: 'none', 
-              fontFamily: 'inherit', 
-              padding: 0, 
-              margin: 0,
-              width: chapter > 99 ? '45px' : (chapter > 9 ? '35px' : '25px'),
-              textAlign: 'center'
-            }}
-          >
-            {bibleData && bibleData.find(b => b.name === book) && [...Array(bibleData.find(b => b.name === book).chapters).keys()].map(i => (
-              <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>
-            ))}
-          </select>
-
-
-
-          {/* 4. Version Pill (tight, tiny, functional dropdown) */}
-          <select
-            value={version}
-            onChange={e => setVersion(e.target.value)}
-            style={{
-              fontSize: '0.7rem',
-              padding: '0 2px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              background: theme === 'dark' ? '#333' : '#f5f5f5',
-              color: theme === 'dark' ? '#aaa' : '#666',
-              fontWeight: 600,
-              minWidth: 0,
-              maxWidth: '90px',
-              height: '24px',
-              lineHeight: 1,
-              textAlign: 'center',
-              appearance: 'none',
-              outline: 'none',
-              margin: 0,
-              display: 'inline-block',
-              verticalAlign: 'middle',
-            }}
-            title="Bible Version"
-          >
-            {bibleVersions.map(v => (
-              <option key={v.id} value={v.id} style={{fontSize: '0.7rem'}}>{v.abbreviation}</option>
-            ))}
-          </select>
-
-          {/* 5. Prev/Next Buttons */}
-          <button onClick={goToPrevChapter} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">← Prev</button>
-          <button onClick={goToNextChapter} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">Next →</button>
-          {/* Mark as Read Button (compact, full label) */}
-          {user && (
-            <button
-              onClick={() => markChapterAsRead(book, chapter)}
-              style={{ padding: '2px 6px', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid', display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '4px', minWidth: '70px', height: '28px' }}
-              className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')}`}
-              title={isChapterRead ? "Chapter marked as read" : "Mark chapter as read"}
-            >
-              <span>{isChapterRead ? '✓' : '☐'}</span>
-              <span>{isChapterRead ? 'Read' : 'Mark Read'}</span>
-            </button>
-          )}
-
-          {/* 6. Font Size Controls */}
-          <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-gray-200 text-black font-bold">-</button>
-          <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-gray-200 text-black font-bold">+</button>
-
-          {/* 7. Highlight Button - REMOVED ICON, keep highlight logic */}
-          {/* 8. Study/Reading Mode Button - background color always matches highlight color */}
-          <button 
-            onClick={() => {
-              if (!user) {
-                alert('Please sign in to use Study mode tools.');
-                return;
-              }
-              setShowNotes((prev) => {
-                const next = !prev;
-                if (next) {
-                  setShowNotebook(true);
-                  setShowHighlightPalette(false);
-                } else {
-                  setShowNotebook(false);
-                  setSelectedVerses([]);
-                }
-                return next;
-              });
-            }}
-            style={{ 
-              padding: '5px 10px', 
-              fontSize: '0.85rem', 
-              borderRadius: '8px', 
-              border: '1px solid',
-              background: activeHighlightColor.code,
-              color: theme === 'dark' ? '#222' : '#fff',
-              fontWeight: 'bold',
-              transition: 'background 0.2s, color 0.2s',
-            }}
-            className={`font-medium transition border-indigo-600`}
-            title={showNotes ? `Switch to Reading Mode (highlights only)` : `Switch to Study Mode (long press verses to add notes)`}
-          >
-            {showNotes ? '📖' : '📝'}
-          </button>
+          {/* Audio and other controls - Book and Chapter selectors moved to bottom */}
 
 
         </div>
 
-        {/* Search Well (hidden until magnifier is clicked) */}
-        {showSearchWell && (
-          <div className="flex justify-center mt-2 mb-2">
-            <input
-              type="text"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && onSearch) {
-                  onSearch(searchInput);
-                  setShowSearchWell(false);
-                }
-              }}
-              placeholder="Search..."
-              style={{ padding: '6px 12px', fontSize: '0.95rem', borderRadius: '8px', border: '1px solid #ccc', width: '220px', maxWidth: '90vw' }}
-              autoFocus
-            />
-            <button
-              onClick={() => {
-                if (onSearch) onSearch(searchInput);
-                setShowSearchWell(false);
-              }}
-              style={{ marginLeft: '6px', fontSize: '1.2rem', border: 'none', background: 'none', color: theme === 'dark' ? '#aaa' : '#666', cursor: 'pointer' }}
-              title="Search"
-            >
-              🔍
-            </button>
-            <button
-              onClick={() => setShowSearchWell(false)}
-              style={{ marginLeft: '6px', fontSize: '1.2rem', border: 'none', background: 'none', color: '#c00', cursor: 'pointer' }}
-              title="Close"
-            >
-              ✕
-            </button>
-          </div>
-        )}
         {/* Hint Text Below */}
         <p className="text-xs text-gray-500 text-center mt-2" style={{ fontStyle: 'italic' }}>💡 Tip: Swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes</p>
       </div>
@@ -1443,6 +1344,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           onTouchEnd={handleTouchEnd}
         >
             <div className="flex items-center gap-2 mb-4">
+              {/* Speaker Icon (matches devotional style) */}
+              <button onClick={toggleAudio} title={isPlaying ? "Pause Audio" : "Play Audio"}>
+                {isPlaying ? '🔇' : '🔊'}
+              </button>
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
                 onClick={() => {
@@ -1473,7 +1378,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   transition: 'background 0.2s, color 0.2s',
                 }}
                 className={`font-medium transition border-indigo-600`}
-                title={showNotes ? `Switch to Reading Mode (highlights only)` : `Switch to Study Mode (long press verses to add notes)`}
+                title={showNotes ? `Switch to Reading Mode • Background shows current highlighter color` : `Switch to Study Mode • Enable selecting multiple verses & floating tool palette`}
               >
                 {showNotes ? '📖' : '📝'}
               </button>
@@ -1569,20 +1474,35 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     {/* Main Version Text - Verse by Line */}
                     <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>
                         {verses.map((verse) => {
-                            const isSelected = selectedVerses.includes(verse.number);
-                            const style = highlightsMap[verse.number] 
-                              ? { backgroundColor: highlightsMap[verse.number].bg, cursor: 'pointer' }
-                              : { cursor: 'pointer' };
+                          const isSelected = selectedVerses.includes(verse.number);
+                          const showSelectionCheckbox = showNotebook || isNoteMode;
+                            const highlight = highlightsMap[verse.number];
+                            const style = { cursor: 'pointer' };
+                            
+                            // Apply highlight with dark mode adjustments
+                            if (highlight) {
+                              if (theme === 'dark') {
+                                // Dark mode: reduce opacity and ensure text readability
+                                style.backgroundColor = highlight.bg + '40'; // ~25% opacity
+                                style.color = '#e5e7eb'; // Force light gray text
+                                style.borderLeft = `4px solid ${highlight.border}`;
+                                style.paddingLeft = '12px';
+                              } else {
+                                // Light mode: full color
+                                style.backgroundColor = highlight.bg;
+                                style.borderLeft = `4px solid ${highlight.border}`;
+                                style.paddingLeft = '12px';
+                              }
+                            }
+                            
                             const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
                             const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
-                            const showEditorHere = ((showNotes || showNotebook) && !editingNoteId && selectedVerses.length > 0 && selectedVerses[0] === verse.number) ||
-                                                   (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[0] === verse.number) ||
-                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[0]?.verses?.[0]) ||
-                                                   (longPressVerse === verse.number);
+                            const showEditorHere = (longPressVerse === verse.number) ||
+                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[0]?.verses?.[0]);
                             
                             return (
                                 <div key={verse.id} style={{ marginBottom: '1rem' }} id={`verse-${verse.number}`}>
-                                    <div 
+                                    <div
                                       onClick={() => handleVerseClick(verse.number, false)}
                                       onDoubleClick={() => handleVerseHighlight(verse.number)}
                                         onMouseDown={() => handleMouseDown(verse.number)}
@@ -1595,6 +1515,15 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                       title="Double-click to highlight • Long press verses to add notes"
                                     >
                                         <span style={{ display: 'block', textAlign: 'left' }}>
+                                            {showSelectionCheckbox && (
+                                              <span
+                                                className="mr-2 text-xs font-bold select-none"
+                                                style={{ color: isSelected ? '#4f46e5' : '#9ca3af' }}
+                                                aria-label={isSelected ? 'Selected verse' : 'Unselected verse'}
+                                              >
+                                                {isSelected ? '☑' : '☐'}
+                                              </span>
+                                            )}
                                             <sup className="text-xs font-bold mr-2 text-gray-400 select-none">{verse.number}</sup>
                                             {verse.text}
                                         </span>
@@ -1614,15 +1543,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                 value={currentNoteText}
                                                 onChange={(e) => setCurrentNoteText(e.target.value)}
                                           placeholder={`Type your note on ${getNoteReferenceLabel(verse.number)} here...`}
-                                              className={`w-full h-20 p-2 rounded border resize-none focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                              className={`w-full p-3 rounded border resize-y focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                              style={{ minHeight: '200px', maxHeight: '400px' }}
                                             />
                                             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                                               <div className="flex flex-wrap gap-2 ml-auto">
-                                                <button onClick={() => handleCopyVerse(verse.text, verse.number)} className="px-2 py-1 bg-emerald-600 text-white text-xs rounded hover:bg-emerald-700">Copy</button>
-                                                <button onClick={handlePasteVerses} className="px-2 py-1 bg-purple-600 text-white text-xs rounded hover:bg-purple-700">Paste Ref</button>
-                                                <button onClick={handleSaveNote} className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">Save</button>
-                                                {editingNoteId && <button onClick={handleDeleteNote} className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">Delete</button>}
-                                                <button onClick={handleCancelEditNote} className="px-2 py-1 border border-gray-400 text-gray-600 text-xs rounded hover:bg-gray-100">Cancel</button>
+                                                <button onClick={() => handleCopyFromEditor()} className="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">📋 Copy</button>
+                                                <button onClick={handlePasteVerses} className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 font-medium transition shadow-sm">📌 Paste</button>
+                                                <button onClick={handleSaveNote} className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-700 font-medium transition shadow-sm">💾 Save</button>
+                                                {editingNoteId && <button onClick={handleDeleteNote} className="px-3 py-1.5 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 font-medium transition shadow-sm">🗑️ Delete</button>}
+                                                <button onClick={handleCancelEditNote} className={`px-3 py-1.5 text-xs rounded-lg font-medium transition shadow-sm border ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>Cancel</button>
                                               </div>
                                             </div>
                                         </div>
@@ -1723,8 +1653,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         })}
                     </div>
 
-                    {/* Audio Version Text (Fallback) */}
-                    {audioVersion && audioVerses.length > 0 && (
+                    {/* Audio Version Text (Fallback) - Only show for logged-in users */}
+                    {user && audioVersion && audioVerses.length > 0 && (
                         <div className={`mt-8 pt-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="text-sm font-semibold text-indigo-600">🎧 Audio Version ({audioVersion})</span>
@@ -1793,6 +1723,150 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         )}
       </div>
 
+      {/* Mark as Read Button */}
+      <div className="max-w-4xl mx-auto mt-10 flex justify-center">
+        <button
+          onClick={() => {
+            const chapterKey = `${book} ${chapter}`;
+            if (!readChapters.includes(chapterKey)) {
+              toggleChapterRead(chapterKey);
+            }
+            goToNextChapter();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="px-6 py-3 font-semibold rounded-lg transition shadow-md flex items-center gap-2"
+          style={{
+            backgroundColor: '#10b981',
+            color: 'white',
+            fontSize: '1rem'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
+          title="Mark this chapter as read, track your progress, and advance to the next chapter 🎉"
+        >
+          <span>✓</span>
+          Mark as Read
+        </button>
+      </div>
+
+      {/* Chapter Navigation Buttons */}
+      <div className="max-w-4xl mx-auto flex justify-center gap-3 mt-8 mb-10 flex-wrap items-center">
+        {/* Bible Version Selector - Small and Compact */}
+        <select
+          value={version}
+          onChange={e => setVersion(e.target.value)}
+          style={{
+            fontSize: '0.85rem',
+            padding: '6px 10px',
+            borderRadius: '10px',
+            border: '1px solid #ccc',
+            background: theme === 'dark' ? '#333' : '#f5f5f5',
+            color: theme === 'dark' ? '#aaa' : '#666',
+            fontWeight: 600,
+            cursor: 'pointer',
+            outline: 'none',
+            appearance: 'none',
+            minWidth: '70px',
+            textAlign: 'center'
+          }}
+          title="Bible Version"
+        >
+          {bibleVersions.map(v => (
+            <option key={v.id} value={v.id} style={{color: '#333'}}>{v.abbreviation}</option>
+          ))}
+        </select>
+
+        {/* Book and Chapter Selectors */}
+        <select 
+          value={book} 
+          onChange={(e) => { setBook(e.target.value); setChapter(1); }}
+          style={{ 
+            border: '1px solid #ccc',
+            background: theme === 'dark' ? '#333' : '#f5f5f5',
+            fontWeight: 600, 
+            fontSize: '0.85rem', 
+            color: theme === 'dark' ? '#aaa' : '#666', 
+            cursor: 'pointer', 
+            appearance: 'none', 
+            outline: 'none', 
+            fontFamily: 'inherit', 
+            padding: '6px 10px',
+            borderRadius: '10px',
+            minWidth: '90px'
+          }}
+        >
+          {bibleData && bibleData.map(bookData => (
+            <option key={bookData.name} value={bookData.name} style={{color: '#333'}}>{bookData.name}</option>
+          ))}
+        </select>
+
+        <select 
+          value={chapter} 
+          onChange={(e) => setChapter(Number(e.target.value))}
+          style={{ 
+            border: '1px solid #ccc',
+            background: theme === 'dark' ? '#333' : '#f5f5f5',
+            fontWeight: 600, 
+            fontSize: '0.85rem', 
+            color: theme === 'dark' ? '#aaa' : '#666', 
+            cursor: 'pointer', 
+            appearance: 'none', 
+            outline: 'none', 
+            fontFamily: 'inherit', 
+            padding: '6px 10px',
+            borderRadius: '10px',
+            minWidth: '60px',
+            textAlign: 'center'
+          }}
+        >
+          {bibleData && bibleData.find(b => b.name === book) && [...Array(bibleData.find(b => b.name === book).chapters).keys()].map(i => (
+            <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>
+          ))}
+        </select>
+
+        <button 
+          onClick={goToPrevChapter}
+          style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
+          className={`font-medium transition shadow-sm ${
+            theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          ← Prev
+        </button>
+        <button 
+          onClick={goToNextChapter}
+          style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
+          className={`font-medium transition shadow-sm ${
+            theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+          }`}
+        >
+          Next →
+        </button>
+      </div>
+
+      {/* Navigation Tips */}
+      <div 
+        className="max-w-4xl mx-auto mt-6 mb-10"
+        style={{ 
+          padding: '20px',
+          backgroundColor: theme === 'dark' ? '#1f2937' : '#f3f4f6',
+          borderRadius: '12px',
+          borderLeft: `4px solid ${theme === 'dark' ? '#6366f1' : '#4f46e5'}`
+        }}
+      >
+        <ul style={{ 
+          fontSize: '0.9rem', 
+          lineHeight: '1.8',
+          color: theme === 'dark' ? '#d1d5db' : '#4b5563',
+          listStyle: 'none',
+          padding: 0,
+          margin: 0
+        }}>
+          <li>• Click <strong>✓ Mark as Read</strong> to track progress and advance to next chapter</li>
+          <li>• <strong>💡 Tip:</strong> Swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes</li>
+        </ul>
+      </div>
+
       {/* Reflections */}
       <div className="max-w-4xl mx-auto mt-10">
         <CommunityFeed
@@ -1806,6 +1880,70 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           placeholder={`What is the Spirit saying to you about ${book} ${chapter}?`}
         />
       </div>
+
+      {/* Login Button for Non-Authenticated Users */}
+      {!user && (
+        <div className="max-w-4xl mx-auto mt-6 mb-10 text-center">
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-md"
+            style={{ fontSize: '1rem' }}
+          >
+            🔐 Sign In to Save Notes & Join the Community
+          </button>
+        </div>
+      )}
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+          }}
+          onClick={() => setShowLoginModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: theme === 'dark' ? '#1e1e1e' : '#ffffff',
+              padding: '2rem',
+              borderRadius: '12px',
+              maxWidth: '500px',
+              width: '90%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              position: 'relative',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowLoginModal(false)}
+              style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                color: theme === 'dark' ? '#aaa' : '#666',
+              }}
+              title="Close"
+            >
+              ×
+            </button>
+            <Login theme={theme} />
+          </div>
+        </div>
+      )}
 
       {/* 📚 Bible Tracker */}
       {user && (

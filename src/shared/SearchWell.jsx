@@ -319,7 +319,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     backdropFilter: 'blur(12px)',
     boxShadow: '0 8px 40px rgba(0,0,0,0.3)',
     border: isDark ? '1px solid #444' : '1px solid #ddd',
-    zIndex: 2000, display: 'flex', flexDirection: 'column',
+    zIndex: 10000, display: 'flex', flexDirection: 'column',
     ...(isMobile ? { bottom: 0, left: 0, width: '100%', height: mobileSize === 'full' ? '90vh' : '50vh', borderTopLeftRadius: '16px', borderTopRightRadius: '16px' } 
                  : { left: winState.x, top: winState.y, width: winState.w, height: winState.h, borderRadius: '12px' })
   };

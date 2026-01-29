@@ -48,6 +48,8 @@ export default async function handler(request, response) {
   try {
     const url = `https://rest.api.bible/v1/bibles/${bibleId}/search?query=${encodeURIComponent(query)}&limit=${limit}`;
     
+    console.log(`Searching: ${url}`);
+    
     const fetchResponse = await fetch(url, {
       headers: {
         'api-key': API_KEY,
@@ -61,6 +63,7 @@ export default async function handler(request, response) {
       return response.status(fetchResponse.status).json({ 
         error: `API error: ${fetchResponse.status}`,
         message: fetchResponse.statusText,
+        details: errorText,
         unauthorized: fetchResponse.status === 401
       });
     }
