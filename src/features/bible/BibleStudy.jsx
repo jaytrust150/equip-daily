@@ -252,7 +252,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     return () => { isMounted = false; };
   }, []);
 
-  // Function to mark current chapter as read with confetti
+  // Function to toggle chapter read status
   const markChapterAsRead = async () => {
     if (!user) {
       alert('Please sign in to track your reading progress.');
@@ -260,28 +260,31 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
     
     const chapterKey = `${book} ${chapter}`;
-    if (readChapters.includes(chapterKey)) {
-      alert('Chapter already marked as read! ✓');
-      return;
-    }
+    const isCurrentlyRead = readChapters.includes(chapterKey);
     
-    const updatedChapters = [...readChapters, chapterKey];
+    // Toggle: if already read, remove it; otherwise add it
+    const updatedChapters = isCurrentlyRead
+      ? readChapters.filter(key => key !== chapterKey)
+      : [...readChapters, chapterKey];
+    
     setReadChapters(updatedChapters);
     
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, { readChapters: updatedChapters });
       
-      // 🎉 Trigger confetti!
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+      // 🎉 Trigger confetti only when marking as read (not when unmarking)
+      if (!isCurrentlyRead) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
       
-      console.log(`✅ Chapter marked as read: ${chapterKey}`);
+      console.log(`✅ Chapter ${isCurrentlyRead ? 'unmarked' : 'marked'} as read: ${chapterKey}`);
     } catch (err) {
-      console.error('Error marking chapter as read:', err);
+      console.error('Error updating chapter read status:', err);
     }
   };
 
