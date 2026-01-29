@@ -37,7 +37,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   
   // ✅ Load user's default Bible version or use constant default
   const [version, setVersion] = useState(DEFAULT_BIBLE_VERSION);
-  const [userDefaultVersion, setUserDefaultVersion] = useState(null);
   const [bibleVersions, setBibleVersions] = useState([]);
   const [audioVersion, setAudioVersion] = useState(null); // Track which version audio is from
   const [audioVerses, setAudioVerses] = useState([]); // Store fallback version text
@@ -94,7 +93,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       if (userSnap.exists()) {
         const data = userSnap.data();
         if (data.defaultBibleVersion) {
-          setUserDefaultVersion(data.defaultBibleVersion);
           setVersion(data.defaultBibleVersion);
         }
         if (data.readChapters && Array.isArray(data.readChapters)) {

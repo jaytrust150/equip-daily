@@ -7,7 +7,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [mobileSize, setMobileSize] = useState('half');
+  const [mobileSize] = useState('half');
   const [versions, setVersions] = useState([]); // Bible versions list
   const [selectedVersion, setSelectedVersion] = useState(null); // Selected version for search
   const [versionsLoading, setVersionsLoading] = useState(false);

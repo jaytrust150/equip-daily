@@ -63,8 +63,7 @@ function MemberProfile({ theme, viewingUid, onNavigate, onJumpToHistory, previou
     if (!targetUid || !db) return; // ✅ Check if db exists
     
     if (!isMyProfile && !isHistoryPublic) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setMyReflections([]);
+            setMyReflections([]);
         return; 
     }
 

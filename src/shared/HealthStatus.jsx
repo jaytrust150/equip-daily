@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
  * Health Status Component
  * Displays system health checks in real-time
  */
-export default function HealthStatus({ theme = 'light' }) {
+export default function HealthStatus() {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);

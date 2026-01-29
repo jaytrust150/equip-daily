@@ -53,7 +53,6 @@ export const deleteNote = async (noteId) => { await deleteDoc(doc(db, "notes", n
 
 export const updateUserHighlight = async (userId, book, chapter, verseNum, highlightObj) => {
   const userRef = doc(db, "users", userId);
-  const verseKey = `${book} ${chapter}:${verseNum}`;
   
   // Initialize if needed
   const docSnap = await getDoc(userRef);
