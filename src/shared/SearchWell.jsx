@@ -141,15 +141,27 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
       console.log('Search blocked:', { searchTerm, selectedVersion });
       return;
     }
+    
+    // 🎯 First, check if this is a scripture reference (e.g., "John 3:16")
+    const verseRef = parseVerseReference(searchTerm);
+    if (verseRef && onJumpToVerse) {
+      console.log('Detected scripture reference:', verseRef);
+      // Jump directly to the verse
+      onJumpToVerse(verseRef.bookName, verseRef.chapter, verseRef.startVerse);
+      setResults([]); // Clear any previous results
+      if (window.innerWidth <= 768) onClose(); // Close on mobile
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     setResults([]);
 
     try {
         const searchVersion = selectedVersion; // Use selected version from dropdown
-        console.log('Performing search:', { query: searchTerm, version: searchVersion });
+        console.log('Performing word search:', { query: searchTerm, version: searchVersion });
         
-        // 🔒 Use serverless proxy
+        // 🔒 Use serverless proxy for word/phrase search
         const res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
         
         if (res.status === 401) {
