@@ -27,9 +27,15 @@ export const WEB_BIBLE_ID = '9879dbb7cfe39e4d-01'; // World English Bible (has a
 export const AUDIO_FALLBACK_VERSION = WEB_BIBLE_ID; // Use when primary version lacks audio
 export const DEFAULT_BIBLE_VERSION = NLT_BIBLE_ID; // Always fallback to licensed NLT
 
-// 📚 Bible Versions are now loaded dynamically from the API response.
-// This export remains as an optional fallback for legacy components.
-export const BIBLE_VERSIONS = [];
+// 📚 Licensed Bible Versions - Static list as fallback for when API is slow or unavailable
+// The app will dynamically load and override this from the API, but having this ensures
+// the version selector always has options, even during network delays
+export const BIBLE_VERSIONS = [
+  { id: 'd6e14a625393b4da-01', name: 'New Living Translation', abbreviation: 'NLT', language: 'eng' },
+  { id: '63097d2a0a2f7db3-01', name: 'New King James Version', abbreviation: 'NKJV', language: 'eng' },
+  { id: '9879dbb7cfe39e4d-01', name: 'World English Bible', abbreviation: 'WEB', language: 'eng' },
+  { id: 'de4e12af7f28f599-01', name: 'King James Version', abbreviation: 'KJV', language: 'eng' }
+];
 
 // 🗺️ Book Name to API ID Mapping (USFM Codes)
 export const USFM_MAPPING = {
