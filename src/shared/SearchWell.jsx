@@ -13,6 +13,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
   const [versions, setVersions] = useState([]); // Bible versions list
   const [selectedVersion, setSelectedVersion] = useState(null); // Selected version for search
   const [versionsLoading, setVersionsLoading] = useState(false);
+  const [collapsedChapters, setCollapsedChapters] = useState({}); // Track collapsed state by chapter key
   const inputRef = React.useRef(null);
 
   // 🪟 DESKTOP WINDOW STATE
@@ -172,6 +173,30 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     if (window.innerWidth <= 768) onClose();
   };
 
+  // Group results by book and chapter
+  const groupedResults = React.useMemo(() => {
+    const grouped = {};
+    results.forEach(result => {
+      const key = `${result.fullBookName} ${result.chapter}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          book: result.fullBookName,
+          chapter: result.chapter,
+          verses: []
+        };
+      }
+      grouped[key].verses.push(result);
+    });
+    return grouped;
+  }, [results]);
+
+  const toggleChapter = (chapterKey) => {
+    setCollapsedChapters(prev => ({
+      ...prev,
+      [chapterKey]: !prev[chapterKey]
+    }));
+  };
+
   if (!isOpen) return null;
   const isDark = theme === 'dark';
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
@@ -249,12 +274,58 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
                 )}
             </div>
         )}
-        {!loading && !error && results.map((r) => (
-            <div key={r.id} onClick={() => handleResultClick(r)} style={{ padding: '10px', borderRadius: '8px', backgroundColor: isDark ? '#333' : '#f9f9f9', cursor: 'pointer' }}>
-                <strong style={{ display: 'block', fontSize: '0.85rem', color: '#2196F3', marginBottom: '4px' }}>{r.reference}</strong>
-                <span style={{ fontSize: '0.9rem', color: isDark ? '#ddd' : '#333' }} dangerouslySetInnerHTML={{ __html: r.text }} />
-            </div>
-        ))}
+        {!loading && !error && Object.keys(groupedResults).length > 0 && (
+          <>
+            {Object.entries(groupedResults).map(([chapterKey, group]) => {
+              const isCollapsed = collapsedChapters[chapterKey];
+              return (
+                <div key={chapterKey} style={{ marginBottom: '10px' }}>
+                  {/* Chapter Header */}
+                  <div 
+                    onClick={() => toggleChapter(chapterKey)}
+                    style={{ 
+                      padding: '10px', 
+                      borderRadius: '8px', 
+                      backgroundColor: isDark ? '#2c2c2c' : '#e3f2fd', 
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontWeight: 'bold',
+                      color: '#2196F3',
+                      marginBottom: '5px'
+                    }}
+                  >
+                    <span>{group.book} {group.chapter} ({group.verses.length} verse{group.verses.length !== 1 ? 's' : ''})</span>
+                    <span style={{ fontSize: '1.2rem' }}>{isCollapsed ? '▶' : '▼'}</span>
+                  </div>
+                  
+                  {/* Verses - Collapsible */}
+                  {!isCollapsed && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '10px' }}>
+                      {group.verses.map((r) => (
+                        <div 
+                          key={r.id} 
+                          onClick={() => handleResultClick(r)} 
+                          style={{ 
+                            padding: '10px', 
+                            borderRadius: '8px', 
+                            backgroundColor: isDark ? '#333' : '#f9f9f9', 
+                            cursor: 'pointer',
+                            borderLeft: '3px solid #2196F3'
+                          }}
+                        >
+                          <strong style={{ display: 'block', fontSize: '0.85rem', color: '#2196F3', marginBottom: '4px' }}>Verse {r.verse}</strong>
+                          <span style={{ fontSize: '0.9rem', color: isDark ? '#ddd' : '#333' }} dangerouslySetInnerHTML={{ __html: r.text }} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </>
+        )}
         {!loading && !error && results.length === 0 && query && <p style={{textAlign:'center', color:'#888'}}>No results.</p>}
       </div>
     </div>
