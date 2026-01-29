@@ -553,11 +553,37 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   // 4. 🖱️ Interaction Handlers
   const handleVerseClick = async (verseNum) => {
-    // 🔍 Only allow selection when in Study Mode (notes, notebook, or note editing active)
+    // 🔍 Check if in Study Mode (for selection) or Reading Mode (for highlighting only)
     const inStudyMode = showNotes || isNoteMode || showNotebook;
     
+    // In reading mode, only allow highlighting (not selection)
     if (!inStudyMode) {
-      // In reading mode - no selection allowed to keep UI clean
+      // ⚠️ Highlighting requires login even in reading mode
+      if (!user) {
+        alert('Please sign in to highlight verses and save your progress.');
+        return;
+      }
+      
+      // Toggle highlight only (no selection)
+      const currentHighlight = highlightsMap[verseNum];
+      let newHighlight = null;
+
+      if (!currentHighlight) {
+          newHighlight = { bg: activeHighlightColor.code, border: activeHighlightColor.border };
+      } else if (currentHighlight.bg !== activeHighlightColor.code) {
+          newHighlight = { bg: activeHighlightColor.code, border: activeHighlightColor.border };
+      } else {
+          newHighlight = null;
+      }
+
+      setHighlightsMap(prev => {
+          const next = { ...prev };
+          if (newHighlight) next[verseNum] = newHighlight;
+          else delete next[verseNum];
+          return next;
+      });
+
+      await updateUserHighlight(user.uid, book, chapter, verseNum, newHighlight);
       return;
     }
     
@@ -1318,7 +1344,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                             : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
                                                         }`}
                                                     >
-                                                        📌 Note: {book} {chapter}:{verseNotes[0].verses.join(',')}
+                                                        📌 Note: {book} {chapter}:{note.verses.join(',')}
                                                     </button>
 
                                                     {/* Note Peek View */}
