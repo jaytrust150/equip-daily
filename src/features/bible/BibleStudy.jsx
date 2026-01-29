@@ -1516,7 +1516,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         </div>
 
         {/* RIGHT: Notes & Tools */}
-        {showNotes && (
+        {showNotes && !longPressVerse && (
         <div className="space-y-4">
             
             {/* Note Editor */}
