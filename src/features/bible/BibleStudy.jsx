@@ -553,6 +553,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   // 4. 🖱️ Interaction Handlers
   const handleVerseClick = async (verseNum) => {
+    // 🔍 Only allow selection when in Study Mode (notes, notebook, or note editing active)
+    const inStudyMode = showNotes || isNoteMode || showNotebook;
+    
+    if (!inStudyMode) {
+      // In reading mode - no selection allowed to keep UI clean
+      return;
+    }
+    
     // ✅ Allow verse selection for notebooks without login
     if (showNotebook) {
       setSelectedVerses((prev) =>
