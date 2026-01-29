@@ -1283,6 +1283,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           onSearch={onSearch}
           onProfileClick={onProfileClick}
           title={`Reflections for ${book} ${chapter}`}
+          placeholder={`What is the Spirit saying to you about ${book} ${chapter}?`}
         />
       </div>
 
