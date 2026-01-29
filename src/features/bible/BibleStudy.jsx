@@ -255,13 +255,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   }, []);
 
   // Function to toggle chapter read status
-  const markChapterAsRead = async () => {
+  const markChapterAsRead = async (bookName, chapterNum) => {
     if (!user) {
       alert('Please sign in to track your reading progress.');
       return;
     }
     
-    const chapterKey = `${book} ${chapter}`;
+    const chapterKey = `${bookName} ${chapterNum}`;
     const isCurrentlyRead = readChapters.includes(chapterKey);
     
     // Toggle: if already read, remove it; otherwise add it
@@ -861,9 +861,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                           setChapter(chapterNum);
                           window.scrollTo({ top: 0, behavior: 'smooth' });
                         }}
-                        onDoubleClick={async () => {
+                        onDoubleClick={async (e) => {
+                          e.stopPropagation();
                           if (user) {
-                            await markChapterAsRead();
+                            await markChapterAsRead(testamentDrillBook.name, chapterNum);
                           } else {
                             alert('Please sign in to mark chapters as read.');
                           }
