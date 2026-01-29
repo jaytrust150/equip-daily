@@ -146,9 +146,14 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
 
   return (
     <div style={containerStyle}>
-      <div onMouseDown={handleMouseDown} style={{ padding: '12px 20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', cursor: isMobile ? 'default' : 'grab' }}>
-        <span style={{ fontWeight: 'bold', color: '#2196F3' }}>📖 The Well</span>
-        <button onClick={onClose} style={{background:'none', border:'none', fontSize:'1.2rem', cursor:'pointer'}}>✕</button>
+      <div onMouseDown={handleMouseDown} style={{ padding: '12px 20px', borderBottom: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '6px', cursor: isMobile ? 'default' : 'grab' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontWeight: 'bold', color: '#2196F3', fontSize: '1rem' }}>📖 The Well</span>
+          <button onClick={onClose} style={{background:'none', border:'none', fontSize:'1.2rem', cursor:'pointer'}}>✕</button>
+        </div>
+        <p style={{ fontSize: '0.75rem', fontStyle: 'italic', color: isDark ? '#aaa' : '#666', margin: 0, lineHeight: '1.3' }}>
+          "How much better to get wisdom than gold, to get insight rather than silver!" — Proverbs 16:16
+        </p>
       </div>
 
       <div style={{ padding: '10px 20px' }}>

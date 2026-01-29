@@ -681,37 +681,82 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       {/* 🟢 TOP CONTROLS */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4 bg-white/5 p-4 rounded-xl shadow-sm border border-gray-200/20">
         
-        {/* Book/Chapter Selector */}
+        {/* Book/Chapter Selector - Secret Select Style */}
         <div className="flex items-center gap-2">
            <select 
              value={book} 
              onChange={(e) => { setBook(e.target.value); setChapter(1); }}
-             className={`p-2 rounded-lg border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
+             style={{ 
+               border: 'none', 
+               background: 'transparent', 
+               fontWeight: 'bold', 
+               fontSize: '1.25rem', 
+               color: theme === 'dark' ? '#f0f0f0' : '#2c3e50', 
+               cursor: 'pointer', 
+               appearance: 'none', 
+               outline: 'none', 
+               fontFamily: 'inherit', 
+               padding: 0, 
+               margin: 0,
+               textAlign: 'center'
+             }}
            >
              {bibleData && bibleData.map(bookData => (
-               <option key={bookData.name} value={bookData.name}>{bookData.name}</option>
+               <option key={bookData.name} value={bookData.name} style={{color: '#333'}}>{bookData.name}</option>
              ))}
            </select>
 
            <select 
              value={chapter} 
              onChange={(e) => setChapter(Number(e.target.value))}
-             className={`p-2 rounded-lg border w-20 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
+             style={{ 
+               border: 'none', 
+               background: 'transparent', 
+               fontWeight: 'bold', 
+               fontSize: '1.25rem', 
+               color: theme === 'dark' ? '#f0f0f0' : '#2c3e50', 
+               cursor: 'pointer', 
+               appearance: 'none', 
+               outline: 'none', 
+               fontFamily: 'inherit', 
+               padding: 0, 
+               margin: 0,
+               width: chapter > 99 ? '45px' : (chapter > 9 ? '35px' : '25px'),
+               textAlign: 'center'
+             }}
            >
              {bibleData && bibleData.find(b => b.name === book) && [...Array(bibleData.find(b => b.name === book).chapters).keys()].map(i => (
-               <option key={i+1} value={i+1}>{i+1}</option>
+               <option key={i+1} value={i+1} style={{color: '#333'}}>{i+1}</option>
+             ))}
+           </select>
+
+           {/* Version Pill */}
+           <select
+             value={version}
+             onChange={(e) => setVersion(e.target.value)}
+             style={{
+               fontSize: '0.7rem',
+               padding: '2px 6px',
+               borderRadius: '10px',
+               border: '1px solid',
+               borderColor: theme === 'dark' ? '#555' : '#ccc',
+               backgroundColor: theme === 'dark' ? '#333' : '#f5f5f5',
+               color: theme === 'dark' ? '#aaa' : '#666',
+               cursor: 'pointer',
+               appearance: 'none',
+               outline: 'none',
+               fontWeight: '600'
+             }}
+             title="Bible Version"
+           >
+             {bibleVersions && bibleVersions.map(v => (
+               <option key={v.id} value={v.id} style={{color: '#333'}}>{v.abbreviation || v.name}</option>
              ))}
            </select>
         </div>
 
-        {/* Version & Audio */}
+        {/* Audio */}
         <div className="flex items-center gap-3">
-            <BibleVersionPicker
-                selectedVersion={version}
-                onVersionChange={setVersion}
-                theme={theme}
-              versions={bibleVersions}
-            />
 
             <div className="flex flex-col items-center">
                 <button 
@@ -845,7 +890,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                               : { cursor: 'pointer' };
                             const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
                             const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
-                            const showEditorHere = (showNotebook && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
+                            const showEditorHere = ((showNotes || showNotebook) && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
                                                    (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
                                                    (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]) ||
                                                    (longPressVerse === verse.number);
