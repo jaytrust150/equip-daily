@@ -98,13 +98,17 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
   };
 
   const performSearch = async (searchTerm) => {
-    if (!searchTerm || !selectedVersion) return;
+    if (!searchTerm || !selectedVersion) {
+      console.log('Search blocked:', { searchTerm, selectedVersion });
+      return;
+    }
     setLoading(true);
     setError(null);
     setResults([]);
 
     try {
         const searchVersion = selectedVersion; // Use selected version from dropdown
+        console.log('Performing search:', { query: searchTerm, version: searchVersion });
         
         // 🔒 Use serverless proxy
         const res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
@@ -113,7 +117,11 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
             console.error("API Authorization Failed. Check Vercel environment variables");
             throw new Error(`Unauthorized. Check API key configuration in Vercel.`);
         }
-        if (!res.ok) throw new Error(`API Error: ${res.status}`);
+        if (!res.ok) {
+          const errorText = await res.text();
+          console.error('Search API error:', res.status, errorText);
+          throw new Error(`API Error: ${res.status}`);
+        }
 
         const data = await res.json();
         

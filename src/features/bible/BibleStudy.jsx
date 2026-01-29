@@ -852,21 +852,23 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
         
 
-      {/* 🔴 COLOR PALETTE */}
-      <div className="flex flex-col items-center gap-2 mb-6">
-        <div className="flex gap-2 justify-center">
-        {(COLOR_PALETTE || []).map((color) => (
-            <button
-                key={color.name}
-                onClick={() => setActiveHighlightColor(color)}
-                className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${activeHighlightColor.name === color.name ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
-                style={{ backgroundColor: color.code, borderColor: color.border }}
-                title={color.name}
-            />
-        ))}
+      {/* 🔴 COLOR PALETTE - Only show when highlight mode is active */}
+      {showHighlightPalette && (
+        <div className="flex flex-col items-center gap-2 mb-6">
+          <div className="flex gap-2 justify-center">
+          {(COLOR_PALETTE || []).map((color) => (
+              <button
+                  key={color.name}
+                  onClick={() => setActiveHighlightColor(color)}
+                  className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${activeHighlightColor.name === color.name ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+                  style={{ backgroundColor: color.code, borderColor: color.border }}
+                  title={color.name}
+              />
+          ))}
+          </div>
+          <p className="text-xs text-gray-500">Tip: Double click to highlight.</p>
         </div>
-        <p className="text-xs text-gray-500">Tip: Double click to highlight.</p>
-      </div>
+      )}
 
       {/* 📖 MAIN CONTENT */}
       <div className={`max-w-4xl mx-auto grid grid-cols-1 ${showNotes ? 'md:grid-cols-[1fr_300px]' : ''} gap-6`}>
