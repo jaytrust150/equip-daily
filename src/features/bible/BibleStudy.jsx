@@ -730,13 +730,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     setIsNoteMode(false);
   };
 
-  // Auto-focus note editor
+  // Auto-focus note editor (only for inline editing, not sidebar)
   useEffect(() => {
-    if ((isNoteMode || editingNoteId) && noteEditorRef.current) {
+    if (noteEditorRef.current && (longPressVerse || (editingNoteId && !showNotes))) {
       noteEditorRef.current.focus();
       noteEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-  }, [isNoteMode, editingNoteId]);
+  }, [longPressVerse, editingNoteId, showNotes]);
 
   // --- RENDER ---
   // ✅ Allow Bible reading without login - only require login for saving features
