@@ -656,7 +656,24 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               📌
             </button>
           <button 
-            onClick={() => setShowNotes((prev) => !prev)}
+            onClick={() => {
+              if (!user) {
+                alert('Please sign in to use Study mode tools.');
+                return;
+              }
+
+              setShowNotes((prev) => {
+                const next = !prev;
+                if (next) {
+                  setShowNotebook(true);
+                  setShowHighlightPalette(false);
+                } else {
+                  setShowNotebook(false);
+                  setSelectedVerses([]);
+                }
+                return next;
+              });
+            }}
             className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
             title={showNotes ? "Switch to Reading Mode" : "Switch to Study Mode"}
           >
