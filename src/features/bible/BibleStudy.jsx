@@ -1404,10 +1404,24 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             
             {/* Long Press Note Editor */}
             {longPressVerse && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancelNote}>
+                <>
+                    {/* Backdrop */}
+                    <div className="fixed inset-0 bg-black/30 z-40" onClick={handleCancelNote} />
+                    {/* Modal positioned below the verse */}
                     <div 
-                        className={`w-full max-w-3xl rounded-xl shadow-2xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+                        className={`fixed rounded-xl shadow-2xl p-6 z-50 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
                         onClick={(e) => e.stopPropagation()}
+                        style={{
+                            top: `${typeof window !== 'undefined' && document.getElementById(`verse-${longPressVerse}`) 
+                                ? (document.getElementById(`verse-${longPressVerse}`).getBoundingClientRect().bottom + window.scrollY + 10) 
+                                : window.innerHeight / 2}px`,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            maxWidth: '90vw',
+                            width: '100%',
+                            maxHeight: '80vh',
+                            overflowY: 'auto'
+                        }}
                     >
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold text-lg">✏️ Note for {book} {chapter}:{longPressVerse}</h3>
@@ -1545,7 +1559,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             </button>
                         </div>
                     </div>
-                </div>
+                </>
             )}
         </div>
 
