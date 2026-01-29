@@ -97,8 +97,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const chapterClickTimeouts = useRef({}); // Maps chapter to timeout ID
   const bookClickTimeouts = useRef({}); // Maps book to timeout ID
   
-  // --- MODAL POSITIONING ---
+  // --- MODAL POSITIONING & DRAGGING ---
   const modalRef = useRef(null);
+  const [editorPosition, setEditorPosition] = useState({ x: window.innerWidth / 2 - 300, y: window.innerHeight / 2 - 200 });
+  const [isEditorDragging, setIsEditorDragging] = useState(false);
+  const editorDragStart = useRef({ x: 0, y: 0 });
   
   // --- DOUBLE CLICK TRACKING ---
   const doubleClickFlags = useRef({}); // Prevents click handler from running after double-click
@@ -809,21 +812,32 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
   }, [longPressVerse, editingNoteId, showNotes]);
   
-  // Position modal under the verse and scroll it into view
+  // Handle editor dragging
+  const handleEditorMouseDown = (e) => {
+    setIsEditorDragging(true);
+    editorDragStart.current = { x: e.clientX - editorPosition.x, y: e.clientY - editorPosition.y };
+    e.preventDefault();
+  };
+
+  const handleEditorMouseMove = (e) => {
+    if (!isEditorDragging) return;
+    setEditorPosition({ x: e.clientX - editorDragStart.current.x, y: e.clientY - editorDragStart.current.y });
+  };
+
+  const handleEditorMouseUp = () => {
+    setIsEditorDragging(false);
+  };
+
   useEffect(() => {
-    if (longPressVerse && modalRef.current) {
-      const verseEl = document.getElementById(`verse-${longPressVerse}`);
-      if (verseEl) {
-        const rect = verseEl.getBoundingClientRect();
-        const modalTop = rect.bottom + window.scrollY + 10;
-        modalRef.current.style.top = `${modalTop}px`;
-      }
-      // Scroll modal into view
-      setTimeout(() => {
-        modalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 50);
+    if (isEditorDragging) {
+      window.addEventListener('mousemove', handleEditorMouseMove);
+      window.addEventListener('mouseup', handleEditorMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleEditorMouseMove);
+        window.removeEventListener('mouseup', handleEditorMouseUp);
+      };
     }
-  }, [longPressVerse]);
+  }, [isEditorDragging, editorPosition]);
 
   // --- RENDER ---
   // ✅ Allow Bible reading without login - only require login for saving features
@@ -1440,22 +1454,25 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 <>
                     {/* Backdrop */}
                     <div className="fixed inset-0 bg-black/30 z-40" onClick={handleCancelNote} />
-                    {/* Modal positioned below the verse */}
+                    {/* Floating Note Editor */}
                     <div 
                         ref={modalRef}
                         className={`fixed rounded-xl shadow-2xl p-6 z-50 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            maxWidth: '90vw',
-                            width: '100%',
+                            left: `${editorPosition.x}px`,
+                            top: `${editorPosition.y}px`,
+                            width: '600px',
                             maxHeight: '80vh',
                             overflowY: 'auto',
-                            top: '50%' // Fallback position while calculating
+                            cursor: isEditorDragging ? 'grabbing' : 'default'
                         }}
                     >
-                        <div className="flex items-center justify-between mb-4">
+                        <div 
+                            className="flex items-center justify-between mb-4 rounded-t-lg -m-6 mb-4 p-4 cursor-grab active:cursor-grabbing"
+                            style={{ background: theme === 'dark' ? '#333' : '#f5f5f5' }}
+                            onMouseDown={handleEditorMouseDown}
+                        >
                             <h3 className="font-semibold text-lg">✏️ Note for {book} {chapter}:{longPressVerse}</h3>
                             <button onClick={handleCancelNote} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
                         </div>
