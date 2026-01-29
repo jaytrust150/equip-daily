@@ -203,7 +203,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             setVerses(parsedVerses);
             
             // 📖 Track this chapter as read
-            trackChapterRead(book, chapter);
+            // trackChapterRead(book, chapter);
         } else {
             setVerses([]);
         }
