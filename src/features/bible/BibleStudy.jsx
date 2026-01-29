@@ -1363,20 +1363,118 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             {longPressVerse && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancelNote}>
                     <div 
-                        className={`w-full max-w-md rounded-xl shadow-2xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+                        className={`w-full max-w-3xl rounded-xl shadow-2xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-lg">✏️ Note for Verse {longPressVerse}</h3>
+                            <h3 className="font-semibold text-lg">✏️ Note for {book} {chapter}:{longPressVerse}</h3>
                             <button onClick={handleCancelNote} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
                         </div>
+                        
+                        {/* Color Palette - Same as FloatingTools */}
+                        <div className="mb-4 p-3 rounded-lg" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
+                            <div className="text-xs font-semibold mb-2" style={{ color: theme === 'dark' ? '#999' : '#666' }}>Highlight Color:</div>
+                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {COLOR_PALETTE.map(c => {
+                                    const isSelected = selectedHighlightColor && selectedHighlightColor.code === c.code;
+                                    return (
+                                        <button 
+                                            key={c.code} 
+                                            onClick={() => {
+                                                setSelectedHighlightColor(c);
+                                                if (longPressVerse) {
+                                                    handleApplyHighlight(c, longPressVerse);
+                                                }
+                                            }} 
+                                            title={c.name}
+                                            style={{ 
+                                                width: '28px', 
+                                                height: '28px', 
+                                                background: c.code, 
+                                                borderRadius: '50%', 
+                                                border: isSelected ? '3px solid #000' : '2px solid #999',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                transform: isSelected ? 'scale(1.15)' : 'scale(1)',
+                                                boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.4)' : 'none'
+                                            }}
+                                        />
+                                    );
+                                })}
+                                <button 
+                                    onClick={() => {
+                                        setSelectedHighlightColor(null);
+                                        if (longPressVerse) {
+                                            handleApplyHighlight(null, longPressVerse);
+                                        }
+                                    }}
+                                    title="Remove highlight"
+                                    style={{ 
+                                        width: '28px', 
+                                        height: '28px', 
+                                        borderRadius: '50%', 
+                                        border: '2px solid #999',
+                                        background: 'white',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold'
+                                    }}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        </div>
+                        
                         <textarea
+                            ref={noteEditorRef}
                             value={currentNoteText}
                             onChange={(e) => setCurrentNoteText(e.target.value)}
                             placeholder={`Write your note for ${book} ${chapter}:${longPressVerse}...`}
-                            className={`w-full p-3 rounded-lg border h-40 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            className={`w-full p-3 rounded-lg border mb-4 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            style={{ height: '200px', minHeight: '200px' }}
                             autoFocus
                         />
+                        
+                        {/* Study Mode Buttons - Same as FloatingTools */}
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                            <button 
+                                onClick={handleCopyVerse}
+                                style={{ 
+                                    padding: '8px 12px', 
+                                    fontSize: '0.85rem',
+                                    background: '#4caf50',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold',
+                                    whiteSpace: 'nowrap'
+                                }}
+                                title={`Copy ${book} ${chapter}:${longPressVerse}`}
+                            >
+                                📋 Copy Verse
+                            </button>
+                            
+                            <button 
+                                onClick={handlePasteVerses}
+                                disabled={!versesCopied}
+                                style={{ 
+                                    padding: '8px 12px', 
+                                    fontSize: '0.85rem',
+                                    background: versesCopied ? '#9c27b0' : '#ccc',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: versesCopied ? 'pointer' : 'not-allowed',
+                                    fontWeight: 'bold',
+                                    whiteSpace: 'nowrap'
+                                }}
+                                title={versesCopied ? 'Paste reference to note' : 'Copy verses first'}
+                            >
+                                📌 Paste Ref
+                            </button>
+                        </div>
+                        
                         <div className="flex gap-2">
                             <button 
                                 onClick={() => {
@@ -1386,7 +1484,24 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                 disabled={!currentNoteText.trim()}
                                 className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
                             >
-                                Save Note
+                                💾 Save Note
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    handleDeleteNote();
+                                    setLongPressVerse(null);
+                                }}
+                                style={{ 
+                                    padding: '8px 12px',
+                                    background: '#f44336',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                🗑️ Delete
                             </button>
                             <button 
                                 onClick={handleCancelNote}
