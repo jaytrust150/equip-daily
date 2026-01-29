@@ -796,8 +796,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           {/* 7. Highlight Button */}
           <button
             onClick={() => setShowHighlightPalette((open) => !open)}
-            className={`px-2 py-1 rounded-lg border text-sm font-medium transition ${showHighlightPalette ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
-            title="Highlight Tools"
+            style={{ backgroundColor: activeHighlightColor.code, borderColor: showHighlightPalette ? '#4f46e5' : activeHighlightColor.border }}
+            className={`px-2 py-1 rounded-lg border-2 text-sm font-medium transition ${showHighlightPalette ? 'border-indigo-600' : (theme === 'dark' ? 'border-gray-700' : 'border-gray-300')}`}
+            title={`Highlight Tools - Current: ${activeHighlightColor.name}`}
           >
             🎨
           </button>
@@ -875,7 +876,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-            <h1 className="text-2xl font-bold mb-4 text-center">{book} {chapter}</h1>
+            <h1 className="text-2xl font-bold mb-4">{book} {chapter}</h1>
             
             {loading && <p className="text-center py-10">Loading scripture...</p>}
             {error && (
