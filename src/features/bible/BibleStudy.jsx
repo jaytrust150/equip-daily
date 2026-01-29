@@ -92,6 +92,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [longPressVerse, setLongPressVerse] = useState(null);
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
+  
+  // --- CLICK DETECTION STATE (for chapter/book navigation vs marking) ---
+  const chapterClickTimeouts = useRef({}); // Maps chapter to timeout ID
+  const bookClickTimeouts = useRef({}); // Maps book to timeout ID
 
   // 0️⃣ LOAD USER'S DEFAULT BIBLE VERSION & READ HISTORY
   useEffect(() => {
@@ -887,26 +891,25 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px', maxHeight: '240px', overflowY: 'auto', paddingRight: '5px', width: '100%', alignItems: 'flex-start' }}>
                   {Array.from({ length: testamentDrillBook.chapters }, (_, i) => i + 1).map(chapterNum => {
                     const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
-                    let clickTimeoutRef;
                     
                     const handleChapterClick = (e) => {
                       // Prevent double-click from triggering single-click navigation
-                      if (clickTimeoutRef) return;
+                      if (chapterClickTimeouts.current[chapterNum]) return;
                       
-                      clickTimeoutRef = setTimeout(() => {
+                      chapterClickTimeouts.current[chapterNum] = setTimeout(() => {
                         setBook(testamentDrillBook.name);
                         setChapter(chapterNum);
                         window.scrollTo({ top: 0, behavior: 'smooth' });
-                        clickTimeoutRef = null;
+                        delete chapterClickTimeouts.current[chapterNum];
                       }, 250);
                     };
                     
                     const handleChapterDoubleClick = async (e) => {
                       e.stopPropagation();
                       // Cancel the pending single click
-                      if (clickTimeoutRef) {
-                        clearTimeout(clickTimeoutRef);
-                        clickTimeoutRef = null;
+                      if (chapterClickTimeouts.current[chapterNum]) {
+                        clearTimeout(chapterClickTimeouts.current[chapterNum]);
+                        delete chapterClickTimeouts.current[chapterNum];
                       }
                       
                       if (user) {
@@ -955,13 +958,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     const readCount = readChapters.filter(entry => entry.startsWith(`${bookData.name} `)).length;
                     const percent = Math.round((readCount / bookData.chapters) * 100);
                     const isComplete = percent === 100;
-                    let bookClickTimeoutRef;
                     
                     const handleBookClick = () => {
-                      if (bookClickTimeoutRef) return;
-                      bookClickTimeoutRef = setTimeout(() => {
+                      if (bookClickTimeouts.current[bookData.name]) return;
+                      bookClickTimeouts.current[bookData.name] = setTimeout(() => {
                         setTestamentDrillBook(bookData);
-                        bookClickTimeoutRef = null;
+                        delete bookClickTimeouts.current[bookData.name];
                       }, 250);
                     };
                     
@@ -1435,7 +1437,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             onChange={(e) => setCurrentNoteText(e.target.value)}
                             placeholder={`Write your note for ${book} ${chapter}:${longPressVerse}...`}
                             className={`w-full p-3 rounded-lg border mb-3 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
-                            style={{ height: '200px', minHeight: '200px' }}
+                            style={{ height: '100px', minHeight: '100px' }}
                             autoFocus
                         />
                         
