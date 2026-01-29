@@ -51,6 +51,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   // ✅ FEEDBACK STATES
   const [copyFeedback, setCopyFeedback] = useState("");
   const [noteFeedback, setNoteFeedback] = useState({}); 
+  const [versesCopied, setVersesCopied] = useState(false); // Track if verses are copied
 
   // Highlights Map & Notes
   const [highlightsMap, setHighlightsMap] = useState({});
@@ -569,6 +570,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       const textToCopy = `${verseTexts}\n\n— ${verseRefs}`;
       await navigator.clipboard.writeText(textToCopy);
       
+      setVersesCopied(true); // Mark as copied
       setNoteFeedback({ type: 'success', msg: `Copied ${selectedVerses.length} verse${selectedVerses.length !== 1 ? 's' : ''}` });
       setTimeout(() => setNoteFeedback({}), 2000);
     } catch (err) {
@@ -625,8 +627,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       return;
     }
     if (!currentNoteText.trim()) return;
+    if (!longPressVerse) return;
     
-    await saveNote(user.uid, book, chapter, currentNoteText, DEFAULT_NOTE_COLOR);
+    await saveNote(user, book, chapter, [longPressVerse], currentNoteText);
     setCurrentNoteText("");
     setIsNoteMode(false);
     setEditingNoteId(null);
@@ -1145,6 +1148,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         setShowNotebook={setShowNotebook}
         onApplyColor={handleApplyColor}
         selectedVerses={selectedVerses}
+        book={book}
+        chapter={chapter}
+        versesCopied={versesCopied}
+        setVersesCopied={setVersesCopied}
         onSaveNote={handleSaveSelectedNote}
         onCopyVerses={handleCopyVerses}
         onPasteVerses={handlePasteVerses}

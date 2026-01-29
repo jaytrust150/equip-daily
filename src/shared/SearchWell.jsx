@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useDraggableWindow } from '../hooks/useDraggableWindow';
 import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../config/constants';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
 
-function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
+function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,18 +28,21 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
     }
   }, [isOpen]);
 
-  // Auto-focus input when opened and handle initial query
+  // Fetch Bible versions when opened
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 100);
-      if (initialQuery) { 
-        setQuery(initialQuery); 
-        performSearch(initialQuery); 
-      }
-      // Fetch available Bible versions
       fetchBibleVersions();
     }
-  }, [isOpen, initialQuery]);
+  }, [isOpen]);
+
+  // Handle initial query after version is selected
+  useEffect(() => {
+    if (isOpen && initialQuery && selectedVersion) {
+      setQuery(initialQuery);
+      performSearch(initialQuery);
+    }
+  }, [isOpen, initialQuery, selectedVersion]);
 
   // 📖 Fetch available Bible versions from /api/bibles
   const fetchBibleVersions = async () => {
@@ -48,9 +53,31 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
       const data = await res.json();
       if (data.data && Array.isArray(data.data)) {
         setVersions(data.data);
-        // Set first version as default if not already set
-        if (!selectedVersion && data.data.length > 0) {
-          setSelectedVersion(data.data[0].id);
+        
+        // Load user's saved Bible version preference
+        let userDefaultVersion = null;
+        if (user && db) {
+          try {
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              const userData = userSnap.data();
+              if (userData.defaultBibleVersion) {
+                userDefaultVersion = userData.defaultBibleVersion;
+              }
+            }
+          } catch (error) {
+            console.error('Error loading user Bible version preference:', error);
+          }
+        }
+        
+        // Set version priority: user's saved version > first in list > fallback
+        if (!selectedVersion) {
+          if (userDefaultVersion) {
+            setSelectedVersion(userDefaultVersion);
+          } else if (data.data.length > 0) {
+            setSelectedVersion(data.data[0].id);
+          }
         }
       }
     } catch (err) {

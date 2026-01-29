@@ -542,6 +542,7 @@ function App() {
         onJumpToVerse={jumpToVerse}
         historyStack={bibleHistory}
         onGoBack={goBackInBible}
+        user={user}
       />
     </div>
   );

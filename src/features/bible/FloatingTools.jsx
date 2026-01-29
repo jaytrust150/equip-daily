@@ -1,11 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { COLOR_PALETTE } from '../../config/constants';
+import { COLOR_PALETTE, USFM_MAPPING } from '../../config/constants';
 
 function FloatingTools({ 
   showPalette, setShowPalette, 
   showNotebook, setShowNotebook, 
   onApplyColor, 
   selectedVerses, 
+  book,
+  chapter,
+  versesCopied,
+  setVersesCopied,
   onSaveNote,
   onCopyVerses,
   onPasteVerses,
@@ -15,6 +19,49 @@ function FloatingTools({
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight / 2 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
+
+  // Helper function to format verse references intelligently with abbreviations
+  const getVerseReference = () => {
+    if (!selectedVerses || selectedVerses.length === 0) return '';
+    
+    // Get abbreviated book name from USFM_MAPPING
+    const bookAbbr = USFM_MAPPING[book] || book;
+    
+    const sortedVerses = [...selectedVerses].sort((a, b) => a - b);
+    
+    // If single verse
+    if (sortedVerses.length === 1) {
+      return `${bookAbbr} ${chapter}:${sortedVerses[0]}`;
+    }
+    
+    // Check if verses are consecutive
+    let isConsecutive = true;
+    for (let i = 1; i < sortedVerses.length; i++) {
+      if (sortedVerses[i] !== sortedVerses[i - 1] + 1) {
+        isConsecutive = false;
+        break;
+      }
+    }
+    
+    // If consecutive, show as range
+    if (isConsecutive) {
+      return `${bookAbbr} ${chapter}:${sortedVerses[0]}-${sortedVerses[sortedVerses.length - 1]}`;
+    }
+    
+    // If not consecutive, show as list (limit to first few if many)
+    if (sortedVerses.length <= 3) {
+      return `${bookAbbr} ${chapter}:${sortedVerses.join(', ')}`;
+    } else {
+      return `${bookAbbr} ${chapter}:${sortedVerses[0]}, ${sortedVerses[1]}, ... ${sortedVerses[sortedVerses.length - 1]}`;
+    }
+  };
+
+  // Reset copied state when selection changes
+  React.useEffect(() => {
+    if (setVersesCopied) {
+      setVersesCopied(false);
+    }
+  }, [selectedVerses, setVersesCopied]);
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
@@ -126,26 +173,41 @@ function FloatingTools({
               border: 'none',
               borderRadius: '6px',
               cursor: selectedVerses.length > 0 ? 'pointer' : 'not-allowed',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '200px'
             }}
+            title={selectedVerses.length > 0 ? `Copy ${getVerseReference()}` : 'Select verses to copy'}
           >
-            📋 Copy Verses
+            {selectedVerses.length > 0 
+              ? `📋 Copy ${getVerseReference()}` 
+              : '📋 Copy Verses'}
           </button>
 
           <button 
             onClick={onPasteVerses}
+            disabled={!versesCopied || selectedVerses.length === 0}
             style={{ 
               padding: '6px 10px', 
               fontSize: '0.85rem',
-              background: '#2196F3',
+              background: (versesCopied && selectedVerses.length > 0) ? '#9c27b0' : '#ccc',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
+              cursor: (versesCopied && selectedVerses.length > 0) ? 'pointer' : 'not-allowed',
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '200px'
             }}
+            title={(versesCopied && selectedVerses.length > 0) ? `Paste reference: ${getVerseReference()}` : 'Copy verses first'}
           >
-            📌 Paste Ref
+            {(versesCopied && selectedVerses.length > 0)
+              ? `📌 Paste ${getVerseReference()}` 
+              : '📌 Paste Ref'}
           </button>
 
           <button 
