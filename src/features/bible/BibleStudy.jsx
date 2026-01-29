@@ -850,25 +850,43 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 </div>
 
                 {/* Chapter Pills - Compact Grid Layout */}
-                <div className="flex flex-wrap justify-center" style={{ gap: '4px', maxHeight: '240px', overflowY: 'auto', paddingRight: '5px', width: '100%', flexDirection: 'row' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4px', maxHeight: '240px', overflowY: 'auto', paddingRight: '5px', width: '100%', alignItems: 'flex-start' }}>
                   {Array.from({ length: testamentDrillBook.chapters }, (_, i) => i + 1).map(chapterNum => {
                     const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
+                    let clickTimeoutRef;
+                    
+                    const handleChapterClick = (e) => {
+                      // Prevent double-click from triggering single-click navigation
+                      if (clickTimeoutRef) return;
+                      
+                      clickTimeoutRef = setTimeout(() => {
+                        setBook(testamentDrillBook.name);
+                        setChapter(chapterNum);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        clickTimeoutRef = null;
+                      }, 250);
+                    };
+                    
+                    const handleChapterDoubleClick = async (e) => {
+                      e.stopPropagation();
+                      // Cancel the pending single click
+                      if (clickTimeoutRef) {
+                        clearTimeout(clickTimeoutRef);
+                        clickTimeoutRef = null;
+                      }
+                      
+                      if (user) {
+                        await markChapterAsRead(testamentDrillBook.name, chapterNum);
+                      } else {
+                        alert('Please sign in to mark chapters as read.');
+                      }
+                    };
+                    
                     return (
                       <button
                         key={chapterNum}
-                        onClick={() => {
-                          setBook(testamentDrillBook.name);
-                          setChapter(chapterNum);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        onDoubleClick={async (e) => {
-                          e.stopPropagation();
-                          if (user) {
-                            await markChapterAsRead(testamentDrillBook.name, chapterNum);
-                          } else {
-                            alert('Please sign in to mark chapters as read.');
-                          }
-                        }}
+                        onClick={handleChapterClick}
+                        onDoubleClick={handleChapterDoubleClick}
                         className="font-bold transition flex-shrink-0"
                         title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''} - Double-click to mark read`}
                         style={{
