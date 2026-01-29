@@ -10,7 +10,6 @@ import CommunityFeed from '../../shared/CommunityFeed';
 import FloatingTools from './FloatingTools';
 import { auth } from "../../config/firebase"; 
 import { 
-  BIBLE_VERSIONS, 
   COLOR_PALETTE, 
   DEFAULT_NOTE_COLOR, 
   DEFAULT_HIGHLIGHT_DATA, 
@@ -35,6 +34,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   
   // ✅ Default to NLT from constants
   const [version, setVersion] = useState(DEFAULT_BIBLE_VERSION);
+  const [bibleVersions, setBibleVersions] = useState([]);
   const [audioVersion, setAudioVersion] = useState(null); // Track which version audio is from
   const [audioVerses, setAudioVerses] = useState([]); // Store fallback version text
 
@@ -56,7 +56,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [showNotes, setShowNotes] = useState(true); 
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
-  const [showNoteMenu, setShowNoteMenu] = useState(false);
+  
   const [editingNoteId, setEditingNoteId] = useState(null);
   const noteEditorRef = useRef(null);
   
@@ -154,6 +154,52 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
     fetchBibleText();
   }, [book, chapter, version]);
+
+  // 1b. 📚 Fetch Bible Versions from API (no filtering)
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchBibleVersions() {
+      try {
+        const isDev = import.meta.env.DEV;
+        const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+        let response;
+
+        if (isDev && apiKey) {
+          response = await fetch('https://rest.api.bible/v1/bibles', {
+            headers: { 'api-key': apiKey.trim() }
+          });
+        } else {
+          response = await fetch('/api/bibles');
+        }
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch versions: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const versions = (data.data || []).map((bible) => ({
+          id: bible.id,
+          name: bible.name,
+          abbreviation: bible.abbreviation || bible.abbreviationLocal || bible.name,
+          language: bible.language?.id || bible.language?.name || 'other',
+          hasAudio: Array.isArray(bible.audioBibles) && bible.audioBibles.length > 0
+        }));
+
+        if (isMounted) {
+          setBibleVersions(versions);
+          if (versions.length > 0) {
+            setVersion((prev) => versions.find((v) => v.id === prev) ? prev : versions[0].id);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load Bible versions:', err);
+      }
+    }
+
+    fetchBibleVersions();
+    return () => { isMounted = false; };
+  }, []);
 
   // Helper to parse the complex JSON from API.Bible
   // API.Bible returns nested structure: para → verse (with attrs) → text nodes
@@ -562,6 +608,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 selectedVersion={version}
                 onVersionChange={setVersion}
                 theme={theme}
+              versions={bibleVersions}
             />
 
             <div className="flex flex-col items-center">
@@ -609,11 +656,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               📌
             </button>
           <button 
-            onClick={() => setShowNoteMenu((open) => !open)}
-            className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNoteMenu ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
-            title="Notes & Modes"
+            onClick={() => setShowNotes((prev) => !prev)}
+            className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+            title={showNotes ? "Switch to Reading Mode" : "Switch to Study Mode"}
           >
-            📝
+            {showNotes ? '📖 Reading' : '📝 Study'}
           </button>
         </div>
       </div>
@@ -627,33 +674,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         <p className="text-xs text-gray-500">Tip: Swipe left/right to change chapters.</p>
       </div>
 
-        {/* Floating Notes / Modes Panel */}
-        {showNoteMenu && (
-        <div className={`fixed right-4 top-24 z-50 w-56 p-4 rounded-xl shadow-xl border ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white border-gray-200 text-gray-800'}`}>
-          <div className="text-xs uppercase tracking-wide font-semibold mb-3 text-gray-400">Reading & Study</div>
-          <div className="flex gap-2 mb-3">
-            <button 
-              onClick={() => { setShowNotes(false); setShowNoteMenu(false); }}
-              className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${!showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-gray-100 border-gray-200 text-gray-700')}`}
-            >
-              Reading Mode
-            </button>
-            <button 
-              onClick={() => { setShowNotes(true); setShowNoteMenu(false); }}
-              className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-gray-100 border-gray-200 text-gray-700')}`}
-            >
-              Study Mode
-            </button>
-          </div>
-          <p className="text-[11px] text-gray-400 mb-3">Tip: Study mode shows notes + reflections.</p>
-          <button 
-            onClick={() => setShowNoteMenu(false)}
-            className={`w-full py-2 rounded-lg text-xs font-semibold border ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-gray-100 border-gray-200 text-gray-700'}`}
-          >
-            Close
-          </button>
-        </div>
-        )}
+        
 
       {/* 🔴 COLOR PALETTE */}
       <div className="flex flex-col items-center gap-2 mb-6">

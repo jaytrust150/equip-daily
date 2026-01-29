@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { BIBLE_VERSIONS } from '../../config/constants';
 
 /**
  * BibleVersionPicker - A searchable dropdown component for selecting Bible translations
@@ -14,26 +13,26 @@ import { BIBLE_VERSIONS } from '../../config/constants';
  * @param {function} onVersionChange - Callback when version is selected
  * @param {string} theme - Current theme ('light' or 'dark')
  */
-function BibleVersionPicker({ selectedVersion, onVersionChange, theme = 'light' }) {
+function BibleVersionPicker({ selectedVersion, onVersionChange, theme = 'light', versions = [] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get the selected version details
   const selectedVersionData = useMemo(() => {
-    return BIBLE_VERSIONS.find(v => v.id === selectedVersion) || BIBLE_VERSIONS[0];
-  }, [selectedVersion]);
+    return versions.find(v => v.id === selectedVersion) || versions[0];
+  }, [selectedVersion, versions]);
 
   // Filter versions based on search query
   const filteredVersions = useMemo(() => {
-    if (!searchQuery.trim()) return BIBLE_VERSIONS;
+    if (!searchQuery.trim()) return versions;
 
     const query = searchQuery.toLowerCase();
-    return BIBLE_VERSIONS.filter(version => 
+    return versions.filter(version => 
       version.name.toLowerCase().includes(query) ||
       version.abbreviation.toLowerCase().includes(query) ||
       (version.language && version.language.toLowerCase().includes(query))
     );
-  }, [searchQuery]);
+  }, [searchQuery, versions]);
 
   // Group versions by language
   const groupedVersions = useMemo(() => {
@@ -44,7 +43,7 @@ function BibleVersionPicker({ selectedVersion, onVersionChange, theme = 'light' 
     };
 
     filteredVersions.forEach(version => {
-      const lang = version.language || 'eng';
+      const lang = version.language || 'other';
       if (groups[lang]) {
         groups[lang].versions.push(version);
       } else {
@@ -100,12 +99,13 @@ function BibleVersionPicker({ selectedVersion, onVersionChange, theme = 'light' 
         }}
       >
         <span>
-          <strong>{selectedVersionData.abbreviation}</strong>
+          <strong>{selectedVersionData?.abbreviation || '...'}</strong>
           <span style={{ color: isDark ? '#999' : '#666', marginLeft: '8px', fontSize: '12px' }}>
-            {selectedVersionData.name.length > 20 
-              ? selectedVersionData.name.substring(0, 20) + '...'
-              : selectedVersionData.name
-            }
+            {selectedVersionData?.name ? (
+              selectedVersionData.name.length > 20 
+                ? selectedVersionData.name.substring(0, 20) + '...'
+                : selectedVersionData.name
+            ) : 'Loading versions...'}
           </span>
         </span>
         <span style={{ 

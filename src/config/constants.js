@@ -1,7 +1,5 @@
 // src/config/constants.js
 
-import authorizedBibles from '../data/authorizedBibles.json';
-
 export const CITY_NAME = "Sebastian";
 export const AUDIO_BASE_PATH = "/audio/";
 
@@ -29,14 +27,9 @@ export const WEB_BIBLE_ID = '9879dbb7cfe39e4d-01'; // World English Bible (has a
 export const AUDIO_FALLBACK_VERSION = WEB_BIBLE_ID; // Use when primary version lacks audio
 export const DEFAULT_BIBLE_VERSION = NLT_BIBLE_ID; // Always fallback to licensed NLT
 
-// 📚 Bible Versions - Limited to Authorized Bibles (matching API.Bible Commercial Plan)
-export const BIBLE_VERSIONS = authorizedBibles.map(bible => ({
-  id: bible.id,
-  name: bible.name,
-  abbreviation: bible.abbreviation,
-  language: 'eng',
-  hasAudio: bible.hasAudio || false
-}));
+// 📚 Bible Versions are now loaded dynamically from the API response.
+// This export remains as an optional fallback for legacy components.
+export const BIBLE_VERSIONS = [];
 
 // 🗺️ Book Name to API ID Mapping (USFM Codes)
 export const USFM_MAPPING = {
