@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useDraggableWindow } from '../hooks/useDraggableWindow';
 import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../config/constants';
 
-function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, historyStack = [], onGoBack }) {
+function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [mobileSize, setMobileSize] = useState('half');
+  const inputRef = React.useRef(null);
 
   // 🪟 DESKTOP WINDOW STATE
   const DEFAULT_WIDTH = 340;
@@ -22,9 +23,16 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
     }
   }, [isOpen]);
 
+  // Auto-focus input when opened and handle initial query
   useEffect(() => {
-    if (initialQuery) { setQuery(initialQuery); performSearch(initialQuery); }
-  }, [initialQuery]);
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+      if (initialQuery) { 
+        setQuery(initialQuery); 
+        performSearch(initialQuery); 
+      }
+    }
+  }, [isOpen, initialQuery]);
 
   const performSearch = async (searchTerm) => {
     if (!searchTerm) return;
@@ -143,8 +151,14 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, histo
 
       <div style={{ padding: '10px 20px' }}>
         <form onSubmit={(e) => { e.preventDefault(); performSearch(query); }} style={{ display: 'flex', gap: '8px' }}>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search Scripture..." style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ccc' }} />
-          <button type="submit" style={{ background: '#2196F3', color: 'white', border: 'none', borderRadius: '8px', padding: '0 15px', fontWeight: 'bold' }}>Go</button>
+          <input 
+            ref={inputRef}
+            value={query} 
+            onChange={(e) => setQuery(e.target.value)} 
+            placeholder="Search Scripture..." 
+            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #ccc', backgroundColor: isDark ? '#444' : '#fff', color: isDark ? '#fff' : '#000' }} 
+          />
+          <button type="submit" style={{ background: '#2196F3', color: 'white', border: 'none', borderRadius: '8px', padding: '0 15px', fontWeight: 'bold', cursor: 'pointer' }}>Go</button>
         </form>
       </div>
 
