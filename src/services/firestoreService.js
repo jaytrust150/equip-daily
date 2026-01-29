@@ -51,15 +51,36 @@ export const saveNote = async (user, book, chapter, verses, text, editingId = nu
 
 export const deleteNote = async (noteId) => { await deleteDoc(doc(db, "notes", noteId)); };
 
-export const updateUserHighlight = async (userId, verseKey, colorCode) => {
+export const updateUserHighlight = async (userId, book, chapter, verseNum, highlightObj) => {
   const userRef = doc(db, "users", userId);
+  const verseKey = `${book} ${chapter}:${verseNum}`;
+  
+  // Initialize if needed
   const docSnap = await getDoc(userRef);
-  if (docSnap.exists()) {
-    const currentHighlights = docSnap.data().highlights || [];
-    const toRemove = currentHighlights.filter(h => h.startsWith(verseKey));
-    if (toRemove.length > 0) await updateDoc(userRef, { highlights: arrayRemove(...toRemove) });
+  if (!docSnap.exists()) {
+    await setDoc(userRef, { highlights: {} });
   }
-  if (colorCode) await updateDoc(userRef, { highlights: arrayUnion(`${verseKey}|${colorCode}`) });
+  
+  try {
+    const currentData = (await getDoc(userRef)).data() || {};
+    const highlights = currentData.highlights || {};
+    
+    // Ensure nested structure exists
+    if (!highlights[book]) highlights[book] = {};
+    if (!highlights[book][chapter]) highlights[book][chapter] = {};
+    
+    if (highlightObj) {
+      // Add or update highlight
+      highlights[book][chapter][verseNum] = highlightObj;
+    } else {
+      // Remove highlight
+      delete highlights[book][chapter][verseNum];
+    }
+    
+    await updateDoc(userRef, { highlights });
+  } catch (err) {
+    console.error("Error updating highlight:", err);
+  }
 };
 
 export const subscribeToUserProfile = (userId, callback) => {
