@@ -548,14 +548,24 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   };
 
   const handleSaveSelectedNote = async () => {
-    if (!user || selectedVerses.length === 0 || !currentNoteText.trim()) return;
-    await saveNote(user, book, chapter, selectedVerses, currentNoteText);
-    setSelectedVerses([]);
-    setShowNotebook(false);
-    setIsNoteMode(false);
-    setCurrentNoteText("");
-    setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
-    setTimeout(() => setNoteFeedback({}), 2000);
+    if (!user || selectedVerses.length === 0 || !currentNoteText.trim()) {
+      console.log('Save blocked:', { user: !!user, versesCount: selectedVerses.length, hasText: !!currentNoteText.trim() });
+      return;
+    }
+    try {
+      console.log('Saving note:', { book, chapter, verses: selectedVerses, text: currentNoteText });
+      await saveNote(user, book, chapter, selectedVerses, currentNoteText);
+      setSelectedVerses([]);
+      setShowNotebook(false);
+      setIsNoteMode(false);
+      setCurrentNoteText("");
+      setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    } catch (error) {
+      console.error('Error saving note:', error);
+      setNoteFeedback({ type: 'error', msg: 'Failed to save note: ' + error.message });
+      setTimeout(() => setNoteFeedback({}), 3000);
+    }
   };
 
   const handleCopyVerses = async () => {
@@ -629,12 +639,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     if (!currentNoteText.trim()) return;
     if (!longPressVerse) return;
     
-    await saveNote(user, book, chapter, [longPressVerse], currentNoteText);
-    setCurrentNoteText("");
-    setIsNoteMode(false);
-    setEditingNoteId(null);
-    setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
-    setTimeout(() => setNoteFeedback({}), 2000);
+    try {
+      console.log('Saving long-press note:', { book, chapter, verse: longPressVerse, text: currentNoteText });
+      await saveNote(user, book, chapter, [longPressVerse], currentNoteText);
+      setCurrentNoteText("");
+      setIsNoteMode(false);
+      setEditingNoteId(null);
+      setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    } catch (error) {
+      console.error('Error saving long-press note:', error);
+      setNoteFeedback({ type: 'error', msg: 'Failed to save note: ' + error.message });
+      setTimeout(() => setNoteFeedback({}), 3000);
+    }
   };
 
   const handleEditNote = (note) => {

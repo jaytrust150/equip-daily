@@ -44,9 +44,20 @@ export const toggleFruitReaction = async (postId, fruitId, userId, currentReacti
 
 export const saveNote = async (user, book, chapter, verses, text, editingId = null) => {
   if (!text.trim()) return;
-  const noteData = { userId: user.uid, book, chapter: parseInt(chapter), verses: verses.sort((a,b) => a-b), text, timestamp: serverTimestamp(), color: DEFAULT_NOTE_COLOR };
-  if (editingId) await updateDoc(doc(db, "notes", editingId), { text, timestamp: serverTimestamp() });
-  else await addDoc(collection(db, "notes"), noteData);
+  try {
+    console.log('firestoreService.saveNote called:', { userId: user?.uid, book, chapter, verses, textLength: text.length, editingId });
+    const noteData = { userId: user.uid, book, chapter: parseInt(chapter), verses: verses.sort((a,b) => a-b), text, timestamp: serverTimestamp(), color: DEFAULT_NOTE_COLOR };
+    if (editingId) {
+      await updateDoc(doc(db, "notes", editingId), { text, timestamp: serverTimestamp() });
+      console.log('Note updated successfully:', editingId);
+    } else {
+      const docRef = await addDoc(collection(db, "notes"), noteData);
+      console.log('Note created successfully:', docRef.id);
+    }
+  } catch (error) {
+    console.error('Error in saveNote:', error);
+    throw error;
+  }
 };
 
 export const deleteNote = async (noteId) => { await deleteDoc(doc(db, "notes", noteId)); };
