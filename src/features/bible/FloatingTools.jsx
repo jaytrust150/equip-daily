@@ -14,7 +14,8 @@ function FloatingTools({
   onCopyVerses,
   onPasteVerses,
   onDeleteNote,
-  theme = 'light'
+  theme = 'light',
+  activeColor
 }) {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight / 2 });
   const [isDragging, setIsDragging] = useState(false);
