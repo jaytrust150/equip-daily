@@ -849,8 +849,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   </div>
                 </div>
 
-                {/* Chapter Pills - More Compact Layout */}
-                <div className="flex flex-wrap gap-1 justify-start" style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '5px' }}>
+                {/* Chapter Pills - Compact Grid Layout */}
+                <div className="flex flex-wrap justify-center" style={{ gap: '4px', maxHeight: '240px', overflowY: 'auto', paddingRight: '5px' }}>
                   {Array.from({ length: testamentDrillBook.chapters }, (_, i) => i + 1).map(chapterNum => {
                     const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
                     return (
@@ -868,11 +868,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             alert('Please sign in to mark chapters as read.');
                           }
                         }}
-                        className="font-bold transition"
+                        className="font-bold transition flex-shrink-0"
                         title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''} - Double-click to mark read`}
                         style={{
-                          width: '35px',
-                          height: '35px',
+                          width: '32px',
+                          height: '32px',
                           borderRadius: '50%',
                           border: isRead ? '2px solid #4caf50' : `1px solid ${theme === 'dark' ? '#444' : '#ddd'}`,
                           backgroundColor: isRead ? '#4caf50' : (theme === 'dark' ? '#2a2a2a' : '#f0f0f0'),
