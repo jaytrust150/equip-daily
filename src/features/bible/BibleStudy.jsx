@@ -1371,50 +1371,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             <button onClick={handleCancelNote} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
                         </div>
                         
-                        {/* Color Palette - Same as FloatingTools */}
-                        <div className="mb-4 p-3 rounded-lg" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
-                            <div className="text-xs font-semibold mb-2" style={{ color: theme === 'dark' ? '#999' : '#666' }}>Highlight Color:</div>
-                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                {COLOR_PALETTE.map(c => {
-                                    const isSelected = activeHighlightColor && activeHighlightColor.code === c.code;
-                                    return (
-                                        <button 
-                                            key={c.code} 
-                                            onClick={() => handleApplyColor(c)} 
-                                            title={c.name}
-                                            style={{ 
-                                                width: '28px', 
-                                                height: '28px', 
-                                                background: c.code, 
-                                                borderRadius: '50%', 
-                                                border: isSelected ? '3px solid #000' : '2px solid #999',
-                                                cursor: 'pointer',
-                                                transition: 'all 0.2s',
-                                                transform: isSelected ? 'scale(1.15)' : 'scale(1)',
-                                                boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.4)' : 'none'
-                                            }}
-                                        />
-                                    );
-                                })}
-                                <button 
-                                    onClick={() => handleApplyColor(null)}
-                                    title="Remove highlight"
-                                    style={{ 
-                                        width: '28px', 
-                                        height: '28px', 
-                                        borderRadius: '50%', 
-                                        border: '2px solid #999',
-                                        background: 'white',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        fontWeight: 'bold'
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        </div>
-                        
+
                         <textarea
                             ref={noteEditorRef}
                             value={currentNoteText}
