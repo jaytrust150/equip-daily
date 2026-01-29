@@ -49,7 +49,7 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
   const [error, setError] = useState(null);
   const [mobileSize] = useState('half');
   const [versions, setVersions] = useState([]); // Bible versions list
-  const [selectedVersion, setSelectedVersion] = useState(null); // Selected version for search
+  const [selectedVersion, setSelectedVersion] = useState(DEFAULT_BIBLE_VERSION); // Initialize with default Bible version to avoid race condition
   const [versionsLoading, setVersionsLoading] = useState(false);
   const [collapsedChapters, setCollapsedChapters] = useState({}); // Track collapsed state by chapter key
   const inputRef = React.useRef(null);
