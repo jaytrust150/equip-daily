@@ -4,7 +4,8 @@ import { auth } from '../config/firebase';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signInWithPopup, 
+  signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   FacebookAuthProvider,
   updateProfile,
@@ -53,8 +54,27 @@ function Login({ theme }) {
 
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(auth, provider); } 
-    catch (err) { console.error(err); setError("Google Login Failed"); }
+    provider.setCustomParameters({ prompt: 'select_account' });
+    try { 
+      await signInWithPopup(auth, provider); 
+    } catch (err) { 
+      console.error(err);
+      const code = err?.code || '';
+      if (code === 'auth/popup-blocked' || code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirectErr) {
+          console.error(redirectErr);
+          setError("Popup blocked. Please allow popups and try again.");
+        }
+        return;
+      }
+      if (code === 'auth/unauthorized-domain') {
+        setError("This domain isn’t authorized in Firebase Auth.");
+        return;
+      }
+      setError(err?.message?.replace('Firebase: ', '').replace('auth/', '') || "Google Login Failed");
+    }
   };
 
   const handleFacebookLogin = async () => {
