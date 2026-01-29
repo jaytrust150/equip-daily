@@ -96,6 +96,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   // --- CLICK DETECTION STATE (for chapter/book navigation vs marking) ---
   const chapterClickTimeouts = useRef({}); // Maps chapter to timeout ID
   const bookClickTimeouts = useRef({}); // Maps book to timeout ID
+  
+  // --- MODAL POSITIONING ---
+  const modalRef = useRef(null);
 
   // 0️⃣ LOAD USER'S DEFAULT BIBLE VERSION & READ HISTORY
   useEffect(() => {
@@ -796,13 +799,28 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     setIsNoteMode(false);
   };
 
-  // Auto-focus note editor (only for inline editing, not sidebar)
+  // Auto-focus note editor and position modal correctly
   useEffect(() => {
     if (noteEditorRef.current && (longPressVerse || (editingNoteId && !showNotes))) {
       noteEditorRef.current.focus();
-      noteEditorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [longPressVerse, editingNoteId, showNotes]);
+  
+  // Position modal under the verse and scroll it into view
+  useEffect(() => {
+    if (longPressVerse && modalRef.current) {
+      const verseEl = document.getElementById(`verse-${longPressVerse}`);
+      if (verseEl) {
+        const rect = verseEl.getBoundingClientRect();
+        const modalTop = rect.bottom + window.scrollY + 10;
+        modalRef.current.style.top = `${modalTop}px`;
+      }
+      // Scroll modal into view
+      setTimeout(() => {
+        modalRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+    }
+  }, [longPressVerse]);
 
   // --- RENDER ---
   // ✅ Allow Bible reading without login - only require login for saving features
@@ -1411,18 +1429,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     <div className="fixed inset-0 bg-black/30 z-40" onClick={handleCancelNote} />
                     {/* Modal positioned below the verse */}
                     <div 
+                        ref={modalRef}
                         className={`fixed rounded-xl shadow-2xl p-6 z-50 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            top: `${typeof window !== 'undefined' && document.getElementById(`verse-${longPressVerse}`) 
-                                ? (document.getElementById(`verse-${longPressVerse}`).getBoundingClientRect().bottom + window.scrollY + 10) 
-                                : window.innerHeight / 2}px`,
                             left: '50%',
                             transform: 'translateX(-50%)',
                             maxWidth: '90vw',
                             width: '100%',
                             maxHeight: '80vh',
-                            overflowY: 'auto'
+                            overflowY: 'auto',
+                            top: '50%' // Fallback position while calculating
                         }}
                     >
                         <div className="flex items-center justify-between mb-4">
