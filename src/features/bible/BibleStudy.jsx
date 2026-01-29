@@ -718,7 +718,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   const handleDeleteNote = async () => {
     if (!editingNoteId || !user) return;
-    await deleteNote(user.uid, book, chapter, editingNoteId);
+    await deleteNote(editingNoteId);
     setEditingNoteId(null);
     setCurrentNoteText("");
     setIsNoteMode(false);
@@ -1269,7 +1269,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           theme={theme}
           onSearch={onSearch}
           onProfileClick={onProfileClick}
-          title="Reflections from the Body"
+          title={`Reflections for ${book} ${chapter}`}
         />
       </div>
 
