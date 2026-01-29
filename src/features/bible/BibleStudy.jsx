@@ -704,6 +704,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       console.log('Saving long-press note:', { book, chapter, verse: longPressVerse, text: currentNoteText });
       await saveNote(user, book, chapter, [longPressVerse], currentNoteText);
       setCurrentNoteText("");
+      setLongPressVerse(null); // Close the inline editor
       setIsNoteMode(false);
       setEditingNoteId(null);
       setNoteFeedback({ type: 'success', msg: 'Note Saved!' });
