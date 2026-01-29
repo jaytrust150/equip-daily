@@ -104,6 +104,25 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     loadUserSettings();
   }, [user]);
 
+  // AUTO-HIGHLIGHT VERSE FROM SEARCH
+  useEffect(() => {
+    const verseNum = sessionStorage.getItem('jumpToVerse');
+    if (verseNum) {
+      setTimeout(() => {
+        const verseEl = document.getElementById(`verse-${verseNum}`);
+        if (verseEl) {
+          verseEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Temporarily highlight the verse with a golden background
+          verseEl.style.backgroundColor = 'rgba(255, 193, 7, 0.3)';
+          setTimeout(() => {
+            verseEl.style.backgroundColor = '';
+          }, 2000);
+        }
+      }, 100);
+      sessionStorage.removeItem('jumpToVerse');
+    }
+  }, [chapter]); // Trigger when chapter changes from search
+
   // 1. 🔄 Fetch Bible Content from API
   useEffect(() => {
     async function fetchBibleText() {
@@ -832,7 +851,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                    (longPressVerse === verse.number);
                             
                             return (
-                                <div key={verse.id} style={{ marginBottom: '1rem' }}>
+                                <div key={verse.id} style={{ marginBottom: '1rem' }} id={`verse-${verse.number}`}>
                                     <div 
                                         onClick={() => handleVerseClick(verse.number)}
                                         onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}

@@ -124,8 +124,8 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
 
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
-    // Use the pre-mapped full book name
-    onJumpToVerse(r.fullBookName, r.chapter);
+    // Use the pre-mapped full book name and pass verse number
+    onJumpToVerse(r.fullBookName, r.chapter, parseInt(r.verse));
     if (window.innerWidth <= 768) onClose();
   };
 

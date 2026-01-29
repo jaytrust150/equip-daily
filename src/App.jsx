@@ -77,11 +77,16 @@ function App() {
   };
 
   // --- 🚀 SMART BIBLE JUMP ---
-  const jumpToVerse = (book, chapter) => {
+  const jumpToVerse = (book, chapter, verseNum = null) => {
     setBibleHistory(prev => [...prev, { book: bibleBook, chapter: bibleChapter }]);
     setBibleBook(book);
     setBibleChapter(parseInt(chapter));
     setActiveTab('bible');
+    // If verse number provided, pass it to BibleStudy via props
+    if (verseNum) {
+      // Store verse to highlight in state so BibleStudy can access it
+      sessionStorage.setItem('jumpToVerse', verseNum);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
