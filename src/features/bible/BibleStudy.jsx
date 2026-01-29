@@ -303,59 +303,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
   };
 
-  // Function to mark current chapter as read with confetti
-  const markChapterAsRead = async () => {
-    if (!user) {
-      alert('Please sign in to track your reading progress.');
-      return;
-    }
-    
-    const chapterKey = `${book} ${chapter}`;
-    if (readChapters.includes(chapterKey)) {
-      alert('Chapter already marked as read! ✓');
-      return;
-    }
-    
-    const updatedChapters = [...readChapters, chapterKey];
-    setReadChapters(updatedChapters);
-    
-    try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, { readChapters: updatedChapters });
-      
-      // 🎉 Trigger confetti!
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-      
-      console.log(`✅ Chapter marked as read: ${chapterKey}`);
-    } catch (err) {
-      console.error('Error marking chapter as read:', err);
-    }
-  };
-
-  // Function to toggle chapter read status (for Bible Tracker double-click)
-  const toggleChapterRead = async (chapterKey) => {
-    if (!user) return;
-    
-    const isCurrentlyRead = readChapters.includes(chapterKey);
-    const updatedChapters = isCurrentlyRead
-      ? readChapters.filter(key => key !== chapterKey)
-      : [...readChapters, chapterKey];
-    
-    setReadChapters(updatedChapters);
-    
-    try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, { readChapters: updatedChapters });
-      console.log(`${isCurrentlyRead ? '❌ Unmarked' : '✅ Marked'} as read: ${chapterKey}`);
-    } catch (err) {
-      console.error('Error toggling chapter read status:', err);
-    }
-  };
-
   // 📖 Track chapter as read in Firestore
   const trackChapterRead = async (bookName, chapterNum) => {
     if (!user || !db) return;
