@@ -356,16 +356,35 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
                       {group.verses.map((r) => (
                         <div 
                           key={r.id} 
-                          onClick={() => handleResultClick(r)} 
                           style={{ 
                             padding: '10px', 
                             borderRadius: '8px', 
                             backgroundColor: isDark ? '#333' : '#f9f9f9', 
-                            cursor: 'pointer',
-                            borderLeft: '3px solid #2196F3'
+                            borderLeft: '3px solid #2196F3',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px'
                           }}
                         >
-                          <strong style={{ display: 'block', fontSize: '0.85rem', color: '#2196F3', marginBottom: '4px' }}>Verse {r.verse}</strong>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <strong style={{ fontSize: '0.85rem', color: '#2196F3' }}>Verse {r.verse}</strong>
+                            <button
+                              onClick={() => handleResultClick(r)}
+                              style={{
+                                padding: '4px 10px',
+                                fontSize: '0.75rem',
+                                backgroundColor: '#2196F3',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontWeight: '500',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              Go to →
+                            </button>
+                          </div>
                           <span style={{ fontSize: '0.9rem', color: isDark ? '#ddd' : '#333' }} dangerouslySetInnerHTML={{ __html: r.text }} />
                         </div>
                       ))}
