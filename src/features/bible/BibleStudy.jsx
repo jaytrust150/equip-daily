@@ -888,7 +888,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         onClick={handleChapterClick}
                         onDoubleClick={handleChapterDoubleClick}
                         className="font-bold transition flex-shrink-0"
-                        title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''} - Double-click to mark read`}
+                        title={`Chapter ${chapterNum}${isRead ? ' (✓ Read)' : ''} - Double-click to ${isRead ? 'unmark' : 'mark'} read`}
                         style={{
                           width: '32px',
                           height: '32px',
