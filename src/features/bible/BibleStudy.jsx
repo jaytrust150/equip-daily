@@ -126,7 +126,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 return; 
             }
 
-            const domain = window.location.origin;
             console.error("API Authorization Failed. Check Vercel environment variables and API.Bible configuration");
             throw new Error(`Unauthorized. Check API key configuration in Vercel.`);
         }
@@ -260,7 +259,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     
     // For NLT, audio is not available - use WEB as fallback
     const needsAudioFallback = version === DEFAULT_BIBLE_VERSION;
-    const effectiveAudioVersion = needsAudioFallback ? AUDIO_FALLBACK_VERSION : version;
     
     // If using fallback, fetch the audio version text
     if (needsAudioFallback) {

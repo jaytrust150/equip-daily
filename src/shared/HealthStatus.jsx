@@ -37,9 +37,7 @@ export default function HealthStatus({ theme = 'light' }) {
     return null;
   }
 
-  const bgColor = theme === 'dark' ? 'bg-gray-900' : 'bg-white';
-  const borderColor = theme === 'dark' ? 'border-gray-700' : 'border-gray-200';
-  const textColor = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
+  // Theme colors are handled by statusColors object
 
   const statusColors = {
     healthy: 'bg-green-100 border-green-300 text-green-800',

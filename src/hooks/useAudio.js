@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-export function useAudio(_src, _captionsSrc) {
+export function useAudio() {
   const audioRef = useRef(null);
   const [error, setError] = useState(false);
   const [sleepMinutes, setSleepMinutes] = useState(null);
