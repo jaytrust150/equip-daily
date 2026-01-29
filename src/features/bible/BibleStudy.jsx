@@ -753,6 +753,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                <option key={v.id} value={v.id} style={{color: '#333'}}>{v.abbreviation || v.name}</option>
              ))}
            </select>
+
+           {/* Search Box */}
+           <div className="relative ml-3">
+                <input 
+                    type="text" 
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && onSearch && onSearch(searchInput)}
+                    placeholder="Search..."
+                    className={`pl-2 pr-7 py-1 rounded-lg border w-32 text-sm focus:w-48 transition-all ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
+            </div>
         </div>
 
         {/* Audio */}
@@ -773,19 +786,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             </div>
         </div>
 
-        {/* Font Size & Search */}
+        {/* Font Size & Tools */}
         <div className="flex items-center gap-2">
-            <div className="relative">
-                <input 
-                    type="text" 
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && onSearch && onSearch(searchInput)}
-                    placeholder="Search..."
-                    className={`pl-2 pr-7 py-1 rounded-lg border w-32 text-sm focus:w-48 transition-all ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'}`}
-                />
-                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
-            </div>
             <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">-A</button>
             <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black">+A</button>
             <button
