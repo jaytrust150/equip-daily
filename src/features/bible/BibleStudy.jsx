@@ -45,6 +45,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [showBibleTracker, setShowBibleTracker] = useState(false); // Show/hide Bible tracker modal
   const [testamentFilter, setTestamentFilter] = useState(null); // 'OT' or 'NT' or null
   const [showTestamentNav, setShowTestamentNav] = useState(null); // 'OT' or 'NT' or null - for compact navigation
+  const [testamentDrillBook, setTestamentDrillBook] = useState(null); // For showing chapters when book clicked
 
   const [verses, setVerses] = useState([]);
   const [_selectedVerses, _setSelectedVerses] = useState([]);
@@ -786,7 +787,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         {/* Testament Navigation Buttons */}
         <div className="flex gap-2 mb-3 justify-center">
           <button
-            onClick={() => setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT')}
+            onClick={() => {
+              setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
+              setTestamentDrillBook(null);
+            }}
             style={{ padding: '8px 20px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
             className={`font-medium transition shadow-sm ${
               showTestamentNav === 'OT'
@@ -798,7 +802,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             📖 Old Testament
           </button>
           <button
-            onClick={() => setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT')}
+            onClick={() => {
+              setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
+              setTestamentDrillBook(null);
+            }}
             style={{ padding: '8px 20px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
             className={`font-medium transition shadow-sm ${
               showTestamentNav === 'NT'
@@ -814,26 +821,105 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         {/* Compact Testament Navigation */}
         {showTestamentNav && bibleData && (
           <div className="mb-3 p-3 rounded-lg" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {bibleData
-                .filter(bookData => {
-                  return showTestamentNav === 'OT' ? bookData.section === 'OT' : bookData.section === 'NT';
-                })
-                .map(bookData => (
-                  <div key={bookData.name} className="text-sm">
-                    <button
-                      onClick={() => { setBook(bookData.name); setChapter(1); setShowTestamentNav(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                      className={`w-full text-left px-2 py-1 rounded font-medium transition ${
-                        book === bookData.name
-                          ? 'bg-indigo-600 text-white'
-                          : (theme === 'dark' ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-200 text-gray-700')
-                      }`}
-                    >
-                      {bookData.name}
-                    </button>
+            
+            {/* Book Drill-Down: Show Chapters */}
+            {testamentDrillBook ? (
+              <div>
+                {/* Back Button & Book Title with Progress */}
+                <div className="flex items-center justify-between mb-3">
+                  <button
+                    onClick={() => setTestamentDrillBook(null)}
+                    className="text-sm font-medium px-3 py-1 rounded transition"
+                    style={{
+                      background: theme === 'dark' ? '#2a2a2a' : '#e5e5e5',
+                      color: theme === 'dark' ? '#aaa' : '#555'
+                    }}
+                  >
+                    ← Back
+                  </button>
+                  <div className="text-sm font-bold" style={{ color: theme === 'dark' ? '#fff' : '#333' }}>
+                    {testamentDrillBook.name}
+                    <span className="ml-2 text-xs font-normal" style={{ color: theme === 'dark' ? '#999' : '#666' }}>
+                      {(() => {
+                        const readCount = readChapters.filter(entry => entry.startsWith(`${testamentDrillBook.name} `)).length;
+                        const percent = Math.round((readCount / testamentDrillBook.chapters) * 100);
+                        return `${percent}% complete`;
+                      })()}
+                    </span>
                   </div>
-                ))}
-            </div>
+                </div>
+
+                {/* Chapter Pills */}
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {Array.from({ length: testamentDrillBook.chapters }, (_, i) => i + 1).map(chapterNum => {
+                    const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
+                    return (
+                      <button
+                        key={chapterNum}
+                        onClick={() => {
+                          setBook(testamentDrillBook.name);
+                          setChapter(chapterNum);
+                          setShowTestamentNav(null);
+                          setTestamentDrillBook(null);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="font-bold transition"
+                        style={{
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          border: 'none',
+                          backgroundColor: isRead ? '#4caf50' : (theme === 'dark' ? '#2a2a2a' : '#f0f0f0'),
+                          color: isRead ? 'white' : (theme === 'dark' ? '#aaa' : '#555'),
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: isRead ? '0 2px 5px rgba(76, 175, 80, 0.4)' : 'none'
+                        }}
+                      >
+                        {chapterNum}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              /* Book Pills with Progress */
+              <div className="flex flex-wrap gap-2 justify-center">
+                {bibleData
+                  .filter(bookData => {
+                    return showTestamentNav === 'OT' ? bookData.section === 'OT' : bookData.section === 'NT';
+                  })
+                  .map(bookData => {
+                    const readCount = readChapters.filter(entry => entry.startsWith(`${bookData.name} `)).length;
+                    const percent = Math.round((readCount / bookData.chapters) * 100);
+                    const isComplete = percent === 100;
+                    
+                    return (
+                      <button
+                        key={bookData.name}
+                        onClick={() => setTestamentDrillBook(bookData)}
+                        className="text-sm font-medium px-3 py-1.5 rounded-lg transition"
+                        style={{
+                          background: isComplete 
+                            ? '#ffd700' 
+                            : `linear-gradient(to right, #b3e5fc ${percent}%, ${theme === 'dark' ? '#2a2a2a' : '#f5f5f5'} ${percent}%)`,
+                          border: isComplete ? '1px solid #e6c200' : `1px solid ${theme === 'dark' ? '#444' : '#ddd'}`,
+                          color: isComplete ? '#555' : (theme === 'dark' ? '#ddd' : '#333'),
+                          fontWeight: isComplete ? 'bold' : 'normal',
+                          cursor: 'pointer',
+                          minWidth: '80px',
+                          textAlign: 'center',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                        }}
+                      >
+                        {isComplete ? `🏆 ${bookData.name}` : percent > 0 ? `${bookData.name} ${percent}%` : bookData.name}
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
           </div>
         )}
 
