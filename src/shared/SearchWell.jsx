@@ -1,8 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import { useDraggableWindow } from '../hooks/useDraggableWindow';
-import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK } from '../config/constants';
+import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK, USFM_MAPPING } from '../config/constants';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../config/firebase';
+
+// Helper to parse verse references like "John 3:16", "1 Corinthians 13:4-7", "James 1"
+const parseVerseReference = (query) => {
+  // Normalize input: trim and handle common variations
+  const normalized = query.trim();
+  
+  // Match patterns like:
+  // - "John 3:16" -> book chapter:verse
+  // - "1 Corinthians 13:4-7" -> book chapter:verse-verse
+  // - "James 1" -> book chapter
+  // - "Psalm 23" -> book chapter
+  // - "1 Kings 8:27" -> numbered book chapter:verse
+  const match = normalized.match(/^((?:\d\s)?[a-z\s]+?)\s+(\d+)(?::(\d+)(?:-(\d+))?)?$/i);
+  
+  if (!match) return null;
+  
+  const [, bookName, chapter, startVerse, endVerse] = match;
+  
+  // Normalize book name (handle "1 Corinthians" vs "1corinthians" etc)
+  const normalizedBook = bookName.trim().replace(/\s+/g, ' ');
+  
+  // Try to find the book in our mapping (case-insensitive)
+  const bookEntry = Object.entries(USFM_MAPPING).find(([fullName]) =>
+    fullName.toLowerCase() === normalizedBook.toLowerCase()
+  );
+  
+  if (!bookEntry) return null;
+  
+  const [fullBookName, bookCode] = bookEntry;
+  
+  return {
+    bookName: fullBookName,
+    bookCode,
+    chapter: parseInt(chapter, 10),
+    startVerse: startVerse ? parseInt(startVerse, 10) : null,
+    endVerse: endVerse ? parseInt(endVerse, 10) : null
+  };
+};
 
 function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user }) {
   const [query, setQuery] = useState("");
