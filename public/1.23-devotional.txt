@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>The Heart of Kindness: Serving Christ in Others</title>
+</head>
+<body>
+
+  <h1>The Heart of Kindness: Serving Christ in Others</h1>
+
+  <p>May the Lord repay you for your kindness! Thank you for the lessons and for taking into account even the little things that don’t matter… 😊</p>
+  
+  <p>Sometimes, just letting someone know you see them means the world to them—to show, "Hey, to me, you matter!" Love you for it! ❤ It’s not always about winning; just being able to participate is awesome! 🙏</p>
+
+  <p>“But when the Son of Man comes in His glory, and all the angels with Him, then He will sit on His glorious throne. All the nations will be gathered before Him; and He will separate them from one another, as the shepherd separates the sheep from the goats; and He will put the sheep on His right, and the goats on the left.” - Matthew 25:31-33</p>
+
+  <p>“Then the King will say to those on His right, ‘Come, you who are blessed of My Father, inherit the kingdom prepared for you from the foundation of the world. For I was hungry, and you gave Me something to eat; I was thirsty, and you gave Me something to drink; I was a stranger, and you invited Me in; naked, and you clothed Me; I was sick, and you visited Me; I was in prison, and you came to Me.’” - Matthew 25:34-36</p>
+
+  <p>“Then the righteous will answer Him, ‘Lord, when did we see You hungry, and feed You, or thirsty, and give You something to drink? And when did we see You a stranger, and invite You in, or naked, and clothe You? When did we see You sick, or in prison, and come to You?’” - Matthew 25:37-39</p>
+
+  <p>“The King will answer and say to them, ‘Truly I say to you, to the extent that you did it to one of these brothers of Mine, even the least of them, you did it to Me.’” - Matthew 25:40</p>
+
+</body>
+</html>
