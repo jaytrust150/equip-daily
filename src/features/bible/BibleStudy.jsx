@@ -44,6 +44,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [readChapters, setReadChapters] = useState([]); // Track read chapters
   const [showBibleTracker, setShowBibleTracker] = useState(false); // Show/hide Bible tracker modal
   const [testamentFilter, setTestamentFilter] = useState(null); // 'OT' or 'NT' or null
+  const [showTestamentNav, setShowTestamentNav] = useState(null); // 'OT' or 'NT' or null - for compact navigation
 
   const [verses, setVerses] = useState([]);
   const [_selectedVerses, _setSelectedVerses] = useState([]);
