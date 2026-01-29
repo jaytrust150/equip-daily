@@ -142,21 +142,73 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
       return;
     }
     
-    // 🎯 First, check if this is a scripture reference (e.g., "John 3:16")
-    const verseRef = parseVerseReference(searchTerm);
-    if (verseRef && onJumpToVerse) {
-      console.log('Detected scripture reference:', verseRef);
-      // Jump directly to the verse
-      onJumpToVerse(verseRef.bookName, verseRef.chapter, verseRef.startVerse);
-      setResults([]); // Clear any previous results
-      if (window.innerWidth <= 768) onClose(); // Close on mobile
-      return;
-    }
-    
     setLoading(true);
     setError(null);
     setResults([]);
 
+    // 🎯 Check if this is a scripture reference (e.g., "John 3:16")
+    const verseRef = parseVerseReference(searchTerm);
+    if (verseRef) {
+      console.log('Detected scripture reference:', verseRef);
+      // Fetch the specific verse(s) and display them in the well
+      try {
+        const bookCode = USFM_MAPPING[verseRef.bookName];
+        const chapterId = `${bookCode}.${verseRef.chapter}`;
+        const res = await fetch(`/api/bible-chapter?bibleId=${selectedVersion}&chapterId=${chapterId}`);
+        
+        if (!res.ok) throw new Error(`Failed to fetch chapter`);
+        
+        const data = await res.json();
+        
+        if (data.data && data.data.content) {
+          // Parse verses from the content
+          const verseMatches = [...data.data.content.matchAll(/<span[^>]*data-number="(\d+)"[^>]*>(.*?)<\/span>/gs)];
+          const verses = [];
+          
+          for (const match of verseMatches) {
+            const verseNum = parseInt(match[1]);
+            const verseText = match[2].replace(/<[^>]+>/g, '').trim();
+            
+            // If specific verse range requested, filter
+            if (verseRef.startVerse) {
+              const endVerse = verseRef.endVerse || verseRef.startVerse;
+              if (verseNum >= verseRef.startVerse && verseNum <= endVerse) {
+                verses.push({
+                  id: `${chapterId}.${verseNum}`,
+                  reference: `${verseRef.bookName} ${verseRef.chapter}:${verseNum}`,
+                  text: verseText,
+                  bookId: bookCode,
+                  fullBookName: verseRef.bookName,
+                  chapter: verseRef.chapter.toString(),
+                  verse: verseNum.toString()
+                });
+              }
+            } else {
+              // Show all verses in chapter
+              verses.push({
+                id: `${chapterId}.${verseNum}`,
+                reference: `${verseRef.bookName} ${verseRef.chapter}:${verseNum}`,
+                text: verseText,
+                bookId: bookCode,
+                fullBookName: verseRef.bookName,
+                chapter: verseRef.chapter.toString(),
+                verse: verseNum.toString()
+              });
+            }
+          }
+          
+          setResults(verses);
+        }
+      } catch (err) {
+        console.error('Error fetching verse reference:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+    
+    // Otherwise, perform a word search
     try {
         const searchVersion = selectedVersion; // Use selected version from dropdown
         console.log('Performing word search:', { query: searchTerm, version: searchVersion });
