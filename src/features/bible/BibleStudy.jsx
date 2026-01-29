@@ -1236,6 +1236,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                 <div key={verse.id} style={{ marginBottom: '1rem' }} id={`verse-${verse.number}`}>
                                     <div 
                                         onClick={() => handleVerseClick(verse.number)}
+                                        onDoubleClick={() => handleCopyVerse(verse.text, verse.number)}
                                         onMouseDown={() => handleMouseDown(verse.number)}
                                         onMouseUp={handleMouseUp}
                                         onMouseLeave={handleMouseUp}
@@ -1367,25 +1368,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 </div>
             )}
             
-            {/* Long Press Note Editor - Inline Popover */}
+            {/* Long Press Note Editor */}
             {longPressVerse && (
-                <div 
-                    className={`fixed z-50 rounded-xl shadow-2xl p-4 border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
-                    style={{
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '90vw',
-                        maxWidth: '600px',
-                        maxHeight: '85vh',
-                        overflowY: 'auto'
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold text-base">✏️ Note for {book} {chapter}:{longPressVerse}</h3>
-                        <button onClick={handleCancelNote} className="text-xl text-gray-400 hover:text-gray-600 flex-shrink-0">&times;</button>
-                    </div>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={handleCancelNote}>
+                    <div 
+                        className={`w-full max-w-3xl rounded-xl shadow-2xl p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-lg">✏️ Note for {book} {chapter}:{longPressVerse}</h3>
+                            <button onClick={handleCancelNote} className="text-2xl text-gray-400 hover:text-gray-600">&times;</button>
+                        </div>
                         
 
                         <textarea
@@ -1393,8 +1386,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             value={currentNoteText}
                             onChange={(e) => setCurrentNoteText(e.target.value)}
                             placeholder={`Write your note for ${book} ${chapter}:${longPressVerse}...`}
-                            className={`w-full p-2 rounded-lg border mb-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
-                            style={{ height: '120px', minHeight: '120px' }}
+                            className={`w-full p-3 rounded-lg border mb-3 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200 text-gray-900'}`}
+                            style={{ height: '200px', minHeight: '200px' }}
                             autoFocus
                         />
                         
