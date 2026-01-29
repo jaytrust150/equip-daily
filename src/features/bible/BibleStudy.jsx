@@ -1376,16 +1376,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                             <div className="text-xs font-semibold mb-2" style={{ color: theme === 'dark' ? '#999' : '#666' }}>Highlight Color:</div>
                             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                                 {COLOR_PALETTE.map(c => {
-                                    const isSelected = selectedHighlightColor && selectedHighlightColor.code === c.code;
+                                    const isSelected = activeHighlightColor && activeHighlightColor.code === c.code;
                                     return (
                                         <button 
                                             key={c.code} 
-                                            onClick={() => {
-                                                setSelectedHighlightColor(c);
-                                                if (longPressVerse) {
-                                                    handleApplyHighlight(c, longPressVerse);
-                                                }
-                                            }} 
+                                            onClick={() => handleApplyColor(c)} 
                                             title={c.name}
                                             style={{ 
                                                 width: '28px', 
@@ -1402,12 +1397,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                     );
                                 })}
                                 <button 
-                                    onClick={() => {
-                                        setSelectedHighlightColor(null);
-                                        if (longPressVerse) {
-                                            handleApplyHighlight(null, longPressVerse);
-                                        }
-                                    }}
+                                    onClick={() => handleApplyColor(null)}
                                     title="Remove highlight"
                                     style={{ 
                                         width: '28px', 
@@ -1438,7 +1428,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         {/* Study Mode Buttons - Same as FloatingTools */}
                         <div className="grid grid-cols-2 gap-2 mb-4">
                             <button 
-                                onClick={handleCopyVerse}
+                                onClick={handleCopyVerses}
                                 style={{ 
                                     padding: '8px 12px', 
                                     fontSize: '0.85rem',
