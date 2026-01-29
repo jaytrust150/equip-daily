@@ -60,6 +60,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [showNotes, setShowNotes] = useState(true); 
   const [isNoteMode, setIsNoteMode] = useState(false);
   const [currentNoteText, setCurrentNoteText] = useState("");
+  const [expandedNotes, setExpandedNotes] = useState({}); // Track which notes are expanded in reading mode
   
   const [editingNoteId, setEditingNoteId] = useState(null);
   const noteEditorRef = useRef(null);
@@ -870,26 +871,65 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                     )}
                                     
                                     {/* Inline Notes Below Verse */}
-                                    {showNotes && verseNotes.length > 0 && verseNotes.map(note => (
-                                        note.id !== editingNoteId && (
-                                            <div 
-                                                key={note.id} 
-                                                className={`ml-6 mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
-                                                style={{ fontSize: '0.9rem' }}
-                                            >
-                                                <p className="text-sm mb-1 whitespace-pre-wrap">{note.text}</p>
-                                                <div className="flex justify-between items-center text-xs mt-2">
-                                                    <button 
-                                                        onClick={() => handleEditNote(note)}
-                                                        className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                    <span className="text-gray-500">{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                    {verseNotes.length > 0 && (
+                                      <>
+                                        {/* STUDY MODE: Always show notes */}
+                                        {showNotes && verseNotes.map(note => (
+                                            note.id !== editingNoteId && (
+                                                <div 
+                                                    key={note.id} 
+                                                    className={`ml-6 mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
+                                                    style={{ fontSize: '0.9rem' }}
+                                                >
+                                                    <p className="text-sm mb-1 whitespace-pre-wrap">{note.text}</p>
+                                                    <div className="flex justify-between items-center text-xs mt-2">
+                                                        <button 
+                                                            onClick={() => handleEditNote(note)}
+                                                            className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                                                        >
+                                                            Edit
+                                                        </button>
+                                                        <span className="text-gray-500">{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )
-                                    ))}
+                                            )
+                                        ))}
+
+                                        {/* READING MODE: Show note pills */}
+                                        {!showNotes && verseNotes.map(note => (
+                                            note.id !== editingNoteId && (
+                                                <div key={note.id} className="ml-6 mt-2">
+                                                    <button
+                                                        onClick={() => setExpandedNotes(prev => ({ ...prev, [note.id]: !prev[note.id] }))}
+                                                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                                                          expandedNotes[note.id] 
+                                                            ? 'bg-indigo-600 text-white' 
+                                                            : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
+                                                        }`}
+                                                    >
+                                                        📌 Note: {book} {chapter}:{verseNotes[0].verses.join(',')}
+                                                    </button>
+
+                                                    {/* Note Peek View */}
+                                                    {expandedNotes[note.id] && (
+                                                        <div className={`mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}>
+                                                            <div className="flex justify-between items-start mb-2">
+                                                                <p className="text-sm whitespace-pre-wrap flex-1">{note.text}</p>
+                                                                <button
+                                                                    onClick={() => setExpandedNotes(prev => ({ ...prev, [note.id]: false }))}
+                                                                    className="text-gray-500 hover:text-gray-700 ml-2 text-lg leading-none"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            </div>
+                                                            <span className="text-xs text-gray-500">{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )
+                                        ))}
+                                      </>
+                                    )}
                                 </div>
                             );
                         })}
