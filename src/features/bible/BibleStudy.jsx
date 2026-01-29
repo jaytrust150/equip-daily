@@ -509,23 +509,43 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     if (!user) return;
     
     // ✅ Guard against undefined imports (prevents white screen)
-    const unsubscribeNotes = (typeof subscribeToNotes === 'function') 
-      ? subscribeToNotes(user.uid, book, chapter, setUserNotes)
-      : () => {};
+    // Wrap in try-catch to handle permission errors gracefully
+    let unsubscribeNotes = () => {};
+    let unsubscribeProfile = () => {};
+    
+    try {
+      if (typeof subscribeToNotes === 'function') {
+        unsubscribeNotes = subscribeToNotes(user.uid, book, chapter, setUserNotes);
+      }
+    } catch (error) {
+      console.warn('Could not subscribe to notes:', error.message);
+    }
 
-    const unsubscribeProfile = (typeof subscribeToUserProfile === 'function')
-      ? subscribeToUserProfile(user.uid, (data) => {
+    try {
+      if (typeof subscribeToUserProfile === 'function') {
+        unsubscribeProfile = subscribeToUserProfile(user.uid, (data) => {
           if (data?.highlights && data.highlights[book] && data.highlights[book][chapter]) {
-              setHighlightsMap(data.highlights[book][chapter]);
+            setHighlightsMap(data.highlights[book][chapter]);
           } else {
-              setHighlightsMap({});
+            setHighlightsMap({});
           }
-      })
-      : () => {};
+        });
+      }
+    } catch (error) {
+      console.warn('Could not subscribe to profile:', error.message);
+    }
 
     return () => {
+      try {
         if (typeof unsubscribeNotes === 'function') unsubscribeNotes();
+      } catch (error) {
+        console.warn('Error unsubscribing notes:', error.message);
+      }
+      try {
         if (typeof unsubscribeProfile === 'function') unsubscribeProfile();
+      } catch (error) {
+        console.warn('Error unsubscribing profile:', error.message);
+      }
     };
   }, [user, book, chapter]);
 
@@ -797,8 +817,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
               {bibleData
                 .filter(bookData => {
-                  const isOT = BIBLE_BOOKS.OT.includes(bookData.name);
-                  return showTestamentNav === 'OT' ? isOT : !isOT;
+                  return showTestamentNav === 'OT' ? bookData.section === 'OT' : bookData.section === 'NT';
                 })
                 .map(bookData => (
                   <div key={bookData.name} className="text-sm">

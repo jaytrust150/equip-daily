@@ -11,11 +11,18 @@ export const subscribeToReflections = (keyField, keyValue, callback) => {
     collection(db, "reflections"), 
     where(keyField, "==", keyValue)
   );
-  return onSnapshot(q, (snapshot) => {
-    const data = [];
-    snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
-    callback(data);
-  });
+  return onSnapshot(
+    q, 
+    (snapshot) => {
+      const data = [];
+      snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
+      callback(data);
+    },
+    (error) => {
+      console.warn('Reflections subscription error:', error.code, error.message);
+      callback([]); // Return empty array on permission error
+    }
+  );
 };
 
 export const saveReflection = async (user, text, keyField, keyValue, editingId = null) => {
@@ -94,10 +101,17 @@ export const updateUserHighlight = async (userId, book, chapter, verseNum, highl
 };
 
 export const subscribeToUserProfile = (userId, callback) => {
-    return onSnapshot(doc(db, "users", userId), (docSnap) => {
-        if (docSnap.exists()) callback(docSnap.data());
-        else callback(null);
-    });
+    return onSnapshot(
+        doc(db, "users", userId), 
+        (docSnap) => {
+            if (docSnap.exists()) callback(docSnap.data());
+            else callback(null);
+        },
+        (error) => {
+            console.warn('Profile subscription error:', error.code, error.message);
+            callback(null); // Return empty data on permission error
+        }
+    );
 };
 
 export const updateUserHighlightsBulk = async (userId, verseKeys, colorCode) => {
@@ -121,11 +135,18 @@ export const updateUserHighlightsBulk = async (userId, verseKeys, colorCode) => 
 
 export const subscribeToNotes = (userId, book, chapter, callback) => {
     const q = query(collection(db, "notes"), where("userId", "==", userId), where("book", "==", book), where("chapter", "==", parseInt(chapter)));
-    return onSnapshot(q, (snapshot) => {
-        const notes = [];
-        snapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
-        callback(notes);
-    });
+    return onSnapshot(
+        q, 
+        (snapshot) => {
+            const notes = [];
+            snapshot.forEach(doc => notes.push({ id: doc.id, ...doc.data() }));
+            callback(notes);
+        },
+        (error) => {
+            console.warn('Notes subscription error:', error.code, error.message);
+            callback([]); // Return empty array on permission error
+        }
+    );
 };
 
 export const toggleChapterReadStatus = async (userId, chapterKey, isRead) => {
