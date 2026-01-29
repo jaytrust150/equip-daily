@@ -8,6 +8,7 @@ import Login from '../../shared/Login';
 import BibleVersionPicker from './BibleVersionPicker';
 import CommunityFeed from '../../shared/CommunityFeed';
 import FloatingTools from './FloatingTools';
+import BibleTracker from './BibleTracker';
 import { auth } from "../../config/firebase";
 import { db } from "../../config/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore"; 
@@ -960,29 +961,24 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 )}
             </div>
 
-            {/* Saved Notes List - Only show if logged in */}
-            {user && (
-              <div className="space-y-3">
-                {userNotes.map(note => (
-                    <div key={note.id} className={`p-3 rounded-lg border relative group ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-yellow-50 border-yellow-200'}`}>
-                        <p className="text-sm mb-2">{note.text}</p>
-                        <div className="flex justify-between items-center text-xs text-gray-500">
-                            <span>{new Date(note.createdAt?.seconds * 1000).toLocaleDateString()}</span>
-                            <button 
-                                onClick={() => deleteNote(user.uid, book, chapter, note.id)}
-                                className="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </div>
-                ))}
-              </div>
-            )}
-
         </div>
         )}
       </div>
+
+      {/* 📚 Bible Tracker */}
+      {user && (
+        <div className="max-w-4xl mx-auto mt-10 mb-10">
+          <BibleTracker 
+            theme={theme}
+            readChapters={readChapters} 
+            onNavigate={(bookName, chapterNum) => {
+              setBook(bookName);
+              setChapter(chapterNum);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        </div>
+      )}
 
       {/* Reflections */}
       <div className="max-w-4xl mx-auto mt-10">
