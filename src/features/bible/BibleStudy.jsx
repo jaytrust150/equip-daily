@@ -99,6 +99,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   
   // --- MODAL POSITIONING ---
   const modalRef = useRef(null);
+  
+  // --- DOUBLE CLICK TRACKING ---
+  const doubleClickFlags = useRef({}); // Prevents click handler from running after double-click
 
   // 0️⃣ LOAD USER'S DEFAULT BIBLE VERSION & READ HISTORY
   useEffect(() => {
@@ -911,6 +914,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     const isRead = readChapters.includes(`${testamentDrillBook.name} ${chapterNum}`);
                     
                     const handleChapterClick = (e) => {
+                      e.stopPropagation();
+                      // If double-click just happened, don't run single-click
+                      if (doubleClickFlags.current[chapterNum]) {
+                        doubleClickFlags.current[chapterNum] = false;
+                        return;
+                      }
                       // Prevent double-click from triggering single-click navigation
                       if (chapterClickTimeouts.current[chapterNum]) return;
                       
@@ -924,6 +933,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     
                     const handleChapterDoubleClick = async (e) => {
                       e.stopPropagation();
+                      e.preventDefault();
+                      // Set flag to prevent single-click from running
+                      doubleClickFlags.current[chapterNum] = true;
+                      
                       // Cancel the pending single click
                       if (chapterClickTimeouts.current[chapterNum]) {
                         clearTimeout(chapterClickTimeouts.current[chapterNum]);
