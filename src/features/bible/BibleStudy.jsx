@@ -911,6 +911,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <span className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs cursor-pointer" onClick={() => onSearch && onSearch(searchInput)}>🔍</span>
           </div>
 
+          {/* 10. Mark Chapter as Read Button */}
+          {user && (
+            <button
+              onClick={markChapterAsRead}
+              style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', border: '1px solid' }}
+              className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
+              title={isChapterRead ? "Chapter marked as read" : "Mark chapter as read"}
+            >
+              {isChapterRead ? '✓' : '☐'}
+            </button>
+          )}
 
         </div>
 
@@ -963,7 +974,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             onNavigate={(bookName, chapterNum) => {
               setBook(bookName);
               setChapter(chapterNum);
-              setShowBibleTracker(false);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             onToggleRead={toggleChapterRead}
