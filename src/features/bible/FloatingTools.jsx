@@ -2,9 +2,7 @@ import React, { useState, useRef } from 'react';
 import { COLOR_PALETTE, USFM_MAPPING } from '../../config/constants';
 
 function FloatingTools({ 
-  showPalette, setShowPalette, 
   showNotebook, setShowNotebook, 
-  onApplyColor, 
   selectedVerses, 
   book,
   chapter,
@@ -15,7 +13,8 @@ function FloatingTools({
   onPasteVerses,
   onDeleteNote,
   theme = 'light',
-  activeColor
+  activeColor,
+  setActiveHighlightColor
 }) {
   const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight / 2 });
   const [isDragging, setIsDragging] = useState(false);
@@ -112,7 +111,7 @@ function FloatingTools({
     }
   }, [isDragging]);
 
-  if (!showPalette && !showNotebook) return null;
+  if (!showNotebook) return null;
 
   return (
     <div 
@@ -133,69 +132,45 @@ function FloatingTools({
       }}
       onMouseDown={handleMouseDown}
     >
-      {/* Color Palette (Reading Mode) */}
-      {showPalette && (
-        <>
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {COLOR_PALETTE.map(c => {
-              const isSelected = activeColor && activeColor.code === c.code;
-              return (
-                <button 
-                  key={c.code} 
-                  onClick={() => onApplyColor(c)} 
-                  title={c.name}
-                  style={{ 
-                    width: '24px', 
-                    height: '24px', 
-                    background: c.code, 
-                    borderRadius: '50%', 
-                    border: isSelected ? '3px solid #000' : '2px solid #999',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    transform: isSelected ? 'scale(1.15)' : 'scale(1)',
-                    boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.4)' : 'none'
-                  }}
-                />
-              );
-            })}
-            <button 
-              onClick={() => onApplyColor(null)}
-              title="Remove highlight"
-              style={{ 
-                width: '24px', 
-                height: '24px', 
-                borderRadius: '50%', 
-                border: '2px solid #999',
-                background: 'white',
-                cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 'bold'
-              }}
-            >
-              ✕
-            </button>
-          </div>
-          {showNotebook && <hr style={{ margin: '4px 0', borderColor: theme === 'dark' ? '#444' : '#ddd' }} />}
-        </>
-      )}
-
+      {/* Color Palette Row */}
+      <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', marginBottom: '4px', justifyContent: 'center', alignItems: 'center' }}>
+        {(COLOR_PALETTE || []).map((color) => (
+          <button
+            key={color.name}
+            onClick={() => setActiveHighlightColor(color)}
+            style={{
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              backgroundColor: color.code,
+              border: `2.5px solid ${activeColor && activeColor.name === color.name ? (theme === 'dark' ? '#222' : '#222') : color.border}`,
+              outline: activeColor && activeColor.name === color.name ? '2px solid #333' : 'none',
+              boxShadow: activeColor && activeColor.name === color.name ? '0 0 0 2px #333' : 'none',
+              cursor: 'pointer',
+              transition: 'border 0.2s, box-shadow 0.2s',
+              display: 'inline-block',
+              padding: 0
+            }}
+            title={color.name}
+          />
+        ))}
+      </div>
       {/* Study Mode Options */}
-      {showNotebook && (
-        <>
-          <div style={{
-            fontSize: '0.85rem',
-            color: theme === 'dark' ? '#ddd' : '#333',
-            fontWeight: 'bold'
-          }}>
-            Note on {getNoteReferenceLabel()}
-          </div>
-          <div style={{ 
-            fontSize: '0.8rem', 
-            color: theme === 'dark' ? '#aaa' : '#666',
-            fontWeight: 'bold'
-          }}>
-            {selectedVerses.length} verse{selectedVerses.length !== 1 ? 's' : ''} selected
-          </div>
+      <>
+        <div style={{
+          fontSize: '0.85rem',
+          color: theme === 'dark' ? '#ddd' : '#333',
+          fontWeight: 'bold'
+        }}>
+          Note on {getNoteReferenceLabel()}
+        </div>
+        <div style={{ 
+          fontSize: '0.8rem', 
+          color: theme === 'dark' ? '#aaa' : '#666',
+          fontWeight: 'bold'
+        }}>
+          {selectedVerses.length} verse{selectedVerses.length !== 1 ? 's' : ''} selected
+        </div>
 
           <button 
             onClick={onCopyVerses}
@@ -262,27 +237,26 @@ function FloatingTools({
             💾 Save Note
           </button>
 
-          <button 
-            onClick={onDeleteNote}
-            style={{ 
-              padding: '6px 10px', 
-              fontSize: '0.85rem',
-              background: '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: 'bold'
-            }}
-          >
-            🗑️ Delete Note
-          </button>
-        </>
-      )}
+        <button 
+          onClick={onDeleteNote}
+          style={{ 
+            padding: '6px 10px', 
+            fontSize: '0.85rem',
+            background: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: 'bold'
+          }}
+        >
+          🗑️ Delete Note
+        </button>
+      </>
 
       {/* Close Button */}
       <button 
-        onClick={() => { setShowPalette(false); setShowNotebook(false); }}
+        onClick={() => { setShowNotebook(false); }}
         style={{ 
           padding: '6px 10px', 
           fontSize: '0.85rem',
