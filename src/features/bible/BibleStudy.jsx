@@ -762,6 +762,61 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       
       {/* 🟢 TOP CONTROLS */}
       <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20">
+        {/* Testament Navigation Buttons */}
+        <div className="flex gap-2 mb-3 justify-center">
+          <button
+            onClick={() => setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT')}
+            style={{ padding: '8px 20px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
+            className={`font-medium transition shadow-sm ${
+              showTestamentNav === 'OT'
+                ? 'bg-indigo-600 text-white border-indigo-600' 
+                : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
+            }`}
+            title="Browse Old Testament"
+          >
+            📖 Old Testament
+          </button>
+          <button
+            onClick={() => setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT')}
+            style={{ padding: '8px 20px', fontSize: '0.9rem', borderRadius: '10px', border: '1px solid' }}
+            className={`font-medium transition shadow-sm ${
+              showTestamentNav === 'NT'
+                ? 'bg-indigo-600 text-white border-indigo-600' 
+                : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
+            }`}
+            title="Browse New Testament"
+          >
+            ✝️ New Testament
+          </button>
+        </div>
+
+        {/* Compact Testament Navigation */}
+        {showTestamentNav && bibleData && (
+          <div className="mb-3 p-3 rounded-lg" style={{ background: theme === 'dark' ? '#1a1a1a' : '#f5f5f5' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {bibleData
+                .filter(bookData => {
+                  const isOT = BIBLE_BOOKS.OT.includes(bookData.name);
+                  return showTestamentNav === 'OT' ? isOT : !isOT;
+                })
+                .map(bookData => (
+                  <div key={bookData.name} className="text-sm">
+                    <button
+                      onClick={() => { setBook(bookData.name); setChapter(1); setShowTestamentNav(null); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      className={`w-full text-left px-2 py-1 rounded font-medium transition ${
+                        book === bookData.name
+                          ? 'bg-indigo-600 text-white'
+                          : (theme === 'dark' ? 'hover:bg-gray-700 text-gray-200' : 'hover:bg-gray-200 text-gray-700')
+                      }`}
+                    >
+                      {bookData.name}
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
           
           {/* 1. Audio Button */}
