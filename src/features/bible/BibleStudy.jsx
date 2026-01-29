@@ -699,14 +699,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       )}
       
       {/* 🟢 TOP CONTROLS */}
-      <div className="mb-6 bg-white/5 p-4 rounded-xl shadow-sm border border-gray-200/20">
+      <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20">
         {/* Single Row with All Controls */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
           
           {/* 1. Audio Button */}
           <button 
             onClick={toggleAudio}
-            className={`px-2 py-1.5 rounded-lg text-white transition text-sm font-medium ${audioError ? 'bg-gray-400' : 'bg-indigo-500 hover:bg-indigo-600'}`}
+            style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className={`text-white transition font-medium ${audioError ? 'bg-gray-400' : 'bg-indigo-500 hover:bg-indigo-600'}`}
             title={audioError ? "Audio not available" : (isPlaying ? "Pause Audio" : "Play Audio")}
           >
             {audioError ? "🔇" : (isPlaying ? "⏸️" : "🔊")}
@@ -786,17 +786,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           </select>
 
           {/* 5. Prev/Next Buttons */}
-          <button onClick={goToPrevChapter} className="px-2 py-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium">← Prev</button>
-          <button onClick={goToNextChapter} className="px-2 py-1 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium">Next →</button>
+          <button onClick={goToPrevChapter} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">← Prev</button>
+          <button onClick={goToNextChapter} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">Next →</button>
 
           {/* 6. Font Size Controls */}
-          <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black text-sm font-bold">-</button>
-          <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} className="px-2 py-1 bg-gray-200 rounded text-black text-sm font-bold">+</button>
+          <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-gray-200 text-black font-bold">-</button>
+          <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px' }} className="bg-gray-200 text-black font-bold">+</button>
 
           {/* 7. Highlight Button */}
           <button
             onClick={() => setShowHighlightPalette((open) => !open)}
-            style={{ backgroundColor: activeHighlightColor.code, borderColor: showHighlightPalette ? '#4f46e5' : activeHighlightColor.border }}
+            style={{ backgroundColor: activeHighlightColor.code, borderColor: showHighlightPalette ? '#4f46e5' : activeHighlightColor.border, padding: '5px 10px', fontSize: '0.85rem', borderRadius: '8px', borderWidth: '2px', borderStyle: 'solid' }}
             className={`px-2 py-1 rounded-lg border-2 text-sm font-medium transition ${showHighlightPalette ? 'border-indigo-600' : (theme === 'dark' ? 'border-gray-700' : 'border-gray-300')}`}
             title={`Highlight Tools - Current: ${activeHighlightColor.name}`}
           >
