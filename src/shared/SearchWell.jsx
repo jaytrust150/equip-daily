@@ -8,6 +8,9 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [mobileSize, setMobileSize] = useState('half');
+  const [versions, setVersions] = useState([]); // Bible versions list
+  const [selectedVersion, setSelectedVersion] = useState(null); // Selected version for search
+  const [versionsLoading, setVersionsLoading] = useState(false);
   const inputRef = React.useRef(null);
 
   // 🪟 DESKTOP WINDOW STATE
@@ -31,46 +34,45 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
         setQuery(initialQuery); 
         performSearch(initialQuery); 
       }
+      // Fetch available Bible versions
+      fetchBibleVersions();
     }
   }, [isOpen, initialQuery]);
 
+  // 📖 Fetch available Bible versions from /api/bibles
+  const fetchBibleVersions = async () => {
+    setVersionsLoading(true);
+    try {
+      const res = await fetch('/api/bibles');
+      if (!res.ok) throw new Error('Failed to load Bible versions');
+      const data = await res.json();
+      if (data.data && Array.isArray(data.data)) {
+        setVersions(data.data);
+        // Set first version as default if not already set
+        if (!selectedVersion && data.data.length > 0) {
+          setSelectedVersion(data.data[0].id);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching Bible versions:', err);
+      // Fallback to default version
+      setSelectedVersion('d6e14a625393b4da-01');
+    } finally {
+      setVersionsLoading(false);
+    }
+  };
+
   const performSearch = async (searchTerm) => {
-    if (!searchTerm) return;
+    if (!searchTerm || !selectedVersion) return;
     setLoading(true);
     setError(null);
     setResults([]);
 
     try {
-        let searchVersion = DEFAULT_BIBLE_VERSION || 'd6e14a625393b4da-01'; // Default to NLT
+        const searchVersion = selectedVersion; // Use selected version from dropdown
         
-        // 🔒 Use serverless proxy (production) or direct API (development)
-        const isDev = import.meta.env.DEV;
-        const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
-        
-        let res;
-        if (isDev && apiKey) {
-          // Development mode: direct API call
-          res = await fetch(`https://rest.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
-            headers: { 'api-key': apiKey.trim() }
-          });
-        } else {
-          // Production mode: use serverless proxy
-          res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
-        }
-
-        // 🔄 Fallback to KJV if unauthorized
-        if (res.status === 401 || (res.ok && (await res.clone().json()).unauthorized)) {
-             if (searchVersion !== 'de4e12af7f28f599-01') {
-                searchVersion = 'de4e12af7f28f599-01';
-                if (isDev && apiKey) {
-                  res = await fetch(`https://rest.api.bible/v1/bibles/${searchVersion}/search?query=${encodeURIComponent(searchTerm.trim())}&limit=20`, {
-                    headers: { 'api-key': apiKey.trim() }
-                  });
-                } else {
-                  res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
-                }
-             }
-        }
+        // 🔒 Use serverless proxy
+        const res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
         
         if (res.status === 401) {
             console.error("API Authorization Failed. Check Vercel environment variables");
@@ -150,6 +152,31 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse }) {
       </div>
 
       <div style={{ padding: '10px 20px' }}>
+        {/* Version Selector */}
+        <div style={{ marginBottom: '10px' }}>
+          <label style={{ fontSize: '0.8rem', color: isDark ? '#aaa' : '#666', display: 'block', marginBottom: '4px' }}>Version</label>
+          <select 
+            value={selectedVersion || ''} 
+            onChange={(e) => setSelectedVersion(e.target.value)}
+            disabled={versionsLoading || versions.length === 0}
+            style={{ 
+              width: '100%', 
+              padding: '8px', 
+              borderRadius: '6px', 
+              border: '1px solid #ccc',
+              backgroundColor: isDark ? '#444' : '#fff',
+              color: isDark ? '#fff' : '#000',
+              cursor: 'pointer'
+            }}
+          >
+            {versionsLoading && <option>Loading versions...</option>}
+            {!versionsLoading && versions.map(v => (
+              <option key={v.id} value={v.id}>{v.abbreviation || v.name}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Search Form */}
         <form onSubmit={(e) => { e.preventDefault(); performSearch(query); }} style={{ display: 'flex', gap: '8px' }}>
           <input 
             ref={inputRef}
