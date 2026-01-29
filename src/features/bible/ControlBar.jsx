@@ -46,7 +46,7 @@ function ControlBar({
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
         <button onClick={onPrev}>← Prev</button><button onClick={onNext}>Next →</button>
         <button onClick={onHighlightClick} style={{ backgroundColor: activeHighlightColor.code }}>Highlight</button>
-        <button onClick={() => setShowNotes(!showNotes)} style={{ backgroundColor: showNotes ? '#2196F3' : '' }}>{showNotes ? 'Study Mode' : 'Reading Mode'}</button>
+        <button onClick={() => setShowNotes(!showNotes)} style={{ backgroundColor: showNotes ? '#2196F3' : '' }}>{showNotes ? 'Reading Mode' : 'Study Mode'}</button>
         <label><input type="checkbox" checked={isChapterRead} onChange={toggleChapterRead} /> Track Read</label>
       </div>
     </div>

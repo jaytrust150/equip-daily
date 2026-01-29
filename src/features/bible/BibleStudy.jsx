@@ -824,7 +824,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             className={`px-3 py-1 rounded-lg border text-sm font-medium transition ${showNotes ? 'bg-indigo-600 text-white border-indigo-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700')}`}
             title={showNotes ? "Switch to Reading Mode (highlights only)" : "Switch to Study Mode (long press verses to add notes)"}
           >
-            {showNotes ? '📖 Reading' : '📝 Study'}
+            {showNotes ? '� Study' : '📖 Reading'}
           </button>
         </div>
       </div>
@@ -890,9 +890,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                               : { cursor: 'pointer' };
                             const selectionStyle = isSelected ? { outline: '2px solid #6366f1', borderRadius: '6px' } : {};
                             const verseNotes = userNotes.filter(n => n.verses && n.verses.includes(verse.number));
-                            const showEditorHere = ((showNotes || showNotebook) && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
-                                                   (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === verse.number) ||
-                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]) ||
+                            const showEditorHere = ((showNotes || showNotebook) && !editingNoteId && selectedVerses.length > 0 && selectedVerses[0] === verse.number) ||
+                                                   (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[0] === verse.number) ||
+                                                   (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && verse.number === verseNotes[0]?.verses?.[0]) ||
                                                    (longPressVerse === verse.number);
                             
                             return (

@@ -35,8 +35,8 @@ function VerseList({
         const isSelected = selectedVerses.includes(v.verse);
         const verseNotes = notes.filter(n => n.verses.includes(v.verse));
         
-        const showEditorHere = (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[selectedVerses.length - 1] === v.verse) || 
-                               (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && v.verse === verseNotes[verseNotes.length-1].verses[verseNotes[verseNotes.length-1].verses.length-1]);
+        const showEditorHere = (isNoteMode && !editingNoteId && selectedVerses.length > 0 && selectedVerses[0] === v.verse) || 
+                               (editingNoteId && verseNotes.some(n => n.id === editingNoteId) && v.verse === verseNotes[0]?.verses?.[0]);
 
         return (
           <div key={v.verse} style={{ marginBottom: '10px' }}>
