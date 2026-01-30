@@ -786,12 +786,12 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 71 | 3506 | `5ab99b2a7a27240a` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2100 | 89905 | `e36646fa6f09b3c8` |
+| `src/features/bible/BibleStudy.jsx` | 2113 | 90819 | `6e2d83379ce7f133` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7735 | `90420e1afac0a2ea` |
 | `src/features/bible/BibleVersionPicker.jsx` | 273 | 9387 | `6f83bc8c7bea806a` |
 | `src/features/bible/ControlBar.jsx` | 55 | 3007 | `e8cefc16bcb6cb6c` |
-| `src/features/bible/FloatingTools.jsx` | 267 | 8705 | `7f06fce86e5d6d2b` |
-| `src/features/bible/VerseList.jsx` | 126 | 6368 | `79de33db78693d41` |
+| `src/features/bible/FloatingTools.jsx` | 275 | 8954 | `8d463b53b82c6690` |
+| `src/features/bible/VerseList.jsx` | 126 | 6367 | `c1f11657b5eaf1cc` |
 | `src/features/devotional/DailyDevotional.jsx` | 104 | 4473 | `51fbdcf9a611b9aa` |
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
 | `src/hooks/useAudio.js` | 34 | 1385 | `ed8ac02ee3ad3d51` |
