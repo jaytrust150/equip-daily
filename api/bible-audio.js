@@ -14,18 +14,38 @@
  */
 // Vercel Serverless Function: Fetch audio URL from API.Bible
 export default async function handler(req, res) {
+  // Set CORS headers to allow requests from frontend
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  // Handle preflight OPTIONS request
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   // Extract query parameters
   const { bibleId, chapterId } = req.query;
 
   // Validate required parameters
   if (!bibleId || !chapterId) {
-    return res.status(400).json({ error: 'Missing bibleId or chapterId parameter' });
+    return res.status(400).json({ error: 'Missing required parameters: bibleId, chapterId' });
   }
 
   // Get API key from environment variables
-  const apiKey = process.env.VITE_BIBLE_API_KEY;
+  let apiKey = process.env.BIBLE_API_KEY;
+  if (!apiKey && process.env.VITE_BIBLE_API_KEY) {
+    apiKey = process.env.VITE_BIBLE_API_KEY;
+  }
   if (!apiKey) {
-    return res.status(500).json({ error: 'API key not configured' });
+    return res.status(500).json({ error: 'Server configuration error: Missing API key' });
   }
 
   try {
@@ -42,8 +62,10 @@ export default async function handler(req, res) {
       const errorText = await response.text();
       console.error('API.Bible audio error:', response.status, errorText);
       return res.status(response.status).json({ 
-        error: 'Failed to fetch audio',
-        details: errorText 
+        error: `API error: ${response.status}`,
+        message: response.statusText,
+        details: errorText,
+        unauthorized: response.status === 401 || response.status === 403
       });
     }
 

@@ -85,7 +85,7 @@ export default async function handler(request, response) {
         error: `API error: ${fetchResponse.status}`,
         message: fetchResponse.statusText,
         details: errorText,
-        unauthorized: fetchResponse.status === 401
+        unauthorized: fetchResponse.status === 401 || fetchResponse.status === 403
       });
     }
 

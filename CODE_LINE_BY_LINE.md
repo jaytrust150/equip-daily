@@ -15,13 +15,20 @@ This document provides comprehensive documentation for AI assistants and future 
 | File | Lines | Bytes | SHA256 Hash |
 |------|-------|-------|-------------|
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
-| `api/bible-audio.js` | 72 | 2473 | `bdcd62935e8d7d9f` |
+| `api/__tests__/bible-audio.test.js` | 84 | 2552 | `aa2c02a21fe32085` |
+| `api/__tests__/bible-chapter.test.js` | 81 | 2532 | `b2296109f7e80406` |
+| `api/__tests__/bible-search.test.js` | 82 | 2496 | `ba65f526b3fdd03c` |
+| `api/__tests__/bibles.test.js` | 69 | 1916 | `51320157a61a88fb` |
+| `api/__tests__/health.test.js` | 53 | 1518 | `966869133b657201` |
+| `api/__tests__/testUtils.js` | 25 | 602 | `9f1ca98c1888567d` |
+| `api/bible-audio.js` | 94 | 3257 | `24de3d8c9c0cdedd` |
 | `api/bible-chapter.js` | 115 | 4098 | `e4350dc40a7e7a1f` |
-| `api/bible-search.js` | 105 | 3406 | `6414a587f43d7be9` |
-| `api/bibles.js` | 83 | 2827 | `7e2de9e16188a0c8` |
+| `api/bible-search.js` | 105 | 3438 | `b9b134761e98a42e` |
+| `api/bibles.js` | 84 | 2911 | `87a9cda7b1f61060` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1309 | 48722 | `4682732eace2a546` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
@@ -29,6 +36,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
+| `IMPLEMENTATION_COMPLETE.md` | 409 | 11828 | `74b19d0a8df15d2a` |
 | `IMPLEMENTATION_SUMMARY.md` | 255 | 6800 | `e4896c9a7f3f7945` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `MONITORING_SETUP.md` | 282 | 7114 | `d2dbf9dd32f57af9` |
@@ -818,9 +826,10 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
-| `vitest.config.js` | 35 | 747 | `61299459b322090a` |
+| `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |
 
 <!-- AUTO-GENERATED-END -->
 

@@ -64,7 +64,8 @@ export default async function handler(request, response) {
       console.error('API.Bible versions error:', fetchResponse.status, errorText);
       return response.status(fetchResponse.status).json({
         error: `API error: ${fetchResponse.status}`,
-        message: fetchResponse.statusText
+        message: fetchResponse.statusText,
+        unauthorized: fetchResponse.status === 401 || fetchResponse.status === 403
       });
     }
 

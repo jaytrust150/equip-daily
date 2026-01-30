@@ -23,7 +23,7 @@ export default defineConfig({
       branches: 70,
       statements: 70,
     },
-    include: ['src/**/*.{test,spec}.{js,jsx}'],
+    include: ['src/**/*.{test,spec}.{js,jsx}', 'api/**/*.{test,spec}.js'],
     testTimeout: 10000,
   },
   resolve: {
