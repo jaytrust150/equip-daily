@@ -28,6 +28,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1309 | 48722 | `4682732eace2a546` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
@@ -35,6 +36,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
+| `IMPLEMENTATION_COMPLETE.md` | 409 | 11828 | `74b19d0a8df15d2a` |
 | `IMPLEMENTATION_SUMMARY.md` | 255 | 6800 | `e4896c9a7f3f7945` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `MONITORING_SETUP.md` | 282 | 7114 | `d2dbf9dd32f57af9` |
@@ -810,7 +812,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/hooks/useDraggableWindow.js` | 84 | 3235 | `cf223eb89f79f955` |
 | `src/hooks/useFirebaseAnalytics.js` | 111 | 2628 | `4f42e34b3cee2d57` |
 | `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
-| `src/main.jsx` | 29 | 775 | `8e046febbbf0daa3` |
+| `src/main.jsx` | 43 | 1142 | `33de0f5c6e0fbed3` |
 | `src/services/firestoreService.js` | 305 | 11937 | `c92eb83daaa98a14` |
 | `src/services/monitoring.js` | 142 | 3800 | `4891d123e498b0c5` |
 | `src/shared/AudioPlayer.jsx` | 49 | 3390 | `582fb95262c7592e` |
@@ -824,6 +826,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 | `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |
