@@ -796,7 +796,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
 | `src/hooks/useAudio.js` | 34 | 1385 | `ed8ac02ee3ad3d51` |
 | `src/hooks/useDraggableWindow.js` | 24 | 1267 | `80c0ee013fb63fec` |
-| `src/index.css` | 68 | 1213 | `67738e7b2c92524f` |
+| `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
 | `src/main.jsx` | 11 | 229 | `4b4b864dbe452534` |
 | `src/services/firestoreService.js` | 160 | 5969 | `b80cfa362d694d3d` |
 | `src/shared/AudioPlayer.jsx` | 20 | 1621 | `80a4cd937ab7cb8e` |
