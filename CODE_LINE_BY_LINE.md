@@ -786,7 +786,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 71 | 3506 | `5ab99b2a7a27240a` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2204 | 94271 | `6a191cfaa97ba4b1` |
+| `src/features/bible/BibleStudy.jsx` | 2211 | 94913 | `2509e1ee1e1f61e8` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7735 | `90420e1afac0a2ea` |
 | `src/features/bible/BibleVersionPicker.jsx` | 273 | 9387 | `6f83bc8c7bea806a` |
 | `src/features/bible/ControlBar.jsx` | 55 | 3007 | `e8cefc16bcb6cb6c` |
