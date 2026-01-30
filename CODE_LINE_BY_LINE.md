@@ -28,7 +28,8 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bibles.js` | 84 | 2911 | `87a9cda7b1f61060` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
-| `CODE_DOCUMENTATION.md` | 1309 | 48722 | `4682732eace2a546` |
+| `CODE_DOCUMENTATION.md` | 1387 | 52308 | `cacc1159448095f1` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -818,7 +819,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
 | `src/main.jsx` | 43 | 1142 | `33de0f5c6e0fbed3` |
 | `src/services/firestoreService.js` | 305 | 11937 | `c92eb83daaa98a14` |
-| `src/services/monitoring.js` | 142 | 3800 | `4891d123e498b0c5` |
+| `src/services/monitoring.js` | 193 | 5505 | `2781a3f72e84bcac` |
 | `src/shared/AudioPlayer.jsx` | 49 | 3390 | `582fb95262c7592e` |
 | `src/shared/CommunityFeed.jsx` | 139 | 7375 | `36d09a86ca7ef35a` |
 | `src/shared/ErrorBoundary.jsx` | 178 | 4689 | `dcd982dc7e5d46e5` |
@@ -832,6 +833,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2237 | `8dcd045771b9e5e8` |
 | `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |

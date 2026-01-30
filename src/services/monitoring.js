@@ -25,6 +25,7 @@ export function initSentry() {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN || "",
       environment: import.meta.env.MODE,
+      enableLogs: true, // Enable structured logging
       tracesSampleRate: 0.1, // Sample 10% of transactions for performance monitoring
       replaysSessionSampleRate: 0.1, // Sample 10% of sessions for replay
       replaysOnErrorSampleRate: 1.0, // Always capture replays on errors
@@ -33,6 +34,8 @@ export function initSentry() {
           maskAllText: true,
           blockAllMedia: true,
         }),
+        // Automatically send console.warn and console.error to Sentry as logs
+        Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
       ],
       beforeSend(event) {
         // Optionally filter events before sending to Sentry
@@ -41,6 +44,12 @@ export function initSentry() {
     });
   }
 }
+
+/**
+ * Get Sentry logger instance for structured logging
+ * Use this instead of console.log in production code
+ */
+export const logger = Sentry.logger;
 
 /**
  * Initialize Firebase Analytics
@@ -115,7 +124,49 @@ export function captureError(error, context = {}) {
 }
 
 /**
- * Start a performance monitoring transaction
+ * Start a performance monitoring span (modern API)
+ * Use this to track performance of critical operations
+ * 
+ * @param {Object} options - Span configuration
+ * @param {string} options.op - Operation type (e.g., 'http.client', 'ui.click', 'db.query')
+ * @param {string} options.name - Descriptive name for the operation
+ * @param {Function} callback - Function to execute within the span
+ * @returns {Promise|any} Result of the callback
+ * 
+ * @example
+ * // Track API call performance
+ * const data = await startSpan(
+ *   { op: 'http.client', name: 'GET /api/bible/chapter' },
+ *   async (span) => {
+ *     span.setAttribute('book', 'Genesis');
+ *     span.setAttribute('chapter', 1);
+ *     const response = await fetch('/api/bible-chapter?book=GEN&chapter=1');
+ *     return response.json();
+ *   }
+ * );
+ * 
+ * @example
+ * // Track button click
+ * startSpan(
+ *   { op: 'ui.click', name: 'Search Bible' },
+ *   (span) => {
+ *     span.setAttribute('query', searchTerm);
+ *     performSearch(searchTerm);
+ *   }
+ * );
+ */
+export function startSpan(options, callback) {
+  if (!import.meta.env.PROD) {
+    // In development, just execute the callback without tracing
+    return callback({ setAttribute: () => {} });
+  }
+
+  return Sentry.startSpan(options, callback);
+}
+
+/**
+ * Legacy: Start a performance monitoring transaction
+ * @deprecated Use startSpan() instead for modern Sentry API
  * @param {string} name - Name of the operation (e.g., 'fetch_bible_chapter')
  * @returns {Function} End transaction callback
  */
