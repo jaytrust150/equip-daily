@@ -27,7 +27,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `IMPLEMENTATION_SUMMARY.md` | 254 | 6749 | `92dbe13986ca419b` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `node generate_bible_audio.js` | 68 | 3634 | `2a2a6d405ad6f65c` |
-| `package.json` | 35 | 879 | `eb38518bb776bc27` |
+| `package.json` | 35 | 900 | `1ca488ccbe9329f6` |
 | `PERSISTENCE_FIX.md` | 132 | 3788 | `eaad06d48a47eb12` |
 | `PROJECT MANIFESTO.md` | 23 | 1402 | `2d90af69836a4dc4` |
 | `public/1.1-devotional.txt` | 35 | 976 | `0be96fffeae79c40` |
