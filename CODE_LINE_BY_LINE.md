@@ -17,7 +17,8 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bibles.js` | 54 | 1691 | `1f7ec87231e9a815` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 103 | 3321 | `20dfd92847ec619c` |
-| `CODE_DOCUMENTATION.md` | 442 | 15217 | `54cd18af767227ec` |
+| `CODE_DOCUMENTATION.md` | 443 | 15365 | `7acaf84246112cb3` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 197 | 5868 | `61027a9af8057bbb` |
 | `eslint.config.js` | 41 | 1048 | `dc3c0a28fdacc4c2` |
 | `generate_audio_files.js` | 54 | 1667 | `264ef8438f699578` |
@@ -777,8 +778,8 @@ This document provides comprehensive documentation for AI assistants and future 
 | `scripts/generate-code-doc.js` | 157 | 4518 | `1f59b13a629b771a` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SERVERLESS_PROXY_GUIDE.md` | 253 | 6962 | `5a5d4fec84e403a5` |
-| `src/App.css` | 164 | 3341 | `6e3d3db11bd744ef` |
-| `src/App.jsx` | 548 | 29170 | `6faa0e420ab470f6` |
+| `src/App.css` | 164 | 3487 | `e058b45566b32194` |
+| `src/App.jsx` | 572 | 30180 | `a8e8fc7ebd720a97` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 89 | 2075 | `c3aa6d9b8fe99d5a` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
@@ -804,10 +805,11 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/HealthStatus.jsx` | 143 | 4703 | `bc1312ec93813477` |
 | `src/shared/LivingBookshelf.jsx` | 90 | 3188 | `70e45d52b821a138` |
 | `src/shared/Login.jsx` | 260 | 10098 | `affff8f6c8df5139` |
-| `src/shared/MemberCard.jsx` | 22 | 2993 | `d665573458fdfdd1` |
+| `src/shared/MemberCard.jsx` | 22 | 3177 | `91239d3b0b739954` |
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 447 | 18500 | `f4f1ff2d048612e2` |
 | `VERCEL_ENV_SETUP.md` | 120 | 3868 | `1b56398464e1fc5c` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 

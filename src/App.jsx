@@ -301,7 +301,31 @@ function App() {
     else { try { await navigator.clipboard.writeText(text); alert("Text copied!"); } catch (err) { console.error('Failed to copy:', err); alert('Failed to copy text'); } }
   };
 
-  const appStyle = { display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: theme === 'dark' ? '#222222' : '#ffffff', color: theme === 'dark' ? '#f0f0f0' : '#333', transition: 'all 0.3s ease', '--devotional-font-size': `${fontSize}rem` };
+  const appStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+    backgroundColor: theme === 'dark' ? '#222222' : '#ffffff',
+    color: theme === 'dark' ? '#f0f0f0' : '#333',
+    transition: 'all 0.3s ease',
+    '--devotional-font-size': `${fontSize}rem`,
+    '--nav-btn-bg': theme === 'dark' ? '#2a2a2a' : '#f8f9fa',
+    '--nav-btn-text': theme === 'dark' ? '#e5e7eb' : '#333',
+    '--nav-btn-border': theme === 'dark' ? '#444' : '#ddd',
+    '--nav-btn-hover-bg': theme === 'dark' ? '#333' : '#e2e6ea',
+    '--card-bg': theme === 'dark' ? '#1f2937' : '#ffffff',
+    '--card-border': theme === 'dark' ? '#374151' : '#e5e7eb',
+    '--card-text': theme === 'dark' ? '#e5e7eb' : '#333',
+    '--card-text-muted': theme === 'dark' ? '#cbd5f5' : '#555',
+    '--chip-bg': theme === 'dark' ? '#1e3a8a' : '#e3f2fd',
+    '--chip-text': theme === 'dark' ? '#bfdbfe' : '#1976d2',
+    '--chip-border': theme === 'dark' ? '#1d4ed8' : '#1976d2',
+    '--pill-bg': theme === 'dark' ? '#2a2a2a' : '#f5f5f5',
+    '--pill-border': theme === 'dark' ? '#444' : '#ddd',
+    '--verse-bg': theme === 'dark' ? '#1f2937' : '#ffffff',
+    '--verse-border': theme === 'dark' ? '#374151' : '#eee',
+    '--verse-hover-border': theme === 'dark' ? '#4b5563' : '#ccc',
+  };
   const buttonStyle = { background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', borderRadius: '20px', padding: '5px 12px', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.85rem', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' };
   const navBtnStyle = { padding: '5px 10px', fontSize: '0.85rem' };
   const secretSelectStyle = { border: 'none', background: 'transparent', fontWeight: 'bold', fontSize: '1.25rem', color: theme === 'dark' ? '#f0f0f0' : '#2c3e50', cursor: 'pointer', appearance: 'none', outline: 'none', fontFamily: 'inherit', padding: 0, margin: 0 };

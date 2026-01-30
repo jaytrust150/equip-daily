@@ -19,9 +19,9 @@ header h1 {
 /* 📅 New Navigation Buttons (Prior / Next Day) */
 .nav-btn {
   padding: 10px 20px;
-  background-color: #f8f9fa; /* Light clean background */
-  color: #333;
-  border: 1px solid #ddd;
+  background-color: var(--nav-btn-bg); /* Theme-aware background */
+  color: var(--nav-btn-text);
+  border: 1px solid var(--nav-btn-border);
   border-radius: 8px; /* Matches your card style */
   cursor: pointer;
   font-weight: 600;
@@ -30,7 +30,7 @@ header h1 {
 }
 
 .nav-btn:hover {
-  background-color: #e2e6ea;
+  background-color: var(--nav-btn-hover-bg);
   transform: translateY(-1px);
 }
 
@@ -43,11 +43,11 @@ header h1 {
 }
 
 .member-card {
-  background: white; /* */
+  background: var(--card-bg); /* */
   border-radius: 12px; /* */
   padding: 1.5rem; /* */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* */
-  border: 1px solid #e5e7eb; /* */
+  border: 1px solid var(--card-border); /* */
   transition: transform 0.2s; /* */
 }
 
@@ -89,14 +89,14 @@ header h1 {
   align-items: flex-start; /* Aligns text to top */
   margin-bottom: 10px;
   padding: 12px;
-  border: 1px solid #eee;
+  border: 1px solid var(--verse-border);
   border-radius: 8px;
-  background-color: #fff;
+  background-color: var(--verse-bg);
   transition: all 0.2s ease;
 }
 
 .verse-container:hover {
-  border-color: #ccc;
+  border-color: var(--verse-hover-border);
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
@@ -135,10 +135,10 @@ header h1 {
 .pill {
   display: flex;
   align-items: center;
-  background-color: #f5f5f5;
+  background-color: var(--pill-bg);
   border-radius: 25px;
   padding: 5px 15px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--pill-border);
 }
 
 /* Action Buttons */

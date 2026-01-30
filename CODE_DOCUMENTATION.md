@@ -324,7 +324,8 @@
 4. **Book Pills Dark Mode** - Fixed book progress pills in testament navigation to display properly in dark mode
 5. **Dev Server Fix** - Changed package.json dev script from `vercel dev` (recursive) to `vite` (local development)
 6. **System Theme Override** - Removed system dark mode preference detection (`color-scheme` and `@media prefers-color-scheme`) so app respects only manual theme toggle
-7. **BibleStudy.jsx Growth** - Component expanded from 1434 to 2213 lines with recent enhancements
+7. **Dark Mode Consistency** - Added theme-driven CSS variables for nav buttons, cards, pills, and verse containers; updated MemberCard to use them
+8. **BibleStudy.jsx Growth** - Component expanded from 1434 to 2213 lines with recent enhancements
 
 ---
 
