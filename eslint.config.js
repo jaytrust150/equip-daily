@@ -7,13 +7,24 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist', 'dev-dist', 'dev-dist/**']),
   {
-    files: ['generate_*.js', 'node *.js', 'api/**/*.js', 'scripts/**/*.js'],
+    files: ['generate_*.js', 'node *.js', 'api/**/*.js', 'scripts/**/*.js', 'lighthouserc.js', 'playwright.config.js', '**/*.config.js'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.node,
+      globals: { ...globals.node, process: 'readonly', __dirname: 'readonly', module: 'readonly' },
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
+      },
+    },
+  },
+  {
+    files: ['**/__tests__/**/*.{js,jsx}', 'src/**/*.test.{js,jsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: { ...globals.browser, ...globals.node, vi: 'readonly', describe: 'readonly', it: 'readonly', test: 'readonly', expect: 'readonly', beforeEach: 'readonly', afterEach: 'readonly', beforeAll: 'readonly', afterAll: 'readonly', global: 'readonly', process: 'readonly' },
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
       },
     },
   },

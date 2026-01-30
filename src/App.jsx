@@ -10,6 +10,7 @@ const MemberProfile = lazy(() => import('./shared/MemberProfile'));
 import MemberCard from './shared/MemberCard';
 import Login from './shared/Login';
 const SearchWell = lazy(() => import('./shared/SearchWell'));
+import { LoadingSkeleton } from './shared/LoadingSkeleton';
 import { auth, db } from "./config/firebase"; 
 
 // 📍 DEFAULT CITY
@@ -417,7 +418,13 @@ function App() {
         onMouseOut={handleMouseOut}
       >
         {activeTab === 'profile' ? (
-          <Suspense fallback={<div className="app-container"><h3>Loading Profile...</h3></div>}>
+          <Suspense fallback={
+            <div className="app-container" style={{ padding: '20px' }}>
+              <LoadingSkeleton type="avatar" />
+              <LoadingSkeleton type="text" count={2} height="24px" />
+              <LoadingSkeleton type="card" count={3} />
+            </div>
+          }>
             <MemberProfile 
               theme={theme} 
               viewingUid={viewingProfileUid} 
@@ -427,7 +434,12 @@ function App() {
             />
           </Suspense>
         ) : activeTab === 'bible' ? (
-          <Suspense fallback={<div className="app-container"><h3>Loading Bible...</h3></div>}>
+          <Suspense fallback={
+            <div className="app-container" style={{ padding: '20px' }}>
+              <LoadingSkeleton type="text" count={1} height="32px" />
+              <LoadingSkeleton type="text" count={15} height="18px" />
+            </div>
+          }>
             <BibleStudy 
               theme={theme} 
               book={bibleBook} setBook={setBibleBook} 
@@ -569,7 +581,22 @@ function App() {
       </main>
       
       {user && <footer style={{ textAlign: 'center', padding: '40px 20px', marginTop: '20px', borderTop: '1px solid #eee' }}><button onClick={logout} className="secondary-btn" style={{ fontSize: '0.8rem', opacity: 0.7 }}>Logout</button></footer>}
-      <Suspense fallback={null}>
+      <Suspense fallback={
+        <div style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          background: 'rgba(0,0,0,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <LoadingSkeleton type="card" height="400px" />
+        </div>
+      }>
         <SearchWell 
           theme={theme} 
           isOpen={isWellOpen} 

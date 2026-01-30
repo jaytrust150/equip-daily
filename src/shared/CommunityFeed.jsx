@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MemberCard from './MemberCard';
 import { subscribeToReflections, saveReflection, deleteReflection, toggleFruitReaction } from '../services/firestoreService';
 import { CITY_NAME } from '../config/constants';
+import { withErrorBoundary } from './withErrorBoundary';
 
 /**
  * CommunityFeed Component
@@ -133,4 +134,6 @@ function CommunityFeed({ queryField, queryValue, user, theme, onSearch, onProfil
     </div>
   );
 }
-export default CommunityFeed;
+const CommunityFeedWithBoundary = withErrorBoundary(CommunityFeed, 'Unable to load community feed');
+CommunityFeedWithBoundary.displayName = 'CommunityFeedWithBoundary';
+export default CommunityFeedWithBoundary;

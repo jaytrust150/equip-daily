@@ -2,12 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'prompt',  // Changed from autoUpdate to prompt user
+      registerType: 'prompt',
       devOptions: {
         enabled: true,
         type: 'module'
@@ -18,7 +17,7 @@ export default defineConfig({
         clientsClaim: true,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/api\.bible\/.*/,  // Only cache API.Bible calls
+            urlPattern: /^https:\/\/api\.bible\/.*/,
             handler: 'NetworkFirst',
             options: { 
               cacheName: 'bible-api-cache', 
@@ -27,7 +26,7 @@ export default defineConfig({
             }
           },
           {
-            urlPattern: /^https:\/\/.*\.firebaseio\.com\/.*/,  // Cache Firebase
+            urlPattern: /^https:\/\/.*\.firebaseio\.com\/.*/,
             handler: 'NetworkFirst',
             options: { 
               cacheName: 'firebase-cache', 
@@ -35,7 +34,6 @@ export default defineConfig({
             }
           }
         ],
-        // Exclude development and hot reload files from cache
         navigateFallbackDenylist: [/^\/api/, /^\/__/]
       },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
@@ -60,5 +58,26 @@ export default defineConfig({
         ]
       }
     })
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
+            if (id.includes('firebase')) {
+              return 'firebase-vendor';
+            }
+            if (id.includes('@sentry')) {
+              return 'sentry-vendor';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 500
+  }
 })

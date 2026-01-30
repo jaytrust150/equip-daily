@@ -27,27 +27,27 @@ class ErrorBoundary extends Component {
   /**
    * Update state so the next render will show the fallback UI
    */
-  static getDerivedStateFromError(error) {
+  static getDerivedStateFromError() {
     return { hasError: true };
   }
 
   /**
    * Log error to console and Sentry
    */
-  componentDidCatch(error, errorInfo) {
+  componentDidCatch(err, errorInfo) {
     // Set state to show error UI
     this.setState({
-      error,
+      error: err,
       errorInfo,
     });
 
     // Log to console in development
     if (!import.meta.env.PROD) {
-      console.error('Error caught by ErrorBoundary:', error, errorInfo);
+      console.error('Error caught by ErrorBoundary:', err, errorInfo);
     }
 
     // Capture error in Sentry
-    captureError(error, {
+    captureError(err, {
       componentStack: errorInfo.componentStack,
       severity: 'critical',
     });
@@ -164,8 +164,8 @@ class ErrorBoundary extends Component {
   }
 }
 
-// Wrap with Sentry error boundary
-export default Sentry.withErrorBoundary(ErrorBoundary, {
+// Wrap with Sentry error boundary - named export for fast refresh
+const WrappedErrorBoundary = Sentry.withErrorBoundary(ErrorBoundary, {
   fallback: (
     <div style={{ padding: '20px', textAlign: 'center' }}>
       <p>An error occurred. Please refresh the page.</p>
@@ -173,3 +173,5 @@ export default Sentry.withErrorBoundary(ErrorBoundary, {
   ),
   showDialog: false,
 });
+WrappedErrorBoundary.displayName = 'WrappedErrorBoundary';
+export default WrappedErrorBoundary;

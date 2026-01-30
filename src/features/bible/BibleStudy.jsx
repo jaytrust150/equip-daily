@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useAuthState } from "react-firebase-hooks/auth";
 import confetti from 'canvas-confetti';
 
@@ -97,6 +97,32 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [activeHighlightColor, setActiveHighlightColor] = useState(() => {
     return (COLOR_PALETTE && COLOR_PALETTE.length > 0) ? COLOR_PALETTE[0] : { code: '#ffff00', border: '#e6e600', name: 'Yellow' };
   });
+
+  // 📊 Memoized Testament Books Calculations (for future optimizations)
+   
+  const _oldTestamentBooks = useMemo(() => {
+    return bibleData ? bibleData.filter(bookData => bookData.section === 'OT') : [];
+  }, []);
+
+   
+  const _newTestamentBooks = useMemo(() => {
+    return bibleData ? bibleData.filter(bookData => bookData.section === 'NT') : [];
+  }, []);
+
+   
+  const _totalReadCount = useMemo(() => {
+    return readChapters.length;
+  }, [readChapters]);
+
+   
+  const _totalChapters = useMemo(() => {
+    return bibleData ? bibleData.reduce((sum, book) => sum + book.chapters, 0) : 0;
+  }, []);
+
+   
+  const _readPercent = useMemo(() => {
+    return _totalChapters > 0 ? Math.round((_totalReadCount / _totalChapters) * 100) : 0;
+  }, [_totalReadCount, _totalChapters]);
 
   // --- CHAPTER PRELOADING ---
   const [preloadedChapters, setPreloadedChapters] = useState({});
