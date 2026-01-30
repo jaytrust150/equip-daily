@@ -21,7 +21,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bibles.js` | 83 | 2827 | `7e2de9e16188a0c8` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
-| `CODE_DOCUMENTATION.md` | 1302 | 48356 | `f1af6c9b30f89032` |
+| `CODE_DOCUMENTATION.md` | 1309 | 48722 | `4682732eace2a546` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
