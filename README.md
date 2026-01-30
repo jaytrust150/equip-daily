@@ -20,7 +20,7 @@ A daily devotional web app with integrated Bible study features, built with Reac
 - **Frontend**: React 18 with Vite
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth
-- **Bible API**: api.bible
+- **Bible API**: API.Bible
 - **Styling**: CSS with custom themes
 - **PWA**: vite-plugin-pwa
 
