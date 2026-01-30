@@ -114,7 +114,6 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
 
   const performSearch = useCallback(async (searchTerm) => {
     if (!searchTerm || !selectedVersion) {
-      console.log('Search blocked:', { searchTerm, selectedVersion });
       return;
     }
     
@@ -125,7 +124,6 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     // 🎯 Check if this is a scripture reference (e.g., "John 3:16")
     const verseRef = parseVerseReference(searchTerm);
     if (verseRef) {
-      console.log('Detected scripture reference:', verseRef);
       // Fetch the specific verse(s) and display them in the well
       try {
         const bookCode = USFM_MAPPING[verseRef.bookName];
@@ -197,7 +195,6 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     // Otherwise, perform a word search
     try {
         const searchVersion = selectedVersion; // Use selected version from dropdown
-        console.log('Performing word search:', { query: searchTerm, version: searchVersion });
         
         // 🔒 Use serverless proxy for word/phrase search
         const res = await fetch(`/api/bible-search?bibleId=${searchVersion}&query=${encodeURIComponent(searchTerm.trim())}&limit=20`);
@@ -213,9 +210,6 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
         }
 
         const data = await res.json();
-        
-        // Debug: log the response structure
-        console.log('Search API Response:', data);
         
         if (data.data && data.data.verses) {
             const mappedResults = data.data.verses.map(v => {

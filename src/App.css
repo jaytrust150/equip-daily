@@ -21,17 +21,20 @@ header h1 {
   padding: 10px 20px;
   background-color: var(--nav-btn-bg); /* Theme-aware background */
   color: var(--nav-btn-text);
-  border: 1px solid var(--nav-btn-border);
-  border-radius: 8px; /* Matches your card style */
+  border: 2px solid var(--nav-btn-border);
+  border-radius: 12px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .nav-btn:hover {
   background-color: var(--nav-btn-hover-bg);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* 🧱 Your Existing Directory Styles */
@@ -74,6 +77,13 @@ header h1 {
   font-weight: bold;
   margin-top: 15px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] .login-btn {
+  background-color: #60A5FA;
+  color: #111827;
+  border: 2px solid #93C5FD;
+  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
 }
 
 .primary-btn, .secondary-btn {
@@ -162,3 +172,23 @@ header h1 {
   font-size: 1rem;
   margin: 0 5px;
 }
+
+/* Utility classes for common layout patterns */
+.flex { display: flex; }
+.flex-row { display: flex; flex-direction: row; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-wrap { flex-wrap: wrap; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-end { justify-content: flex-end; }
+.gap-4 { gap: 4px; }
+.gap-6 { gap: 6px; }
+.gap-8 { gap: 8px; }
+.gap-10 { gap: 10px; }
+.p-10 { padding: 10px; }
+.mt-4 { margin-top: 4px; }
+.mt-10 { margin-top: 10px; }
+.mb-5 { margin-bottom: 5px; }
+.mb-10 { margin-bottom: 10px; }
+.w-full { width: 100%; }
+.w-50 { width: 50px; }

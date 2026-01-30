@@ -183,7 +183,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       
       // If we have preloaded data, use it immediately without loading state
       if (preloadedChapters[cacheKey]) {
-        console.log(`⚡ Using preloaded: ${book} ${chapter}`);
         setVerses(preloadedChapters[cacheKey]);
         setError(null);
         return; // Skip API call and loading state - use preloaded data
@@ -308,11 +307,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 ...prev,
                 [cacheKey]: parsedVerses
               }));
-              console.log(`✅ Preloaded: ${bookName} ${chapterNum}`);
             }
           }
-        } catch (err) {
-          console.debug(`ℹ️ Preload failed for ${bookName} ${chapterNum}:`, err.message);
+        } catch {
+          // Preload failed, ignore
         }
       };
       
@@ -412,7 +410,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         });
       }
       
-      console.log(`✅ Chapter ${isCurrentlyRead ? 'unmarked' : 'marked'} as read: ${chapterKey}`);
     } catch (err) {
       console.error('Error updating chapter read status:', err);
     }
@@ -442,7 +439,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         });
       }
       
-      console.log(`${isCurrentlyRead ? '❌ Unmarked' : '✅ Marked'} as read: ${chapterKey}`);
     } catch (err) {
       console.error('Error toggling chapter read status:', err);
     }
@@ -844,11 +840,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   const handleSaveSelectedNote = async () => {
     if (!user || selectedVerses.length === 0 || !currentNoteText.trim()) {
-      console.log('Save blocked:', { user: !!user, versesCount: selectedVerses.length, hasText: !!currentNoteText.trim() });
       return;
     }
     try {
-      console.log('Saving note:', { book, chapter, verses: selectedVerses, text: currentNoteText });
       await saveNote(user, book, chapter, selectedVerses, currentNoteText);
       setSelectedVerses([]);
       setShowNotebook(false);
@@ -958,7 +952,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     if (!longPressVerse) return;
     
     try {
-      console.log('Saving long-press note:', { book, chapter, verse: longPressVerse, text: currentNoteText });
       await saveNote(user, book, chapter, [longPressVerse], currentNoteText);
       setCurrentNoteText("");
       setLongPressVerse(null); // Close the inline editor
@@ -1032,8 +1025,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Equip Daily', text, url: window.location.href });
-      } catch (error) {
-        console.log('Share cancelled', error);
+      } catch {
+        // Share cancelled
       }
     } else {
       try {
@@ -1120,14 +1113,25 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       
       {/* ⚠️ Login Banner for Guest Users - Top Priority */}
       {!user && (
-        <div className="max-w-4xl mx-auto mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs text-blue-800 text-center mb-2">
+        <div className={`max-w-4xl mx-auto mb-3 p-2 rounded-lg ${
+          theme === 'dark' 
+            ? 'bg-blue-900/30 border border-blue-700/50' 
+            : 'bg-blue-50 border border-blue-200'
+        }`}>
+          <p className={`text-xs text-center mb-2 ${
+            theme === 'dark' ? 'text-blue-200' : 'text-blue-800'
+          }`}>
             👋 You're reading as a guest. <strong>Sign in to save highlights, notes & join the community.</strong>
           </p>
           <div className="flex justify-center">
             <button
               onClick={() => setShowLoginModal(true)}
-              className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-md text-sm"
+              className="px-4 py-2 font-semibold rounded-lg transition shadow-md text-sm"
+              style={{
+                backgroundColor: theme === 'dark' ? '#60A5FA' : '#4F46E5',
+                color: theme === 'dark' ? '#111827' : '#FFFFFF',
+                border: theme === 'dark' ? '2px solid #93C5FD' : 'none'
+              }}
             >
               🔐 Sign In
             </button>

@@ -132,7 +132,7 @@ function FloatingTools({
       onMouseDown={handleMouseDown}
     >
       {/* Color Palette Row */}
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '6px', marginBottom: '4px', justifyContent: 'center', alignItems: 'center' }}>
+      <div className="flex-row flex-center gap-6 mb-5">
         {(COLOR_PALETTE || []).map((color) => (
           <button
             key={color.name}

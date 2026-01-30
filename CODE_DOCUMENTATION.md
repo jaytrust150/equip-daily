@@ -318,14 +318,16 @@
 ```
 
 ### ✅ RECENT FIXES (Jan 30, 2026)
-1. **Login Modal Auto-Close** - Modal now closes automatically when user signs in (added useEffect watching user state)
-2. **Toolbar Fade-In Effect** - Toolbar buttons (-, +, Prev, Next, Mark Read) now fade in smoothly with chapter text during loading
-3. **Dark Mode Button Styling** - Fixed font size buttons and Mark Read button to have proper dark mode colors and hover states
-4. **Book Pills Dark Mode** - Fixed book progress pills in testament navigation to display properly in dark mode
-5. **Dev Server Fix** - Changed package.json dev script from `vercel dev` (recursive) to `vite` (local development)
-6. **System Theme Override** - Removed system dark mode preference detection (`color-scheme` and `@media prefers-color-scheme`) so app respects only manual theme toggle
-7. **Dark Mode Consistency** - Added theme-driven CSS variables for nav buttons, cards, pills, and verse containers; updated MemberCard to use them
-8. **BibleStudy.jsx Growth** - Component expanded from 1434 to 2213 lines with recent enhancements
+1. **Code Health Phase 1** - Removed all 18 console.log statements from src/, added no-console ESLint rule, created 19 CSS utility classes, reduced inline styles
+2. **Dark Mode UI Phase 2** - Fixed "ghost" Sign In button, enhanced login button contrast, improved navigation arrow visibility with better hover states
+3. **Login Modal Auto-Close** - Modal now closes automatically when user signs in (added useEffect watching user state)
+4. **Toolbar Fade-In Effect** - Toolbar buttons (-, +, Prev, Next, Mark Read) now fade in smoothly with chapter text during loading
+5. **Dark Mode Button Styling** - Fixed font size buttons and Mark Read button to have proper dark mode colors and hover states
+6. **Book Pills Dark Mode** - Fixed book progress pills in testament navigation to display properly in dark mode
+7. **Dev Server Fix** - Changed package.json dev script from `vercel dev` (recursive) to `vite` (local development)
+8. **System Theme Override** - Removed system dark mode preference detection (`color-scheme` and `@media prefers-color-scheme`) so app respects only manual theme toggle
+9. **Dark Mode Consistency** - Added theme-driven CSS variables for nav buttons, cards, pills, and verse containers; updated MemberCard to use them
+10. **BibleStudy.jsx Growth** - Component expanded from 1434 to 2213 lines with recent enhancements
 
 ---
 

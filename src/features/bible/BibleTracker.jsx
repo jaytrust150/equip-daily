@@ -44,7 +44,7 @@ function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null, the
       }}>
         
         {/* Header with Navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <div className="flex-between mb-10">
              <button 
                 onClick={() => setSelectedBook(null)}
                 style={{ background: 'none', border: 'none', fontSize: '1rem', cursor: 'pointer', color: theme === 'dark' ? '#aaa' : '#666' }}
@@ -52,7 +52,7 @@ function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null, the
                 ⬅ Back
              </button>
              <h3 style={{ margin: 0, color: theme === 'dark' ? '#fff' : '#333' }}>{selectedBook.name}</h3>
-             <div style={{ width: '50px' }}></div>
+             <div className="w-50"></div>
         </div>
 
         {/* Book Progress Bar */}

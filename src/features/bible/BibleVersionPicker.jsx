@@ -137,7 +137,7 @@ function BibleVersionPicker({ selectedVersion, onVersionChange, theme = 'light',
           }}
         >
           {/* Search Input */}
-          <div style={{ padding: '10px', borderBottom: `1px solid ${borderColor}` }}>
+          <div className="p-10" style={{ borderBottom: `1px solid ${borderColor}` }}>
             <input
               type="text"
               value={searchQuery}

@@ -43,7 +43,7 @@ function Login({ theme }) {
                 'callback': () => {
                   // reCAPTCHA solved
                 },
-                'expired-callback': () => { console.log('reCAPTCHA expired'); }
+                'expired-callback': () => { /* reCAPTCHA expired */ }
             });
         }
       } catch (err) {
@@ -125,7 +125,7 @@ function Login({ theme }) {
       console.error(err);
       setError("Failed to send SMS. Check format (+1...)");
       if (window.recaptchaVerifier) {
-          try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch { console.log('recaptcha cleanup skipped'); }
+          try { window.recaptchaVerifier.clear(); window.recaptchaVerifier = null; } catch { /* cleanup skipped */ }
       } 
     }
   };

@@ -297,7 +297,7 @@ function App() {
   };
   const handleShareItem = async (text) => {
     const shareData = { title: 'Equip Daily', text: text, url: window.location.href };
-    if (navigator.share) { try { await navigator.share(shareData); } catch { console.log('Share cancelled'); } }
+    if (navigator.share) { try { await navigator.share(shareData); } catch { /* Share cancelled */ } }
     else { try { await navigator.clipboard.writeText(text); alert("Text copied!"); } catch (err) { console.error('Failed to copy:', err); alert('Failed to copy text'); } }
   };
 
