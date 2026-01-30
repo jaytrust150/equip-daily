@@ -12,21 +12,21 @@ This document provides comprehensive documentation for AI assistants and future 
 |------|-------|-------|-------------|
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
 | `api/bible-audio.js` | 50 | 1542 | `a94023d48bbc250a` |
-| `api/bible-chapter.js` | 90 | 2775 | `2ece7e767845d84f` |
-| `api/bible-search.js` | 84 | 2504 | `1f382135e29083e2` |
+| `api/bible-chapter.js` | 91 | 2807 | `68f3532694078162` |
+| `api/bible-search.js` | 85 | 2536 | `dbc76420786b0794` |
 | `api/bibles.js` | 54 | 1691 | `1f7ec87231e9a815` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 103 | 3321 | `20dfd92847ec619c` |
 | `CODE_DOCUMENTATION.md` | 445 | 15682 | `15e94767f830274b` |
 | `DEPLOYMENT.md` | 197 | 5868 | `61027a9af8057bbb` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
-| `generate_audio_files.js` | 54 | 1667 | `264ef8438f699578` |
-| `generate_bible_audio.js` | 68 | 3634 | `2a2a6d405ad6f65c` |
+| `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
+| `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `HEALTH_CHECK.md` | 220 | 6294 | `68f2131c2f71d384` |
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
 | `IMPLEMENTATION_SUMMARY.md` | 254 | 6749 | `92dbe13986ca419b` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
-| `node generate_bible_audio.js` | 68 | 3634 | `2a2a6d405ad6f65c` |
+| `node generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `package.json` | 35 | 900 | `1ca488ccbe9329f6` |
 | `PERSISTENCE_FIX.md` | 132 | 3788 | `eaad06d48a47eb12` |
 | `PROJECT MANIFESTO.md` | 23 | 1402 | `2d90af69836a4dc4` |
@@ -774,7 +774,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `QUICK_DEPLOY.txt` | 130 | 5819 | `530773f99a57dbff` |
 | `QUICK_REFERENCE_FILE_EDITING.md` | 122 | 2696 | `7de8424cf3003940` |
 | `README.md` | 177 | 5025 | `b4ac2a77b53a4795` |
-| `scripts/generate-code-doc.js` | 157 | 4518 | `1f59b13a629b771a` |
+| `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SERVERLESS_PROXY_GUIDE.md` | 253 | 6962 | `5a5d4fec84e403a5` |
 | `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
