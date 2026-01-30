@@ -252,6 +252,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
 
     fetchBibleText();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [book, chapter, version]);
 
   // 1a. 🔄 Preload adjacent chapters (next & previous) silently
@@ -325,7 +326,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         clearTimeout(preloadTimeoutRef.current);
       }
     };
-  }, [book, chapter, version, preloadedChapters]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [book, chapter, version]);
 
   // 1b. 📚 Fetch Bible Versions from API (no filtering)
   useEffect(() => {
@@ -2192,6 +2194,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         theme={theme}
         activeColor={activeHighlightColor}
         setActiveHighlightColor={setActiveHighlightColor}
+        initialPosition={floatingToolsPosition}
       />
     </div>
   );
