@@ -91,6 +91,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [fontSize, setFontSize] = useState(1.1);
   const [showHighlightPalette, setShowHighlightPalette] = useState(false);
   const [showNotebook, setShowNotebook] = useState(false);
+  const [floatingToolsPosition, setFloatingToolsPosition] = useState(null);
   const [selectedVerses, setSelectedVerses] = useState([]);
   // ✅ Safe default color (prevents crash if COLOR_PALETTE is undefined)
   const [activeHighlightColor, setActiveHighlightColor] = useState(() => {
@@ -169,7 +170,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       
       setLoading(true);
       setError(null);
-      setVerses([]);
       let isSwitching = false;
 
       try {
@@ -1425,11 +1425,19 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <div className="flex items-center gap-2 mb-4">
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
-                onClick={() => {
+                onClick={(e) => {
                   if (!user) {
                     alert('Please sign in to use Study mode tools.');
                     return;
                   }
+                  
+                  // Capture button position for FloatingTools
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setFloatingToolsPosition({
+                    x: rect.right + 10, // 10px to the right of the button
+                    y: rect.top
+                  });
+                  
                   setShowNotes((prev) => {
                     const next = !prev;
                     if (next) {
@@ -1532,7 +1540,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               )}
             </div>
             
-            {loading && <p className="text-center py-10">Loading scripture...</p>}
             {error && (
                 <div className="text-center py-10">
                     <p className="text-red-500 font-bold mb-2">Error: {error}</p>
@@ -1544,10 +1551,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 </div>
             )}
 
-            {!loading && !error && (
+            {!error && (
                 <>
+                    {/* Loading overlay - shows on top of verses */}
+                    {loading && (
+                        <div style={{ position: 'relative', opacity: 0.6, pointerEvents: 'none' }}>
+                            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'rgba(200, 200, 200, 0.9)', padding: '15px 25px', borderRadius: '8px', zIndex: 10, color: '#333', fontWeight: 'bold' }}>⏳ Loading scripture...</div>
+                        </div>
+                    )}
                     {/* Main Version Text - Verse by Line */}
-                    <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8' }}>
+                    <div style={{ fontSize: `${fontSize}rem`, lineHeight: '1.8', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}>
                         {verses.map((verse) => {
                           const isSelected = selectedVerses.includes(verse.number);
                           const showSelectionCheckbox = showNotebook || isNoteMode;

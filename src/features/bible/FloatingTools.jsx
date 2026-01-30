@@ -14,11 +14,19 @@ function FloatingTools({
   onDeleteNote,
   theme = 'light',
   activeColor,
-  setActiveHighlightColor
+  setActiveHighlightColor,
+  initialPosition = null
 }) {
-  const [position, setPosition] = useState({ x: window.innerWidth - 100, y: window.innerHeight / 2 });
+  const [position, setPosition] = useState(initialPosition || { x: window.innerWidth - 350, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
+
+  // Update position when initialPosition changes and notebook is shown
+  React.useEffect(() => {
+    if (showNotebook && initialPosition) {
+      setPosition(initialPosition);
+    }
+  }, [showNotebook, initialPosition]);
 
   // Helper function to format verse references intelligently with abbreviations
   const getVerseReference = () => {

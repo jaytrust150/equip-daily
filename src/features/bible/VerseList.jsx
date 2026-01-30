@@ -30,7 +30,7 @@ function VerseList({
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', fontSize: `${fontSize}rem`, lineHeight: '1.6', color: isDark ? '#ccc' : '#333' }}>
+    <div style={{ maxWidth: '95vw', margin: '0 auto', fontSize: `${fontSize}rem`, lineHeight: '1.6', color: isDark ? '#ccc' : '#333' }}>
       {verses.map((v) => {
         const isSelected = selectedVerses.includes(v.verse);
         const verseNotes = notes.filter(n => n.verses.includes(v.verse));
