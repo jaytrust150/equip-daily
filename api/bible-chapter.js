@@ -1,5 +1,6 @@
 // Serverless function to proxy Bible API requests for chapters
 // This keeps your API key secure and avoids CORS issues
+/* eslint-disable no-console */
 
 export default async function handler(request, response) {
   // Set CORS headers to allow requests from your frontend

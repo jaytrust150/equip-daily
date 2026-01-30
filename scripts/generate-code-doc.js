@@ -2,7 +2,7 @@
 
 /**
  * Auto-Documentation Generator
- *
+ * Build script for documenting codebase
  * Purpose: Generates/updates CODE_LINE_BY_LINE.md with an auto-generated
  * file index table containing SHA256 hashes, line counts, and byte sizes.
  *
@@ -10,6 +10,9 @@
  *   node scripts/generate-code-doc.js          # Update documentation
  *   node scripts/generate-code-doc.js --check  # Verify docs are current (CI)
  */
+
+// scripts/generate-code-doc.js - Build script, logging is required for user feedback
+/* eslint-disable no-console */
 
 import fs from 'fs';
 import path from 'path';
