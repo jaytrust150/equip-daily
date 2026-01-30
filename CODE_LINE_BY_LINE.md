@@ -1,5 +1,9 @@
 # Code Documentation - Line by Line
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 This document provides comprehensive documentation for AI assistants and future developers.
 
 <!-- AUTO-GENERATED-START -->

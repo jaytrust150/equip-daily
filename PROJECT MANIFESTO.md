@@ -1,3 +1,9 @@
+# Equip Daily - Project Manifesto
+
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 1. THE VISION:"For the equipping of the saints." - Eph 4:12
 The UX: Immersive Reader. When the user engages with the Word, the UI (headers, menus) must disappear.
 2. THE COMMUNITY: "One Body"

@@ -1,5 +1,9 @@
 # Vercel Environment Variables Setup
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 ## ✅ Code Changes Deployed
 Your code changes have been pushed to GitHub and Vercel will automatically deploy them.
 

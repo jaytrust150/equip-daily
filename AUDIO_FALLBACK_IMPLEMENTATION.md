@@ -1,5 +1,9 @@
 # Audio Fallback Implementation for NLT
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 ## Overview
 Since NLT (New Living Translation) does not have audio available, we've implemented a clean fallback solution that:
 

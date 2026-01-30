@@ -1,5 +1,6 @@
 # Equip Daily - Code Documentation
 **Generated:** January 30, 2026
+**Author:** Jonathan Vargas — Sebastian, Florida
 **Purpose:** Document each component's functionality for AI context and debugging
 
 ---

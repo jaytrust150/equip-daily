@@ -1,5 +1,9 @@
 # Deployment Guide - Equip Daily
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 ## 🚀 Deploying to Vercel
 
 ### Step 1: Install Vercel CLI (Optional)

@@ -1,5 +1,9 @@
 # Quick Reference: File Editing in This Codespace
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 ## Problem Identified ❌
 
 The `replace_string_in_file` tool sometimes fails to persist changes in this codespace environment.

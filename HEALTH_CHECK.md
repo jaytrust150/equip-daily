@@ -1,5 +1,6 @@
 # 🏥 Health Check Summary - Equip Daily
 
+**Author:** Jonathan Vargas — Sebastian, Florida
 **Date**: January 25, 2026  
 **Status**: ✅ Code is working, API setup needed for deployment
 

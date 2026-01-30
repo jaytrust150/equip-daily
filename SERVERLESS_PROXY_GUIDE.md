@@ -1,5 +1,9 @@
 # 🔐 Serverless Proxy Implementation Guide
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 ## What Changed (and Why It's Better!)
 
 ### ❌ Old Way (Insecure)

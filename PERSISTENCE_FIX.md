@@ -1,5 +1,9 @@
 # File Persistence Fix - Codespace Issue Resolution
 
+**Author:** Jonathan Vargas — Sebastian, Florida
+
+---
+
 ## Problem
 
 In this codespace environment, the `replace_string_in_file` tool sometimes fails to persist changes to files. This appears to be a synchronization issue between the tool's implementation and the VS Code editor/file system in the dev container.

@@ -4,6 +4,12 @@
 
 A daily devotional web app with integrated Bible study features, built with React + Vite + Firebase.
 
+## ✍️ Author
+
+Jonathan Vargas — Sebastian, Florida
+
+Author of the devotionals and the application.
+
 ## 🚀 Features
 
 - 📖 Daily devotional readings
