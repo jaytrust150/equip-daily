@@ -10,6 +10,7 @@ import BibleVersionPicker from './BibleVersionPicker';
 import CommunityFeed from '../../shared/CommunityFeed';
 import FloatingTools from './FloatingTools';
 import BibleTracker from './BibleTracker';
+import AudioPlayer from '../../shared/AudioPlayer';
 import { auth } from "../../config/firebase";
 import { db } from "../../config/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore"; 
@@ -96,10 +97,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   });
 
   // --- AUDIO STATE ---
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioUrl, setAudioUrl] = useState(null);
   const [audioError, setAudioError] = useState(false);
   const [audioLoading, setAudioLoading] = useState(false);
-  const audioRef = useRef(null);
 
   // --- LONG PRESS STATE ---
   const longPressTimer = useRef(null);
@@ -469,17 +469,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       setAudioVerses([]);
     }
     
-    // Reset play state when chapter changes
-    setIsPlaying(false);
+    // Reset audio state when chapter changes
+    setAudioUrl(null);
     setAudioError(false);
     setAudioLoading(false);
-    
-    // Event handlers for audio
-    const handleEnded = () => setIsPlaying(false);
-    const handleError = () => {
-        setIsPlaying(false);
-        setAudioError(true);
-    };
     
     // Fetch audio from API.Bible if supported
     async function loadAudioFromAPI() {
@@ -511,15 +504,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           
           if (response.ok) {
             const data = await response.json();
-            const audioUrl = data.data?.resourceUrl;
+            const fetchedAudioUrl = data.data?.resourceUrl;
             
-            if (audioUrl) {
-              if (!audioRef.current) audioRef.current = new Audio();
-              audioRef.current.src = audioUrl;
-              audioRef.current.load();
-              // Add event listeners after audio is initialized
-              audioRef.current.addEventListener('ended', handleEnded);
-              audioRef.current.addEventListener('error', handleError);
+            if (fetchedAudioUrl) {
+              setAudioUrl(fetchedAudioUrl);
               setAudioLoading(false);
             } else {
               setAudioError(true);
@@ -535,15 +523,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           
           if (response.ok) {
             const data = await response.json();
-            const audioUrl = data.audioUrl;
+            const fetchedAudioUrl = data.audioUrl;
             
-            if (audioUrl) {
-              if (!audioRef.current) audioRef.current = new Audio();
-              audioRef.current.src = audioUrl;
-              audioRef.current.load();
-              // Add event listeners after audio is initialized
-              audioRef.current.addEventListener('ended', handleEnded);
-              audioRef.current.addEventListener('error', handleError);
+            if (fetchedAudioUrl) {
+              setAudioUrl(fetchedAudioUrl);
               setAudioLoading(false);
             } else {
               setAudioError(true);
@@ -567,31 +550,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     } else {
       setAudioError(true);
     }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeEventListener('ended', handleEnded);
-        audioRef.current.removeEventListener('error', handleError);
-      }
-    };
   }, [book, chapter, version]);
 
   const toggleAudio = () => {
     if (audioError || audioLoading) return;
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(e => {
-          console.error("Play failed:", e);
-          setAudioError(true);
-          setIsPlaying(false);
-        });
-    }
+    // Toggle showing the audio player
+    setAudioUrl(audioUrl ? null : audioUrl);
   };
 
   const getBookIndex = () => bibleData.findIndex(b => b.name === book);
@@ -1428,18 +1392,21 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
+            {/* Audio Player - Show when audio is available */}
+            {audioUrl && hasAudioSupport(version) && (
+              <div className="mb-4">
+                <AudioPlayer src={audioUrl} theme={theme} />
+              </div>
+            )}
+            
+            {/* Show loading or error state */}
+            {audioLoading && hasAudioSupport(version) && (
+              <div className="mb-4 text-center py-2">
+                <span>⏳ Loading audio...</span>
+              </div>
+            )}
+            
             <div className="flex items-center gap-2 mb-4">
-              {/* Speaker Icon (only show if audio is supported for this Bible version) */}
-              {hasAudioSupport(version) && (
-                <button 
-                  onClick={toggleAudio} 
-                  title={audioLoading ? "Loading audio..." : isPlaying ? "Pause Audio" : "Play Audio"}
-                  disabled={audioLoading || audioError}
-                  className={audioError ? 'opacity-50 cursor-not-allowed' : ''}
-                >
-                  {audioLoading ? '⏳' : isPlaying ? '🔇' : '🔊'}
-                </button>
-              )}
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
                 onClick={() => {
