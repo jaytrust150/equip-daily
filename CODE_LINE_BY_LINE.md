@@ -790,7 +790,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/__tests__/setup.js` | 104 | 2344 | `a4c759f56a844ad2` |
 | `src/__tests__/shared/AudioPlayer.test.js` | 172 | 4005 | `f5318dc475cfe7c7` |
 | `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
-| `src/App.jsx` | 581 | 30462 | `3bac36a6c5182702` |
+| `src/App.jsx` | 587 | 30806 | `ddedd4850cea89c9` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 103 | 2492 | `a6226d017bb76830` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |

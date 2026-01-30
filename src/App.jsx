@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { signOut } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, setDoc, updateDoc, deleteDoc, serverTimestamp, collection, query, where, onSnapshot, arrayUnion, arrayRemove } from "firebase/firestore";
 import './App.css';
 
 // ✅ FIXED IMPORTS: Pointing to new folder structure
-import BibleStudy from './features/bible/BibleStudy'; 
-import MemberProfile from './shared/MemberProfile'; 
+const BibleStudy = lazy(() => import('./features/bible/BibleStudy'));
+const MemberProfile = lazy(() => import('./shared/MemberProfile'));
 import MemberCard from './shared/MemberCard';
 import Login from './shared/Login';
-import SearchWell from './shared/SearchWell'; 
+const SearchWell = lazy(() => import('./shared/SearchWell'));
 import { auth, db } from "./config/firebase"; 
 
 // 📍 DEFAULT CITY
@@ -417,23 +417,27 @@ function App() {
         onMouseOut={handleMouseOut}
       >
         {activeTab === 'profile' ? (
+          <Suspense fallback={<div className="app-container"><h3>Loading Profile...</h3></div>}>
             <MemberProfile 
-                theme={theme} 
-                viewingUid={viewingProfileUid} 
-                onNavigate={setActiveTab}
-                onJumpToHistory={jumpToHistoryItem} 
-                previousTab={previousTab} 
+              theme={theme} 
+              viewingUid={viewingProfileUid} 
+              onNavigate={setActiveTab}
+              onJumpToHistory={jumpToHistoryItem} 
+              previousTab={previousTab} 
             />
+          </Suspense>
         ) : activeTab === 'bible' ? (
+          <Suspense fallback={<div className="app-container"><h3>Loading Bible...</h3></div>}>
             <BibleStudy 
-                theme={theme} 
-                book={bibleBook} setBook={setBibleBook} 
-                chapter={bibleChapter} setChapter={setBibleChapter} 
-                onSearch={triggerSearch} 
-                onProfileClick={goToProfile}
-                historyStack={bibleHistory}
-                onGoBack={goBackInBible}
+              theme={theme} 
+              book={bibleBook} setBook={setBibleBook} 
+              chapter={bibleChapter} setChapter={setBibleChapter} 
+              onSearch={triggerSearch} 
+              onProfileClick={goToProfile}
+              historyStack={bibleHistory}
+              onGoBack={goBackInBible}
             />
+          </Suspense>
         ) : (
           /* DEVOTIONAL TAB CONTENT */
           <>
@@ -565,16 +569,18 @@ function App() {
       </main>
       
       {user && <footer style={{ textAlign: 'center', padding: '40px 20px', marginTop: '20px', borderTop: '1px solid #eee' }}><button onClick={logout} className="secondary-btn" style={{ fontSize: '0.8rem', opacity: 0.7 }}>Logout</button></footer>}
-      <SearchWell 
-        theme={theme} 
-        isOpen={isWellOpen} 
-        onClose={handleWellClose} 
-        initialQuery={wellQuery} 
-        onJumpToVerse={jumpToVerse}
-        historyStack={bibleHistory}
-        onGoBack={goBackInBible}
-        user={user}
-      />
+      <Suspense fallback={null}>
+        <SearchWell 
+          theme={theme} 
+          isOpen={isWellOpen} 
+          onClose={handleWellClose} 
+          initialQuery={wellQuery} 
+          onJumpToVerse={jumpToVerse}
+          historyStack={bibleHistory}
+          onGoBack={goBackInBible}
+          user={user}
+        />
+      </Suspense>
     </div>
   );
 }
