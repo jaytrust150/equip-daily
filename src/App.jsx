@@ -137,6 +137,15 @@ function App() {
     setIsWellOpen(true);
   };
 
+  // 🎨 Apply theme to document element so [data-theme="dark"] CSS rules work
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, [theme]);
+
   const handleReaction = async (postId, fruitId) => {
     if (!user) return;
     const postRef = doc(db, "reflections", postId);

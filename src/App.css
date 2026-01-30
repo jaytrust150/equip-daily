@@ -65,11 +65,21 @@ header h1 {
   text-transform: uppercase; /* */
 }
 
+/* 🎨 THEME SYSTEM - Dark Mode Override */
+[data-theme="dark"] {
+  --text-primary: #ffffff !important;
+  --text-secondary: #e5e7eb !important;
+  --button-bg: #2a2a2a !important;
+  --button-text: #ffffff !important;
+  --button-border: #444444 !important;
+  --button-hover-bg: #333333 !important;
+}
+
 /* 🔘 Login & Action Button Styles */
 .login-btn {
   padding: 12px 24px;
-  background-color: #4285F4;
-  color: white;
+  background-color: #4285F4 !important;
+  color: white !important;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -80,10 +90,10 @@ header h1 {
 }
 
 [data-theme="dark"] .login-btn {
-  background-color: #60A5FA;
-  color: #111827;
-  border: 2px solid #93C5FD;
-  box-shadow: 0 2px 8px rgba(96, 165, 250, 0.3);
+  background-color: #3B82F6 !important;
+  color: #FFFFFF !important;
+  border: 2px solid #60A5FA !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4) !important;
 }
 
 .primary-btn, .secondary-btn {

@@ -778,8 +778,8 @@ This document provides comprehensive documentation for AI assistants and future 
 | `scripts/generate-code-doc.js` | 157 | 4518 | `1f59b13a629b771a` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SERVERLESS_PROXY_GUIDE.md` | 253 | 6962 | `5a5d4fec84e403a5` |
-| `src/App.css` | 195 | 4403 | `48e15df14dc14070` |
-| `src/App.jsx` | 572 | 30170 | `026956711f391887` |
+| `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
+| `src/App.jsx` | 581 | 30462 | `3bac36a6c5182702` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 89 | 2075 | `c3aa6d9b8fe99d5a` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
@@ -787,7 +787,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 71 | 3506 | `5ab99b2a7a27240a` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2217 | 94815 | `454e19a18a49c6da` |
+| `src/features/bible/BibleStudy.jsx` | 2245 | 95611 | `6db092259797fe88` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7652 | `61855a7176bfb6de` |
 | `src/features/bible/BibleVersionPicker.jsx` | 273 | 9387 | `32798358073ad634` |
 | `src/features/bible/ControlBar.jsx` | 55 | 3007 | `e8cefc16bcb6cb6c` |
