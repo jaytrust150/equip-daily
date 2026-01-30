@@ -20,20 +20,20 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bible-search.js` | 105 | 3406 | `6414a587f43d7be9` |
 | `api/bibles.js` | 83 | 2827 | `7e2de9e16188a0c8` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
-| `AUDIO_FALLBACK_IMPLEMENTATION.md` | 103 | 3321 | `20dfd92847ec619c` |
-| `CODE_DOCUMENTATION.md` | 923 | 35077 | `3a552e11a51b3f17` |
-| `DEPLOYMENT.md` | 197 | 5868 | `61027a9af8057bbb` |
+| `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
+| `CODE_DOCUMENTATION.md` | 924 | 35128 | `14e97c57047476b1` |
+| `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
 | `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
 | `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
-| `HEALTH_CHECK.md` | 220 | 6294 | `68f2131c2f71d384` |
+| `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
-| `IMPLEMENTATION_SUMMARY.md` | 254 | 6749 | `92dbe13986ca419b` |
+| `IMPLEMENTATION_SUMMARY.md` | 255 | 6800 | `e4896c9a7f3f7945` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `node generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `package.json` | 35 | 900 | `1ca488ccbe9329f6` |
-| `PERSISTENCE_FIX.md` | 132 | 3788 | `eaad06d48a47eb12` |
-| `PROJECT MANIFESTO.md` | 23 | 1402 | `2d90af69836a4dc4` |
+| `PERSISTENCE_FIX.md` | 136 | 3845 | `fd2669dbd599dd1d` |
+| `PROJECT MANIFESTO.md` | 29 | 1494 | `07939e6b508e7f30` |
 | `public/1.1-devotional.txt` | 35 | 976 | `0be96fffeae79c40` |
 | `public/1.10-devotional.txt` | 33 | 2232 | `ee179a19b89f1641` |
 | `public/1.11-devotional.txt` | 31 | 4208 | `c4b140deb7164b4a` |
@@ -48,7 +48,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `public/1.2-devotional.txt` | 23 | 906 | `1dca6fa9a1dcad92` |
 | `public/1.20-devotional.txt` | 17 | 1330 | `488e36a260bdd193` |
 | `public/1.21-devotional.txt` | 32 | 1049 | `381cb5a914580892` |
-| `public/1.22-devotional.txt` | 40 | 3941 | `c62e26f9091552d7` |
+| `public/1.22-devotional.txt` | 25 | 1438 | `0589e3d6844734d5` |
 | `public/1.23-devotional.txt` | 24 | 1897 | `2bc730fee27254e4` |
 | `public/1.24-devotional.txt` | 20 | 1280 | `46f879349cee0ed6` |
 | `public/1.25-devotional.txt` | 24 | 1787 | `b32c0228bd265c65` |
@@ -776,11 +776,11 @@ This document provides comprehensive documentation for AI assistants and future 
 | `public/pwa-512x512.png` | 42 | 27908 | `8df8b60495ed3826` |
 | `public/vite.svg` | 1 | 1497 | `4a748afd443918bb` |
 | `QUICK_DEPLOY.txt` | 130 | 5819 | `530773f99a57dbff` |
-| `QUICK_REFERENCE_FILE_EDITING.md` | 122 | 2696 | `7de8424cf3003940` |
-| `README.md` | 177 | 5025 | `b4ac2a77b53a4795` |
+| `QUICK_REFERENCE_FILE_EDITING.md` | 126 | 2753 | `0492978f861b9717` |
+| `README.md` | 183 | 5131 | `d0b32feae52f2c4d` |
 | `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
-| `SERVERLESS_PROXY_GUIDE.md` | 253 | 6962 | `5a5d4fec84e403a5` |
+| `SERVERLESS_PROXY_GUIDE.md` | 257 | 7019 | `8939f3957677ed48` |
 | `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
 | `src/App.jsx` | 581 | 30462 | `3bac36a6c5182702` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
@@ -811,7 +811,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/MemberCard.jsx` | 91 | 6968 | `5f678b356b11d6d1` |
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
-| `VERCEL_ENV_SETUP.md` | 120 | 3868 | `1b56398464e1fc5c` |
+| `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 
