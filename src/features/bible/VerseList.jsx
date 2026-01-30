@@ -47,11 +47,45 @@ function VerseList({
                 backgroundColor: isSelected ? '#e3f2fd' : (isDark ? '#222' : '#fff'),
                 border: isSelected ? '1px solid #2196F3' : '1px solid transparent',
                 transition: 'background-color 0.2s',
+                position: 'relative',
+                paddingRight: verseNotes.length > 0 && !showEditorHere && verseNotes.some(n => n.id !== editingNoteId && n.verses[n.verses.length - 1] === v.verse) ? '40px' : '10px',
                 ...getHighlightStyle(v.verse)
               }}
             >
               <sup style={{ marginRight: '5px', fontWeight: 'bold', color: '#888' }}>{v.verse}</sup>
               {v.text}
+              
+              {/* Note indicator badge in bottom-right corner */}
+              {showNotes && verseNotes.length > 0 && verseNotes.some(n => n.id !== editingNoteId && n.verses[n.verses.length - 1] === v.verse) && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditNote(verseNotes.find(n => n.id !== editingNoteId && n.verses[n.verses.length - 1] === v.verse));
+                  }}
+                  style={{
+                    position: 'absolute',
+                    bottom: '5px',
+                    right: '8px',
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '50%',
+                    backgroundColor: verseNotes[0]?.color || '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.65rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
+                    minWidth: '22px'
+                  }}
+                  title="Click to view/edit note"
+                >
+                  📝
+                </button>
+              )}
             </div>
 
             {showEditorHere && (
