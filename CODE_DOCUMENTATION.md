@@ -1,5 +1,5 @@
 # Equip Daily - Code Documentation
-**Generated:** January 29, 2026
+**Generated:** January 30, 2026
 **Purpose:** Document each component's functionality for AI context and debugging
 
 ---
@@ -33,7 +33,7 @@
 
 ---
 
-#### **src/features/bible/BibleStudy.jsx** (1434 lines)
+#### **src/features/bible/BibleStudy.jsx** (2213 lines)
 **Purpose:** Main Bible reading interface with study tools
 **Functionality:**
 - Displays Bible chapters with verse-by-verse rendering
@@ -317,11 +317,14 @@
 />
 ```
 
-### ✅ RECENT FIXES (Jan 29, 2026)
-1. Fixed `BIBLE_BOOKS is not defined` - Now uses `bookData.section`
-2. Added `showTestamentNav` state variable
-3. Firestore subscriptions have error handlers (no more crashes)
-4. SearchWell displays verse references instead of auto-navigating
+### ✅ RECENT FIXES (Jan 30, 2026)
+1. **Login Modal Auto-Close** - Modal now closes automatically when user signs in (added useEffect watching user state)
+2. **Toolbar Fade-In Effect** - Toolbar buttons (-, +, Prev, Next, Mark Read) now fade in smoothly with chapter text during loading
+3. **Dark Mode Button Styling** - Fixed font size buttons and Mark Read button to have proper dark mode colors and hover states
+4. **Book Pills Dark Mode** - Fixed book progress pills in testament navigation to display properly in dark mode
+5. **Dev Server Fix** - Changed package.json dev script from `vercel dev` (recursive) to `vite` (local development)
+6. **System Theme Override** - Removed system dark mode preference detection (`color-scheme` and `@media prefers-color-scheme`) so app respects only manual theme toggle
+7. **BibleStudy.jsx Growth** - Component expanded from 1434 to 2213 lines with recent enhancements
 
 ---
 
