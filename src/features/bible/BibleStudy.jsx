@@ -1021,13 +1021,20 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   return (
     <div className={`min-h-screen p-4 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       
-      {/* ⚠️ Login Banner for Guest Users */}
+      {/* ⚠️ Login Banner for Guest Users - Top Priority */}
       {!user && (
-        <div className="max-w-4xl mx-auto mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-center">
-          <p className="text-sm text-blue-800">
-            👋 <strong>Welcome!</strong> You're reading as a guest. You can read the Bible, but 
-            <strong> sign in to save highlights, notes, and join the community</strong>.
+        <div className="max-w-4xl mx-auto mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-800 text-center mb-2">
+            👋 You're reading as a guest. <strong>Sign in to save highlights, notes & join the community.</strong>
           </p>
+          <div className="flex justify-center">
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-md text-sm"
+            >
+              🔐 Sign In
+            </button>
+          </div>
         </div>
       )}
       
@@ -1948,19 +1955,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           placeholder={`What is the Spirit saying to you about ${book} ${chapter}?`}
         />
       </div>
-
-      {/* Login Button for Non-Authenticated Users */}
-      {!user && (
-        <div className="max-w-4xl mx-auto mt-6 mb-10 text-center">
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition shadow-md"
-            style={{ fontSize: '1rem' }}
-          >
-            🔐 Sign In to Save Notes & Join the Community
-          </button>
-        </div>
-      )}
 
       {/* Login Modal */}
       {showLoginModal && (
