@@ -21,7 +21,8 @@ import {
   DEFAULT_BIBLE_VERSION,
   AUDIO_FALLBACK_VERSION,
   USFM_MAPPING,
-  hasAudioSupport
+  hasAudioSupport,
+  AUDIO_BIBLE_MAP
 } from '../../config/constants'; 
 import { 
   subscribeToNotes, saveNote, deleteNote,
@@ -97,6 +98,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   // --- AUDIO STATE ---
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioError, setAudioError] = useState(false);
+  const [audioLoading, setAudioLoading] = useState(false);
   const audioRef = useRef(null);
 
   // --- LONG PRESS STATE ---
@@ -467,22 +469,92 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       setAudioVerses([]);
     }
     
-    // Construct local audio path (e.g., /audio/Genesis/1.mp3)
-    const sanitizedBook = book.replace(/\s+/g, '_'); 
-    const audioSrc = `${AUDIO_BASE_PATH}${sanitizedBook}/${chapter}.mp3`;
+    // Fetch audio from API.Bible if supported
+    async function loadAudioFromAPI() {
+      setAudioLoading(true);
+      setAudioError(false);
+      
+      // Check if this Bible version has audio support
+      const audioBibleId = AUDIO_BIBLE_MAP[version];
+      if (!audioBibleId) {
+        setAudioError(true);
+        setAudioLoading(false);
+        return;
+      }
+      
+      try {
+        const bookId = BIBLE_BOOK_IDS[book] || 'GEN';
+        const chapterId = `${bookId}.${chapter}`;
+        
+        const isDev = import.meta.env.DEV;
+        const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+        
+        let response;
+        if (isDev && apiKey) {
+          // Direct API call in development
+          const url = `https://rest.api.bible/v1/audio-bibles/${audioBibleId}/chapters/${chapterId}`;
+          response = await fetch(url, {
+            headers: { 'api-key': apiKey.trim() }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            const audioUrl = data.data?.resourceUrl;
+            
+            if (audioUrl) {
+              if (!audioRef.current) audioRef.current = new Audio();
+              audioRef.current.src = audioUrl;
+              audioRef.current.load();
+              setAudioLoading(false);
+            } else {
+              setAudioError(true);
+              setAudioLoading(false);
+            }
+          } else {
+            setAudioError(true);
+            setAudioLoading(false);
+          }
+        } else {
+          // Use serverless function in production
+          response = await fetch(`/api/bible-audio?bibleId=${audioBibleId}&chapterId=${chapterId}`);
+          
+          if (response.ok) {
+            const data = await response.json();
+            const audioUrl = data.audioUrl;
+            
+            if (audioUrl) {
+              if (!audioRef.current) audioRef.current = new Audio();
+              audioRef.current.src = audioUrl;
+              audioRef.current.load();
+              setAudioLoading(false);
+            } else {
+              setAudioError(true);
+              setAudioLoading(false);
+            }
+          } else {
+            setAudioError(true);
+            setAudioLoading(false);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading audio:', error);
+        setAudioError(true);
+        setAudioLoading(false);
+      }
+    }
     
-    if (!audioRef.current) audioRef.current = new Audio();
-
-    audioRef.current.src = audioSrc;
-    audioRef.current.load();
+    // Only load audio if version has support
+    if (hasAudioSupport(version)) {
+      loadAudioFromAPI();
+    } else {
+      setAudioError(true);
+    }
     
     // Reset play state when chapter changes
     setIsPlaying(false);
-    setAudioError(false);
-
+    
     const handleEnded = () => setIsPlaying(false);
     const handleError = () => {
-        // console.warn("Audio file not found:", audioSrc);
         setIsPlaying(false);
         setAudioError(true);
     };
@@ -500,14 +572,20 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   }, [book, chapter, version]);
 
   const toggleAudio = () => {
-    if (audioError) return;
+    if (audioError || audioLoading) return;
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(e => console.log("Play failed (file might be missing):", e));
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(e => {
+          console.error("Play failed:", e);
+          setAudioError(true);
+          setIsPlaying(false);
+        });
     }
-    setIsPlaying(!isPlaying);
   };
 
   const getBookIndex = () => bibleData.findIndex(b => b.name === book);
@@ -1347,8 +1425,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <div className="flex items-center gap-2 mb-4">
               {/* Speaker Icon (only show if audio is supported for this Bible version) */}
               {hasAudioSupport(version) && (
-                <button onClick={toggleAudio} title={isPlaying ? "Pause Audio" : "Play Audio"}>
-                  {isPlaying ? '🔇' : '🔊'}
+                <button 
+                  onClick={toggleAudio} 
+                  title={audioLoading ? "Loading audio..." : isPlaying ? "Pause Audio" : "Play Audio"}
+                  disabled={audioLoading || audioError}
+                  className={audioError ? 'opacity-50 cursor-not-allowed' : ''}
+                >
+                  {audioLoading ? '⏳' : isPlaying ? '🔇' : '🔊'}
                 </button>
               )}
               {/* Study/Reading Mode Button - background color always matches highlight color */}
