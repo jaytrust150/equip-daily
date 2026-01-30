@@ -98,6 +98,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     return (COLOR_PALETTE && COLOR_PALETTE.length > 0) ? COLOR_PALETTE[0] : { code: '#ffff00', border: '#e6e600', name: 'Yellow' };
   });
 
+  // --- CHAPTER PRELOADING ---
+  const [preloadedChapters, setPreloadedChapters] = useState({});
+  const preloadTimeoutRef = useRef(null);
+
   // --- AUDIO STATE ---
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioError, setAudioError] = useState(false);
@@ -168,6 +172,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     async function fetchBibleText() {
       if (!book || !chapter) return;
       
+      const cacheKey = `${book}-${chapter}-${version}`;
+      
+      // If we have preloaded data, use it immediately without loading state
+      if (preloadedChapters[cacheKey]) {
+        console.log(`⚡ Using preloaded: ${book} ${chapter}`);
+        setVerses(preloadedChapters[cacheKey]);
+        setError(null);
+        return; // Skip API call and loading state - use preloaded data
+      }
+      
+      // No preloaded data, show loading state and fetch
       setLoading(true);
       setError(null);
       let isSwitching = false;
@@ -238,6 +253,79 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
     fetchBibleText();
   }, [book, chapter, version]);
+
+  // 1a. 🔄 Preload adjacent chapters (next & previous) silently
+  useEffect(() => {
+    // Clear previous timeout
+    if (preloadTimeoutRef.current) {
+      clearTimeout(preloadTimeoutRef.current);
+    }
+
+    // Debounce preloading to avoid excessive API calls during rapid navigation
+    preloadTimeoutRef.current = setTimeout(() => {
+      const preloadChapter = async (bookName, chapterNum) => {
+        if (!bookName || !chapterNum) return;
+        
+        const cacheKey = `${bookName}-${chapterNum}-${version}`;
+        
+        // Skip if already preloaded
+        if (preloadedChapters[cacheKey]) return;
+        
+        try {
+          const bookId = BIBLE_BOOK_IDS[bookName] || 'GEN';
+          const isDev = import.meta.env.DEV;
+          const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
+          
+          let response;
+          if (isDev && apiKey) {
+            const params = new URLSearchParams({
+              'content-type': 'json',
+              'include-verse-numbers': 'true',
+              'include-titles': 'true',
+              'include-chapter-numbers': 'true',
+              'include-verse-spans': 'true'
+            });
+            const url = `https://rest.api.bible/v1/bibles/${version}/chapters/${bookId}.${chapterNum}?${params}`;
+            response = await fetch(url, { headers: { 'api-key': apiKey.trim() } });
+          } else {
+            const url = `/api/bible-chapter?bibleId=${version}&bookId=${bookId}&chapter=${chapterNum}`;
+            response = await fetch(url);
+          }
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.data && data.data.content) {
+              const parsedVerses = parseBibleContent(data.data.content);
+              setPreloadedChapters(prev => ({
+                ...prev,
+                [cacheKey]: parsedVerses
+              }));
+              console.log(`✅ Preloaded: ${bookName} ${chapterNum}`);
+            }
+          }
+        } catch (err) {
+          console.debug(`ℹ️ Preload failed for ${bookName} ${chapterNum}:`, err.message);
+        }
+      };
+      
+      // Preload next chapter
+      const currentChapterCount = bibleData.find(b => b.name === book)?.chapters || 1;
+      if (chapter < currentChapterCount) {
+        preloadChapter(book, chapter + 1);
+      }
+      
+      // Preload previous chapter
+      if (chapter > 1) {
+        preloadChapter(book, chapter - 1);
+      }
+    }, 800); // Debounce 800ms to avoid hammer API during fast clicking
+    
+    return () => {
+      if (preloadTimeoutRef.current) {
+        clearTimeout(preloadTimeoutRef.current);
+      }
+    };
+  }, [book, chapter, version, preloadedChapters]);
 
   // 1b. 📚 Fetch Bible Versions from API (no filtering)
   useEffect(() => {
