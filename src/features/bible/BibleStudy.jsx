@@ -469,6 +469,18 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       setAudioVerses([]);
     }
     
+    // Reset play state when chapter changes
+    setIsPlaying(false);
+    setAudioError(false);
+    setAudioLoading(false);
+    
+    // Event handlers for audio
+    const handleEnded = () => setIsPlaying(false);
+    const handleError = () => {
+        setIsPlaying(false);
+        setAudioError(true);
+    };
+    
     // Fetch audio from API.Bible if supported
     async function loadAudioFromAPI() {
       setAudioLoading(true);
@@ -505,6 +517,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               if (!audioRef.current) audioRef.current = new Audio();
               audioRef.current.src = audioUrl;
               audioRef.current.load();
+              // Add event listeners after audio is initialized
+              audioRef.current.addEventListener('ended', handleEnded);
+              audioRef.current.addEventListener('error', handleError);
               setAudioLoading(false);
             } else {
               setAudioError(true);
@@ -526,6 +541,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               if (!audioRef.current) audioRef.current = new Audio();
               audioRef.current.src = audioUrl;
               audioRef.current.load();
+              // Add event listeners after audio is initialized
+              audioRef.current.addEventListener('ended', handleEnded);
+              audioRef.current.addEventListener('error', handleError);
               setAudioLoading(false);
             } else {
               setAudioError(true);
@@ -549,18 +567,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     } else {
       setAudioError(true);
     }
-    
-    // Reset play state when chapter changes
-    setIsPlaying(false);
-    
-    const handleEnded = () => setIsPlaying(false);
-    const handleError = () => {
-        setIsPlaying(false);
-        setAudioError(true);
-    };
-
-    audioRef.current.addEventListener('ended', handleEnded);
-    audioRef.current.addEventListener('error', handleError);
 
     return () => {
       if (audioRef.current) {
