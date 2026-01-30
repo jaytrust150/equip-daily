@@ -1,15 +1,30 @@
+/**
+ * Bible Chapter API Endpoint
+ * 
+ * Serverless function to proxy Bible API requests for chapter content.
+ * This keeps the API key secure on the server and avoids CORS issues.
+ * 
+ * Query Parameters:
+ * @param {string} bibleId - Bible version ID (e.g., 'd6e14a625393b4da-01' for NLT)
+ * @param {string} bookId - USFM book code (e.g., 'GEN', 'JHN')
+ * @param {string} chapter - Chapter number (e.g., '1', '3')
+ * 
+ * Response:
+ * @returns {Object} Chapter data with verses, numbers, and formatting
+ * @returns {Object} Error object if request fails
+ */
 // Serverless function to proxy Bible API requests for chapters
 // This keeps your API key secure and avoids CORS issues
 /* eslint-disable no-console */
 
 export default async function handler(request, response) {
-  // Set CORS headers to allow requests from your frontend
+  // Set CORS headers to allow requests from any origin (frontend)
   response.setHeader('Access-Control-Allow-Credentials', true);
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight
+  // Handle preflight OPTIONS request
   if (request.method === 'OPTIONS') {
     response.status(200).end();
     return;
@@ -20,6 +35,7 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Extract and validate required query parameters
   const { bibleId, bookId, chapter } = request.query;
 
   // Validate required parameters
@@ -29,7 +45,8 @@ export default async function handler(request, response) {
     });
   }
 
-  // Check for API key with fallback support
+  // Check for API key with fallback support for different env var names
+  // Supports both BIBLE_API_KEY (production) and VITE_BIBLE_API_KEY (development)
   let API_KEY = process.env.BIBLE_API_KEY;
   
   if (API_KEY) {
@@ -39,6 +56,7 @@ export default async function handler(request, response) {
     console.log('Found VITE_BIBLE_API_KEY');
   }
   
+  // If no API key found in any env var, return error
   if (!API_KEY) {
     console.error('CRITICAL ERROR: No API Key found');
     return response.status(500).json({ 
@@ -47,23 +65,27 @@ export default async function handler(request, response) {
   }
 
   try {
-    // Build URL with required query parameters for proper verse parsing
+    // Build API.Bible URL with query parameters for proper verse parsing
+    // These params ensure verses are numbered and formatted correctly
     const params = new URLSearchParams({
-      'content-type': 'json',
-      'include-verse-numbers': 'true',
-      'include-titles': 'true',
-      'include-chapter-numbers': 'true',
-      'include-verse-spans': 'true'
+      'content-type': 'json', // Return JSON instead of HTML
+      'include-verse-numbers': 'true', // Include verse number markers
+      'include-titles': 'true', // Include section titles
+      'include-chapter-numbers': 'true', // Include chapter numbers
+      'include-verse-spans': 'true' // Include verse range spans
     });
     
+    // Construct full API endpoint URL
     const url = `https://rest.api.bible/v1/bibles/${bibleId}/chapters/${bookId}.${chapter}?${params}`;
     
+    // Fetch chapter data from API.Bible with authentication
     const fetchResponse = await fetch(url, {
       headers: {
         'api-key': API_KEY,
       },
     });
 
+    // Handle non-OK responses (401, 403, 404, etc.)
     if (!fetchResponse.ok) {
       const errorText = await fetchResponse.text();
       console.error('API.Bible error:', fetchResponse.status, errorText);
@@ -75,12 +97,14 @@ export default async function handler(request, response) {
       });
     }
 
+    // Parse and return successful response
     const data = await fetchResponse.json();
     
-    // Successfully fetched - return the data
+    // Successfully fetched chapter data - return to client
     return response.status(200).json(data);
     
   } catch (error) {
+    // Handle network errors, timeouts, or other fetch failures
     console.error('Bible API proxy error:', error);
     return response.status(500).json({ 
       error: 'Failed to fetch Bible chapter',

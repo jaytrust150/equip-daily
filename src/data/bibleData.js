@@ -1,5 +1,19 @@
+/**
+ * Bible Books Data
+ * 
+ * Complete list of all 66 books of the Bible with metadata:
+ * - name: Full book name as displayed in UI
+ * - chapters: Total number of chapters in the book
+ * - section: "OT" for Old Testament, "NT" for New Testament
+ * 
+ * Used for:
+ * - Book/chapter navigation dropdowns
+ * - Validating chapter numbers
+ * - Organizing Bible tracker by testament
+ * - Calculating reading progress
+ */
 export const bibleData = [
-  // OLD TESTAMENT
+  // OLD TESTAMENT - 39 Books
   { name: "Genesis", chapters: 50, section: "OT" },
   { name: "Exodus", chapters: 40, section: "OT" },
   { name: "Leviticus", chapters: 27, section: "OT" },
@@ -40,7 +54,7 @@ export const bibleData = [
   { name: "Zechariah", chapters: 14, section: "OT" },
   { name: "Malachi", chapters: 4, section: "OT" },
 
-  // NEW TESTAMENT
+  // NEW TESTAMENT - 27 Books
   { name: "Matthew", chapters: 28, section: "NT" },
   { name: "Mark", chapters: 16, section: "NT" },
   { name: "Luke", chapters: 24, section: "NT" },

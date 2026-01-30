@@ -1,15 +1,31 @@
+/**
+ * Bible Search API Endpoint
+ * 
+ * Serverless function to proxy Bible API search requests.
+ * Performs full-text search across verses in a specific Bible version.
+ * This keeps the API key secure on the server and avoids CORS issues.
+ * 
+ * Query Parameters:
+ * @param {string} bibleId - Bible version ID to search within
+ * @param {string} query - Search query text (words or phrases)
+ * @param {string} limit - Max results to return (default: '20', max: 100)
+ * 
+ * Response:
+ * @returns {Object} Search results with verses, references, and highlighted matches
+ * @returns {Object} Error object if request fails
+ */
 // Serverless function to proxy Bible API search requests
 // This keeps your API key secure and avoids CORS issues
 /* eslint-disable no-console */
 
 export default async function handler(request, response) {
-  // Set CORS headers to allow requests from your frontend
+  // Set CORS headers to allow requests from frontend
   response.setHeader('Access-Control-Allow-Credentials', true);
   response.setHeader('Access-Control-Allow-Origin', '*');
   response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  // Handle preflight
+  // Handle preflight OPTIONS request
   if (request.method === 'OPTIONS') {
     response.status(200).end();
     return;
@@ -20,6 +36,7 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Extract query parameters with default limit
   const { bibleId, query, limit = '20' } = request.query;
 
   // Validate required parameters
@@ -47,16 +64,19 @@ export default async function handler(request, response) {
   }
 
   try {
+    // Construct search URL with URL-encoded query and limit parameter
     const url = `https://rest.api.bible/v1/bibles/${bibleId}/search?query=${encodeURIComponent(query)}&limit=${limit}`;
     
     console.log(`Searching: ${url}`);
     
+    // Fetch search results from API.Bible with authentication
     const fetchResponse = await fetch(url, {
       headers: {
         'api-key': API_KEY,
       },
     });
 
+    // Handle non-OK responses (401, 403, 404, etc.)
     if (!fetchResponse.ok) {
       const errorText = await fetchResponse.text();
       console.error('API.Bible search error:', fetchResponse.status, errorText);

@@ -1,3 +1,17 @@
+/**
+ * Bible Book ID Mappings
+ * 
+ * TypeScript mapping of full Bible book names to their USFM/OSIS abbreviation codes.
+ * These codes are used by API.Bible for:
+ * - Chapter fetching endpoints
+ * - Audio Bible requests
+ * - Search functionality
+ * 
+ * Format: 'Full Book Name': 'USFM_CODE'
+ * Example: 'Genesis': 'GEN', '1 Corinthians': '1CO'
+ * 
+ * @see https://ubsicap.github.io/usfm/identification/books.html
+ */
 export const BIBLE_BOOK_IDS: Record<string, string> = {
   'Genesis': 'GEN',
   'Exodus': 'EXO',

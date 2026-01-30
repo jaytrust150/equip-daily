@@ -129,29 +129,78 @@
 ---
 
 #### **src/services/firestoreService.js** (159 lines)
-**Purpose:** All Firebase Firestore database operations
+**Purpose:** All Firebase Firestore database operations with comprehensive JSDoc documentation
 **Functionality:**
 - CRUD operations for notes, reflections, highlights
 - Real-time subscriptions with error handling
 - User profile management
 - Chapter read status tracking
+- Atomic updates using arrayUnion/arrayRemove
+- Graceful permission-denied error handling
 
 **Functions:**
-- `subscribeToReflections(keyField, keyValue, callback)` - Listen to reflections
-- `saveReflection(user, text, keyField, keyValue, editingId)` - Save/update reflection
-- `deleteReflection(id)` - Delete reflection
-- `toggleFruitReaction(postId, fruitId, userId, reactions)` - Like/unlike posts
-- `saveNote(user, book, chapter, verses, text, editingId)` - Save Bible note
-- `deleteNote(noteId)` - Delete note
-- `updateUserHighlight(userId, book, chapter, verseNum, highlightObj)` - Save highlight
-- `subscribeToUserProfile(userId, callback)` - Listen to user data (highlights, read chapters)
-- `subscribeToNotes(userId, book, chapter, callback)` - Listen to notes for chapter
-- `toggleChapterReadStatus(userId, chapterKey, isRead)` - Mark chapter read/unread
+
+**`subscribeToReflections(keyField, keyValue, callback)`**
+- Sets up real-time listener for reflections filtered by custom field (e.g., chapter, devotional)
+- Orders by timestamp descending (newest first)
+- Returns unsubscribe function for cleanup
+- Error handling logs warnings without breaking app
+
+**`saveReflection(user, text, keyField, keyValue, editingId)`**
+- Creates or updates reflection document
+- If editingId provided, updates existing; otherwise creates new
+- Saves user info (userId, userName, userPhoto, location) with reflection
+- Custom keyField allows flexible categorization (chapter, devotional, etc.)
+
+**`deleteReflection(id)`**
+- Deletes reflection document by ID
+- No ownership check (assumes UI validates)
+
+**`toggleFruitReaction(postId, fruitId, userId, reactions)`**
+- Toggles Fruit of the Spirit reaction on reflection
+- Uses Firestore arrayUnion (add reaction) or arrayRemove (remove reaction)
+- Atomic operation prevents race conditions
+- Checks current reactions to determine add vs remove
+
+**`saveNote(user, book, chapter, verses, text, editingId)`**
+- Saves or updates Bible study note
+- Associates note with specific book, chapter, verses array
+- Includes color field for highlight integration
+- Returns noteId on success
+
+**`deleteNote(noteId)`**
+- Deletes Bible note by ID
+
+**`updateUserHighlight(userId, book, chapter, verseNum, highlightObj)`**
+- Updates nested user highlights object in Firestore
+- Structure: `highlights[book][chapter][verse] = { bg, border }`
+- If highlightObj is null/undefined, removes the highlight
+- Uses Firestore.FieldValue.delete() for removal
+
+**`subscribeToUserProfile(userId, callback)`**
+- Real-time listener for user document
+- Returns highlights, readChapters, and other user data
+- Callback receives snapshot data on every change
+- Returns unsubscribe function
+
+**`subscribeToNotes(userId, book, chapter, callback)`**
+- Real-time listener for notes filtered by user, book, chapter
+- Returns unsubscribe function for cleanup
+
+**`toggleChapterReadStatus(userId, chapterKey, isRead)`**
+- Marks chapter as read or unread
+- Uses arrayUnion (add to readChapters) or arrayRemove (remove)
+- chapterKey format: "Genesis 1", "Exodus 5", etc.
 
 **Error Handling:**
 - All `onSnapshot` listeners have error callbacks
 - Permission errors logged as warnings (graceful degradation)
-- Returns empty data on permission-denied
+- Returns empty data on permission-denied scenarios
+
+**Integration:**
+- Imported by BibleStudy, CommunityFeed, MemberProfile components
+- All write operations include timestamp fields
+- Real-time listeners provide instant UI updates
 
 ---
 
@@ -180,37 +229,268 @@
 ---
 
 #### **src/shared/CommunityFeed.jsx** (66 lines)
-**Purpose:** Reflection input and display component
+**Purpose:** Reflection input and display component with real-time Firestore subscription
 **Functionality:**
-- Text input for reflections
-- Displays community posts
-- Fruit reaction system (like buttons)
-- Edit/delete own posts
-- Custom placeholder support
+- Text input for reflections with community context
+- Displays community posts with real-time updates
+- Fruit of the Spirit reaction system (9 fruits with emojis)
+- Edit/delete own posts with inline editing
+- Custom placeholder support for different contexts
+- Real-time Firestore subscription with automatic unsubscribe on unmount
+
+**Key Functions:**
+- `handlePost()` - Saves or updates reflection via `firestoreService.saveReflection()`
+- `handleDelete(id)` - Deletes reflection and clears editing state
+- `handleReact(postId, fruitId)` - Toggles Fruit of the Spirit reaction
+- `useEffect` - Sets up real-time listener via `subscribeToReflections()`, returns cleanup function
 
 **Props:**
 - `keyField` - Firestore field name ('chapter', 'devotional', etc.)
-- `keyValue` - Value to filter by
-- `user` - Current user object
-- `theme` - Light/dark styling
-- `placeholder` - Custom placeholder text
+- `keyValue` - Value to filter by (e.g., "Genesis 1", "1.1")
+- `user` - Current user object with userId, displayName, photoURL, location
+- `theme` - Light/dark styling ('light' or 'dark')
+- `placeholder` - Custom placeholder text for input field
+
+**Integration:**
+- Used by BibleStudy (chapter reflections) and Devotional (daily reflections)
+- Renders MemberCard components for each reflection
+- Passes onReact, onEdit, onDelete callbacks to MemberCard
+
+---
+
+#### **src/shared/MemberCard.jsx** (169 lines)
+**Purpose:** Community member reflection card with Fruit of the Spirit reactions
+**Functionality:**
+- Displays user reflections with profile photo, name, location, timestamp
+- 9 Fruits of the Spirit as reaction buttons (Love, Joy, Peace, Patience, Kindness, Goodness, Faithfulness, Gentleness, Self-Control)
+- Makes Bible verse references clickable (e.g., "John 3:16" → triggers search)
+- Edit/delete buttons for own reflections
+- Theme-aware styling for light/dark mode
+
+**Key Functions:**
+- `renderThought()` - Parses text and converts verse references to clickable links
+  - Regex: `/([1-3]?\s?[A-Z][a-z]+\s\d+:\d+(?:-\d+)?)/g`
+  - Matches: "Genesis 1:1", "1 Corinthians 13:4-7", "John 3:16"
+- `handleFruitClick(fruitId)` - Triggers parent's onReact callback
+- `handleEdit()` - Triggers parent's onEdit with reflection data
+
+**Props:**
+- `post` - Reflection object with userId, userName, userPhoto, text, timestamp, location, reactions
+- `currentUserId` - Logged-in user's ID for checking ownership
+- `onReact(postId, fruitId)` - Callback to toggle reaction
+- `onEdit(post)` - Callback to edit reflection
+- `onDelete(postId)` - Callback to delete reflection
+- `onSearch(query)` - Callback to open search well with verse reference
+- `onProfileClick(userId)` - Callback to navigate to user profile
+- `theme` - 'light' or 'dark' styling
+
+**Data Structure:**
+- `fruits` array contains:
+  - `id` - Unique identifier (e.g., 'love', 'joy')
+  - `name` - Display name (e.g., 'Love', 'Joy')
+  - `icon` - Emoji (❤️, 😊, ☮️, ⏳, 🤝, ✨, 🙏, 🕊️, 🧘)
+
+**Integration:**
+- Rendered by CommunityFeed for each reflection
+- Calls SearchWell via onSearch callback when verse reference is clicked
+- Uses `new Date(timestamp.seconds * 1000)` to format Firestore timestamps
+
+---
+
+#### **src/shared/AudioPlayer.jsx** (244 lines)
+**Purpose:** Audio player component with sleep timer and playback controls
+**Functionality:**
+- Standard audio controls (play/pause, progress bar, time display)
+- Sleep timer with 4 cycles: null → 15min → 30min → 60min → null
+- Countdown display in minutes:seconds format
+- Auto-pause audio when timer reaches 0:00
+- Theme-aware button styling
+- Keyboard shortcuts for play/pause
+
+**Key Functions:**
+- `togglePlayPause()` - Plays or pauses audio, handles loading states
+- `handleSeek(e)` - Updates playback position via progress bar click
+- `formatTime(seconds)` - Converts seconds to "MM:SS" display format
+- `handleSleepTimerClick()` - Cycles through sleep timer values
+
+**State Variables:**
+- `isPlaying` - Boolean for play/pause button state
+- `currentTime` - Current playback position in seconds
+- `duration` - Total audio length in seconds
+- `sleepTimer` - Current timer value (null, 15, 30, 60)
+- `sleepTimeLeft` - Countdown in seconds
+
+**Integration:**
+- Used by BibleStudy and Devotional components
+- Receives audioUrl, chapter/devotional data via props
+- Calls useAudio hook for sleep timer logic
+
+---
+
+#### **src/features/bible/ControlBar.jsx** (52 lines)
+**Purpose:** Bible navigation control bar with chapter navigation and reading progress
+**Functionality:**
+- Previous/Next chapter navigation buttons
+- Mark chapter as read/unread toggle
+- Displays current book and chapter
+- Theme-aware button styling (green in dark mode)
+- Disabled state handling for first/last chapters
+
+**Key Functions:**
+- `onPrev()` - Navigates to previous chapter
+- `onNext()` - Navigates to next chapter
+- `onToggleRead()` - Marks current chapter as read/unread
+
+**Props:**
+- `book` - Current book name (e.g., "Genesis")
+- `chapter` - Current chapter number
+- `totalChapters` - Total chapters in book for boundary checking
+- `isRead` - Boolean indicating if current chapter is marked read
+- `onPrev` - Callback for previous button
+- `onNext` - Callback for next button
+- `onToggleRead` - Callback for read toggle
+- `theme` - 'light' or 'dark' styling
+
+**Styling:**
+- Green buttons (#10b981) in dark mode for visibility
+- Gray disabled state for boundary chapters
+- Checkmark indicator (✓) when chapter is marked read
+
+**Integration:**
+- Rendered by BibleStudy.jsx below the Bible chapter text
+- Navigation buttons call BibleStudy's `navigateChapter()` function
+- Read status synced with Firestore via `toggleChapterReadStatus()`
+
+---
+
+### Custom Hooks
+
+#### **src/hooks/useAudio.js** (92 lines)
+**Purpose:** Custom React hook for audio player with sleep timer functionality
+**Functionality:**
+- Manages audio state (playing, paused, time tracking)
+- Sleep timer with 4 cycle options: null → 15min → 30min → 60min → null
+- Countdown display formatted as "MM:SS"
+- Auto-pause audio when sleep timer reaches 0:00
+- Automatic cleanup on component unmount
+
+**Key Functions:**
+- `togglePlayPause()` - Plays or pauses audio element
+- `handleTimeUpdate()` - Updates currentTime state on audio progress
+- `handleLoadedMetadata()` - Sets duration when audio metadata loads
+- `handleSeek(time)` - Seeks to specific time position
+- `toggleSleepTimer()` - Cycles through sleep timer values (null → 15 → 30 → 60 → null)
+- `formatTimeLeft(seconds)` - Formats countdown as "15:00", "30:00", etc.
+
+**State Variables:**
+- `isPlaying` - Boolean indicating audio playback state
+- `currentTime` - Current playback position in seconds
+- `duration` - Total audio length in seconds
+- `sleepTimer` - Current timer value in minutes (null, 15, 30, 60)
+- `sleepTimeLeft` - Countdown in seconds (decrements every second)
+
+**Sleep Timer Logic:**
+- When sleepTimer is set, starts countdown interval
+- Decrements sleepTimeLeft by 1 every second
+- When sleepTimeLeft reaches 0:
+  - Pauses audio via `audioRef.current.pause()`
+  - Resets sleepTimer to null
+  - Clears countdown interval
+- useEffect cleanup clears interval on unmount
+
+**Return Value:**
+- Object containing:
+  - `isPlaying`, `currentTime`, `duration`, `sleepTimer`, `sleepTimeLeft`
+  - `togglePlayPause`, `handleTimeUpdate`, `handleLoadedMetadata`, `handleSeek`, `toggleSleepTimer`, `formatTimeLeft`
+
+**Integration:**
+- Used by AudioPlayer.jsx component
+- Receives audioRef (React ref to <audio> element)
+
+---
+
+#### **src/hooks/useDraggableWindow.js** (86 lines)
+**Purpose:** Custom React hook for draggable window functionality
+**Functionality:**
+- Enables click-and-drag repositioning of floating windows
+- Tracks mouse position and calculates offset
+- Handles drag start, drag move, and drag end events
+- Only activates on desktop (requires mouse events)
+
+**Key Functions:**
+- `handleMouseDown(e)` - Captures initial mouse position, sets isDragging to true
+  - Calculates offset between mouse and window position
+  - Adds mousemove and mouseup listeners to document
+- `handleMouseMove(e)` - Updates window position during drag
+  - Calculates new position: mouse position - offset
+  - Updates x, y state variables
+- `handleMouseUp()` - Ends drag operation
+  - Sets isDragging to false
+  - Removes mousemove and mouseup listeners
+- Cleanup function removes event listeners on unmount
+
+**State Variables:**
+- `x` - Window left position in pixels
+- `y` - Window top position in pixels
+- `isDragging` - Boolean indicating active drag operation
+- `offset` - Object with { x, y } offset between mouse and window corner
+
+**Return Value:**
+- Object containing:
+  - `x`, `y` - Current window position
+  - `isDragging` - Drag state
+  - `handleMouseDown` - Function to attach to drag handle element
+
+**Integration:**
+- Used by SearchWell.jsx and FloatingTools.jsx
+- Applied to window header/toolbar for drag handle
+- Window position controlled via inline styles: `left: ${x}px; top: ${y}px`
 
 ---
 
 ### Data & Configuration Files
 
 #### **src/data/bibleData.js** (70 lines)
-**Purpose:** Static Bible structure data
+**Purpose:** Static Bible structure data array with comprehensive JSDoc documentation
 **Exports:**
 - `bibleData` - Array of all 66 books with:
-  - `name` - Book name (e.g., "Genesis")
-  - `chapters` - Number of chapters
-  - `section` - 'OT' or 'NT'
+  - `name` - Book name (e.g., "Genesis", "Matthew")
+  - `chapters` - Number of chapters in book
+  - `section` - 'OT' (Old Testament) or 'NT' (New Testament)
+
+**Structure:**
+- 39 Old Testament books (Genesis → Malachi)
+- 27 New Testament books (Matthew → Revelation)
+- Total: 66 books, 1189 chapters
 
 **Used For:**
-- Populating book lists
-- Filtering by testament
-- Chapter count validation
+- Populating book selection lists in BibleStudy and BibleTracker
+- Filtering by testament (OT/NT) in navigation
+- Chapter count validation when navigating
+- Progress calculation (chapters read / total chapters)
+
+---
+
+#### **src/bibleData.ts** (1194 lines)
+**Purpose:** USFM book ID mapping for API.Bible integration
+**Exports:**
+- `USFM_BOOK_DATA` - Array of objects mapping book names to USFM codes
+  - `name` - Book name (e.g., "Genesis")
+  - `usfm` - USFM code (e.g., "GEN")
+  - `chapters` - Number of chapters
+
+**USFM Format:**
+- Standardized 3-letter codes used by Bible APIs
+- Examples: GEN (Genesis), EXO (Exodus), MAT (Matthew), REV (Revelation)
+
+**Used For:**
+- Converting book names to API.Bible-compatible book IDs
+- Building chapter requests: `/api/bible-chapter?bookId=GEN&chapter=1`
+- Parsing search results that return USFM codes
+
+**Integration:**
+- Imported by BibleStudy.jsx for API requests
+- Used in SearchWell.jsx for result parsing
 
 ---
 
@@ -231,25 +511,180 @@
 
 ### API Routes (Serverless Functions)
 
-#### **api/bible-chapter.js**
-**Purpose:** Fetch specific Bible chapter
-**Endpoint:** `/api/bible-chapter?bibleId=xxx&chapterId=GEN.1`
-**Returns:** Chapter content with HTML markup
+#### **api/bible-chapter.js** (108 lines)
+**Purpose:** Fetch specific Bible chapter with comprehensive inline comments
+**Endpoint:** `/api/bible-chapter?bibleId=xxx&bookId=GEN&chapter=1`
+**Method:** GET
 
-#### **api/bible-search.js**
-**Purpose:** Keyword search across Bible
-**Endpoint:** `/api/bible-search?bibleId=xxx&query=faith&limit=20`
-**Returns:** Array of verses matching search
+**Query Parameters:**
+- `bibleId` - Bible version ID (e.g., "de4e12af7f28f599-02" for NLT)
+- `bookId` - USFM book code (e.g., "GEN", "MAT", "REV")
+- `chapter` - Chapter number (e.g., "1", "5", "150")
 
-#### **api/bibles.js**
-**Purpose:** List available Bible versions
+**Query Options Passed to API.Bible:**
+- `content-type=html` - Returns HTML-formatted verses
+- `include-notes=false` - Excludes study notes
+- `include-titles=true` - Includes section titles
+- `include-chapter-numbers=false` - Excludes chapter headings
+- `include-verse-numbers=true` - Includes verse numbers
+- `include-verse-spans=false` - Excludes verse span elements
+
+**Response:**
+- Success: Returns chapter data from API.Bible
+- Error: Returns `{ error: 'message', unauthorized: true/false }`
+
+**API Key Resolution:**
+- First checks `BIBLE_API_KEY` environment variable
+- Falls back to `VITE_BIBLE_API_KEY` if first is undefined
+- Returns 500 error if no key found
+
+**CORS Configuration:**
+- Allows all origins (`Access-Control-Allow-Origin: *`)
+- Supports GET and OPTIONS methods
+- Required for frontend requests from different domain
+
+**Error Handling:**
+- 401/403 responses include `unauthorized: true` flag
+- Network errors logged and returned with error message
+- Validation errors for missing parameters
+
+---
+
+#### **api/bible-audio.js** (68 lines)
+**Purpose:** Fetch audio URLs for Bible chapters with comprehensive inline comments
+**Endpoint:** `/api/bible-audio?bibleId=xxx&chapterId=GEN.1`
+**Method:** GET
+
+**Query Parameters:**
+- `bibleId` - Audio-enabled Bible version ID (e.g., "9879dbb7cfe39e4d-01" for WEB)
+- `chapterId` - Full chapter identifier (e.g., "GEN.1", "MAT.5", "REV.22")
+
+**Response:**
+- Success: Returns audio data with `mp3` URL and chapter metadata
+- Error: Returns `{ error: 'message', unauthorized: true/false }`
+
+**API Key Resolution:**
+- First checks `BIBLE_API_KEY` environment variable
+- Falls back to `VITE_BIBLE_API_KEY` if first is undefined
+- Returns 500 error if no key found
+
+**CORS Configuration:**
+- Allows all origins for cross-domain audio requests
+- Supports GET and OPTIONS methods
+
+**Error Handling:**
+- 401/403 responses flagged as unauthorized
+- Network errors logged and returned
+- Missing parameter validation
+
+**Integration:**
+- Called from BibleStudy.jsx when user clicks audio icon
+- Audio URL passed to AudioPlayer component
+- Falls back to WEB version if NLT audio unavailable
+
+---
+
+#### **api/bibles.js** (55 lines)
+**Purpose:** List available Bible versions with comprehensive inline comments
 **Endpoint:** `/api/bibles`
-**Returns:** Array of Bible versions with IDs
+**Method:** GET
 
-#### **api/health.js**
-**Purpose:** Health check endpoint
+**Response:**
+- Success: Returns array of Bible version objects with:
+  - `id` - Version identifier
+  - `name` - Display name (e.g., "New Living Translation")
+  - `abbreviation` - Short code (e.g., "NLT", "WEB")
+  - `language` - Language object
+- Error: Returns `{ error: 'message' }`
+
+**API Key Resolution:**
+- Uses same fallback logic as other endpoints
+- Checks BIBLE_API_KEY → VITE_BIBLE_API_KEY
+
+**CORS Configuration:**
+- Allows all origins for version list requests
+- Supports GET and OPTIONS methods
+
+**Integration:**
+- Called from SearchWell.jsx to populate version dropdown
+- Used to display available translations to users
+
+---
+
+#### **api/bible-search.js** (75 lines)
+**Purpose:** Keyword search across Bible with comprehensive inline comments
+**Endpoint:** `/api/bible-search?bibleId=xxx&query=faith&limit=20`
+**Method:** GET
+
+**Query Parameters:**
+- `bibleId` - Bible version ID to search
+- `query` - Search keyword or phrase (e.g., "faith", "love never fails")
+- `limit` - Maximum results to return (default: 20)
+- `offset` - Pagination offset (optional)
+- `sort` - Sort order: "relevance" or "canonical" (optional)
+
+**Response:**
+- Success: Returns search results array with verse objects containing:
+  - `reference` - Verse reference (e.g., "John 3:16")
+  - `text` - Verse text content
+  - `bookId` - USFM book code
+  - `chapterId` - Full chapter identifier
+- Error: Returns `{ error: 'message', unauthorized: true/false }`
+
+**API Key Resolution:**
+- Standard fallback: BIBLE_API_KEY → VITE_BIBLE_API_KEY
+
+**CORS Configuration:**
+- Allows all origins for search requests
+- Supports GET and OPTIONS methods
+
+**Error Handling:**
+- 401/403 responses flagged for unauthorized access
+- Empty query validation
+- Network error logging
+
+**Integration:**
+- Called from SearchWell.jsx when user performs keyword search
+- Results grouped by chapter in UI
+- Click-to-navigate functionality for each verse
+
+---
+
+#### **api/health.js** (15 lines)
+**Purpose:** Health check endpoint for monitoring
 **Endpoint:** `/api/health`
 **Returns:** Status and timestamp
+
+---
+
+### Entry Point
+
+#### **src/main.jsx** (23 lines)
+**Purpose:** Application entry point with React 18 and PWA registration
+**Functionality:**
+- Initializes React 18 with createRoot API (strict mode enabled)
+- Registers service worker for Progressive Web App (PWA) functionality
+- Mounts root App component to DOM
+- Imports global styles (index.css, Tailwind directives)
+
+**Key Operations:**
+- `ReactDOM.createRoot()` - Creates React 18 root for concurrent features
+- `<React.StrictMode>` - Enables development-time checks and warnings
+- `registerSW()` - Registers service worker from vite-plugin-pwa
+  - Enables offline functionality
+  - Caches assets for faster loading
+  - Provides install prompt for PWA
+
+**Service Worker Benefits:**
+- Offline access to Bible reading and devotionals
+- Faster app loading on repeat visits
+- Background sync for reflections and notes
+- Push notification support (future enhancement)
+
+**Integration:**
+- Renders `<App />` component as root
+- Global styles include Tailwind utilities and custom CSS
+- Service worker generated by Vite plugin during build
 
 ---
 
