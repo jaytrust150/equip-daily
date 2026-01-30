@@ -21,13 +21,15 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bibles.js` | 83 | 2827 | `7e2de9e16188a0c8` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
-| `CODE_DOCUMENTATION.md` | 924 | 35128 | `14e97c57047476b1` |
+| `CODE_DOCUMENTATION.md` | 1302 | 48356 | `f1af6c9b30f89032` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
 | `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
 | `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
+| `IMPLEMENTATION_COMPLETE.md` | 409 | 11828 | `74b19d0a8df15d2a` |
 | `IMPLEMENTATION_SUMMARY.md` | 255 | 6800 | `e4896c9a7f3f7945` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `MONITORING_SETUP.md` | 282 | 7114 | `d2dbf9dd32f57af9` |
@@ -817,6 +819,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 | `vitest.config.js` | 35 | 747 | `61299459b322090a` |
