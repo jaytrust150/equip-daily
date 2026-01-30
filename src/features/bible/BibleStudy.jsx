@@ -1602,7 +1602,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   fontFamily: 'inherit',
                   padding: 0,
                   margin: 0,
-                  textAlign: 'left',
+                  textAlign: 'center',
                   minWidth: '80px',
                   lineHeight: 1
                 }}

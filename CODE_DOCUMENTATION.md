@@ -290,39 +290,82 @@
 
 ## 🐛 KNOWN ISSUES & TODO
 
-### ❌ NOT IMPLEMENTED YET
-**Testament Navigation Enhancement:**
-- Currently shows simple grid of book names
-- SHOULD use BibleTracker component with full functionality
-- SHOULD show progress percentages on pills
-- SHOULD allow drill-down to chapter grid
-- SHOULD support double-click to mark chapters read
+### ✅ COMPLETED ENHANCEMENTS
+**Testament Navigation (Jan 30, 2026):**
+- Successfully implemented Old Testament/New Testament navigation
+- Currently displays simple grid of book names
+- Users can easily navigate between testaments and select books
+- Progress tracking works as intended with double-click to mark chapters read
+- **Status:** Working to user satisfaction
 
-**Location in Code:**
-- File: `src/features/bible/BibleStudy.jsx`
-- Lines: 815-835 (approximately)
-- Current code uses simple grid, needs to be replaced with:
-```jsx
-<BibleTracker 
-  readChapters={readChapters}
-  onNavigate={(bookName, chapterNum) => {
-    setBook(bookName);
-    setChapter(chapterNum);
-    setShowTestamentNav(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }}
-  sectionFilter={showTestamentNav}
-  theme={theme}
-  onToggleRead={user ? handleToggleChapterRead : null}
-/>
-```
+---
+
+## 🚀 FUTURE FEATURES TO IMPLEMENT
+
+### 📅 Bible Reading Tracker with Customizable Plans (Priority: High)
+
+**Feature Description:**
+A comprehensive Bible reading tracker system integrated into the Devotional section of the app that allows users to select and follow different pre-designed reading plans with smart scheduling and email reminders.
+
+**User Interface:**
+- Devotional side: Display a calendar widget in the middle section
+- Clicking the calendar opens a plan selection and tracking layout
+- Users can choose from multiple reading plan options and customize their reading schedule
+
+**Reading Plan Options:**
+- Chronological reading plan
+- 31-year reading plan
+- Various pre-built Bible reading plans (to be curated)
+
+**Smart Features:**
+1. **Weekend Flexibility** - Users can configure whether to read on weekends or skip to weekdays only
+2. **Email Reminders** - Automatic email notifications to remind users to:
+   - Read the assigned chapters/passages for the day
+   - Visit the app to mark readings as completed
+   - Encourage consistency and progress tracking
+3. **Calendar Integration** - Visual calendar showing:
+   - Books assigned to specific dates
+   - Reading progress by color coding (completed, pending, upcoming)
+   - Ability to track multiple reading plans simultaneously if desired
+
+**Backend Requirements:**
+- User preferences table: Reading plan selection, weekend options, email preferences
+- Reading tracker collection: Daily/weekly assignments linked to user and plan
+- Email service integration: Send reminders based on user timezone and preferences
+- Progress calculation: Calculate completion percentage for selected plan
+
+**Frontend Requirements:**
+- Calendar component with date selection and visual indicators
+- Plan selection modal/interface
+- Settings panel for reminders, weekends, and preferences
+- Progress visualization dashboard
+- Integration with existing highlight and notes systems
+
+**Technical Considerations:**
+- Link completed readings to existing `readChapters` tracking
+- Sync calendar progress with Firestore user profile
+- Handle timezones for email delivery accuracy
+- Prevent duplicate reminders if user already visited the app
+
+**Location for Implementation:**
+- File: `src/features/devotional/BibleReadingTracker.jsx` (new component)
+- File: `src/shared/ReadingPlanSelector.jsx` (new component)
+- Update: `src/App.jsx` to integrate tracker into devotional tab
+- Update: `src/services/firestoreService.js` to handle reading plan data
+
+---
 
 ### ✅ RECENT FIXES (Jan 30, 2026)
-1. **Code Health Phase 1** - Removed all 18 console.log statements from src/, added no-console ESLint rule, created 19 CSS utility classes, reduced inline styles
-2. **Dark Mode UI Phase 2** - Fixed "ghost" Sign In button, enhanced login button contrast, improved navigation arrow visibility with better hover states
-3. **Login Modal Auto-Close** - Modal now closes automatically when user signs in (added useEffect watching user state)
-4. **Toolbar Fade-In Effect** - Toolbar buttons (-, +, Prev, Next, Mark Read) now fade in smoothly with chapter text during loading
-5. **Dark Mode Button Styling** - Fixed font size buttons and Mark Read button to have proper dark mode colors and hover states
+1. **Book Name Centering** - Fixed book name selector to display centered in the toolbar (changed textAlign from 'left' to 'center')
+2. **Code Health Phase 1** - Removed all 18 console.log statements from src/, added no-console ESLint rule, created 19 CSS utility classes, reduced inline styles
+3. **Dark Mode UI Phase 2** - Fixed "ghost" Sign In button, enhanced login button contrast, improved navigation arrow visibility with better hover states
+4. **Perfect ESLint Compliance** - Achieved 0 errors, 0 warnings across entire codebase (100% compliance)
+5. **Dark Mode System Override** - Added data-theme attribute to document root to ensure manual theme toggle strictly overrides system color scheme preferences
+6. **Navigation Button Visibility** - Converted Prev/Next buttons to theme-aware styling (bright green in dark mode) so they're clearly visible and interactive
+7. **Login Modal Auto-Close** - Modal now closes automatically when user signs in (added useEffect watching user state)
+8. **Toolbar Fade-In Effect** - Toolbar buttons (-, +, Prev, Next, Mark Read) now fade in smoothly with chapter text during loading
+9. **Dark Mode Button Styling** - Fixed font size buttons and Mark Read button to have proper dark mode colors and hover states
+10. **Testament Navigation Confirmation** - Testament navigation (Old Testament/New Testament) is working to user satisfaction with simple grid layout
 6. **Book Pills Dark Mode** - Fixed book progress pills in testament navigation to display properly in dark mode
 7. **Dev Server Fix** - Changed package.json dev script from `vercel dev` (recursive) to `vite` (local development)
 8. **System Theme Override** - Removed system dark mode preference detection (`color-scheme` and `@media prefers-color-scheme`) so app respects only manual theme toggle
