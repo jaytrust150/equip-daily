@@ -22,7 +22,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 924 | 35128 | `14e97c57047476b1` |
-| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
 | `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
@@ -813,7 +812,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
-| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 
