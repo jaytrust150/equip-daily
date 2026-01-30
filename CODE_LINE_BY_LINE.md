@@ -17,8 +17,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bibles.js` | 54 | 1691 | `1f7ec87231e9a815` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 103 | 3321 | `20dfd92847ec619c` |
-| `CODE_DOCUMENTATION.md` | 439 | 14583 | `432007067575b9e3` |
-| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
+| `CODE_DOCUMENTATION.md` | 442 | 15217 | `54cd18af767227ec` |
 | `DEPLOYMENT.md` | 197 | 5868 | `61027a9af8057bbb` |
 | `eslint.config.js` | 41 | 1021 | `206f78dd9576e49d` |
 | `generate_audio_files.js` | 54 | 1667 | `264ef8438f699578` |
@@ -809,7 +808,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 447 | 18335 | `ed77ca1cf1418564` |
 | `VERCEL_ENV_SETUP.md` | 120 | 3868 | `1b56398464e1fc5c` |
-| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 
