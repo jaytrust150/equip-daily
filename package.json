@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:vite": "vite",
-    "build": "vite build",
+    "build": "npm run docs:code && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "docs:code": "node scripts/generate-code-doc.js",
