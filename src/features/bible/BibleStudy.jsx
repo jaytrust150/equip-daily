@@ -148,6 +148,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     loadUserSettings();
   }, [user]);
 
+  // ✅ CLOSE LOGIN MODAL WHEN USER SIGNS IN
+  useEffect(() => {
+    if (user) {
+      setShowLoginModal(false);
+    }
+  }, [user]);
+
   // AUTO-HIGHLIGHT VERSE FROM SEARCH
   useEffect(() => {
     const verseNum = sessionStorage.getItem('jumpToVerse');
@@ -1556,10 +1563,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 {showNotes ? '📖' : '📝'}
               </button>
               {/* Font Size Controls (shrunk) */}
-              <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '2px', minWidth: '22px', height: '22px' }} className="bg-gray-200 text-black font-bold">-</button>
-              <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '8px', minWidth: '22px', height: '22px' }} className="bg-gray-200 text-black font-bold">+</button>
+              <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '2px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease' }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 text-gray-100 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>-</button>
+              <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '8px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease' }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 text-gray-100 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>+</button>
               {/* Prev Button */}
-              <button onClick={goToPrevChapter} style={{ padding: '5px 10px', fontSize: '1rem', borderRadius: '8px', marginRight: '8px' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">← Prev</button>
+              <button onClick={goToPrevChapter} style={{ padding: '5px 10px', fontSize: '1rem', borderRadius: '8px', marginRight: '8px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">← Prev</button>
               {/* Book Selector (inline, styled as title) */}
               <select
                 value={book}
@@ -1615,13 +1622,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 ))}
               </select>
               {/* Next Button */}
-              <button onClick={goToNextChapter} style={{ padding: '3px 7px', fontSize: '0.82rem', borderRadius: '6px', marginLeft: '6px', minWidth: '38px', height: '26px' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">Next →</button>
+              <button onClick={goToNextChapter} style={{ padding: '3px 7px', fontSize: '0.82rem', borderRadius: '6px', marginLeft: '6px', minWidth: '38px', height: '26px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease' }} className="bg-emerald-600 text-white hover:bg-emerald-700 font-medium">Next →</button>
               {/* Mark as Read Button (tight, full label) - Positioned right of Next button */}
               {user && (
                 <button
                   onClick={() => markChapterAsRead(book, chapter)}
-                  style={{ padding: '2px 5px', fontSize: '0.72rem', borderRadius: '5px', border: '1px solid', display: 'inline-flex', alignItems: 'center', gap: '3px', marginLeft: '4px', minWidth: '60px', height: '24px' }}
-                  className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')}`}
+                  style={{ padding: '2px 5px', fontSize: '0.72rem', borderRadius: '5px', border: '1px solid', display: 'inline-flex', alignItems: 'center', gap: '3px', marginLeft: '4px', minWidth: '60px', height: '24px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease' }}
+                  className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')}`}
                   title={isChapterRead ? "Chapter marked as read" : "Mark chapter as read"}
                 >
                   <span style={{ fontSize: '0.9em' }}>{isChapterRead ? '✓' : '☐'}</span>
