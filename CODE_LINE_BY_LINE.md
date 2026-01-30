@@ -29,7 +29,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1387 | 52308 | `cacc1159448095f1` |
-| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -833,7 +832,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
-| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2237 | `8dcd045771b9e5e8` |
 | `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |
