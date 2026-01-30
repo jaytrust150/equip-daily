@@ -32,7 +32,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `MONITORING_SETUP.md` | 282 | 7114 | `d2dbf9dd32f57af9` |
 | `node generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
-| `package.json` | 36 | 933 | `35617f226c6af041` |
+| `package.json` | 46 | 1269 | `9237bcd75f724356` |
 | `PERSISTENCE_FIX.md` | 136 | 3845 | `fd2669dbd599dd1d` |
 | `PROJECT MANIFESTO.md` | 29 | 1494 | `07939e6b508e7f30` |
 | `public/1.1-devotional.txt` | 35 | 976 | `0be96fffeae79c40` |
@@ -778,6 +778,10 @@ This document provides comprehensive documentation for AI assistants and future 
 | `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SERVERLESS_PROXY_GUIDE.md` | 257 | 7019 | `8939f3957677ed48` |
+| `src/__tests__/hooks/useAudio.test.js` | 196 | 4806 | `3abe82bd68f70c4f` |
+| `src/__tests__/services/firestoreService.test.js` | 285 | 6988 | `1ba1db3244f2300c` |
+| `src/__tests__/setup.js` | 104 | 2344 | `a4c759f56a844ad2` |
+| `src/__tests__/shared/AudioPlayer.test.js` | 172 | 4005 | `f5318dc475cfe7c7` |
 | `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
 | `src/App.jsx` | 581 | 30462 | `3bac36a6c5182702` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
@@ -811,9 +815,11 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/MemberCard.jsx` | 91 | 6968 | `5f678b356b11d6d1` |
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
+| `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
+| `vitest.config.js` | 35 | 747 | `61299459b322090a` |
 
 <!-- AUTO-GENERATED-END -->
 
