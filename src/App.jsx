@@ -48,8 +48,15 @@ function App() {
   const [sleepMinutes, setSleepMinutes] = useState(null); 
   const [sleepTimeLeft, setSleepTimeLeft] = useState(null); 
   
-  // 📺 NEW: YouTube Video State
-  const [youtubeIds, setYoutubeIds] = useState([]);
+  // 📺 NEW: YouTube Video State (derived from devotional)
+  const youtubeIds = useMemo(() => {
+    if (!devotional) return [];
+    const ytRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/g;
+    const matches = Array.from(devotional.matchAll(ytRegex))
+      .map((m) => m[1])
+      .filter(Boolean);
+    return [...new Set(matches)];
+  }, [devotional]);
 
   // --- REFLECTION / EDITING STATE ---
   const [reflection, setReflection] = useState("");
@@ -153,18 +160,6 @@ function App() {
 
   const processedDevotional = useMemo(() => { return processDevotionalText(devotional); }, [devotional]);
 
-  // 📺 NEW: Extract YouTube ID from devotional text whenever it changes
-  useEffect(() => {
-    if (!devotional) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setYoutubeIds([]);
-      return;
-    }
-    const ytRegex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/g;
-    const matches = Array.from(devotional.matchAll(ytRegex)).map((m) => m[1]).filter(Boolean);
-    setYoutubeIds([...new Set(matches)]);
-  }, [devotional]);
-
   const handleDevotionalInteraction = (e) => {
     if (e.target.classList.contains('verse-link')) {
       const verseRef = e.target.innerText;
@@ -188,19 +183,22 @@ function App() {
     }
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (sleepTimeLeft === null) return;
-    if (sleepTimeLeft <= 0) {
-        if (audioRef.current) audioRef.current.pause();
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSleepMinutes(null);
-        setSleepTimeLeft(null);
-        return;
-    }
-    const interval = setInterval(() => { setSleepTimeLeft((prev) => prev - 1); }, 1000);
+    const interval = setInterval(() => {
+      setSleepTimeLeft((prev) => {
+        if (prev === null) return prev;
+        if (prev <= 1) {
+          if (audioRef.current) audioRef.current.pause();
+          setSleepMinutes(null);
+          clearInterval(interval);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [sleepTimeLeft]);
 
   const toggleSleepTimer = () => {
       let newMinutes = null;
@@ -219,8 +217,7 @@ function App() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setAudioError(false);
+    setTimeout(() => setAudioError(false), 0);
     if (showAudio && audioRef.current) {
         audioRef.current.load();
         setTimeout(() => {

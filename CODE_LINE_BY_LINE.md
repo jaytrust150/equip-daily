@@ -18,8 +18,9 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 103 | 3321 | `20dfd92847ec619c` |
 | `CODE_DOCUMENTATION.md` | 442 | 15217 | `54cd18af767227ec` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 197 | 5868 | `61027a9af8057bbb` |
-| `eslint.config.js` | 41 | 1021 | `206f78dd9576e49d` |
+| `eslint.config.js` | 41 | 1048 | `dc3c0a28fdacc4c2` |
 | `generate_audio_files.js` | 54 | 1667 | `264ef8438f699578` |
 | `generate_bible_audio.js` | 68 | 3634 | `2a2a6d405ad6f65c` |
 | `HEALTH_CHECK.md` | 220 | 6294 | `68f2131c2f71d384` |
@@ -778,7 +779,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SERVERLESS_PROXY_GUIDE.md` | 253 | 6962 | `5a5d4fec84e403a5` |
 | `src/App.css` | 164 | 3341 | `6e3d3db11bd744ef` |
-| `src/App.jsx` | 551 | 29418 | `669e126dba847313` |
+| `src/App.jsx` | 548 | 29170 | `6faa0e420ab470f6` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 89 | 2075 | `c3aa6d9b8fe99d5a` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
@@ -794,7 +795,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/features/bible/VerseList.jsx` | 126 | 6367 | `c1f11657b5eaf1cc` |
 | `src/features/devotional/DailyDevotional.jsx` | 104 | 4473 | `51fbdcf9a611b9aa` |
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
-| `src/hooks/useAudio.js` | 34 | 1385 | `ed8ac02ee3ad3d51` |
+| `src/hooks/useAudio.js` | 37 | 1378 | `720b67fc003dfab3` |
 | `src/hooks/useDraggableWindow.js` | 24 | 1267 | `80c0ee013fb63fec` |
 | `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
 | `src/main.jsx` | 11 | 229 | `4b4b864dbe452534` |
@@ -806,8 +807,9 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/Login.jsx` | 260 | 10098 | `affff8f6c8df5139` |
 | `src/shared/MemberCard.jsx` | 22 | 2993 | `d665573458fdfdd1` |
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
-| `src/shared/SearchWell.jsx` | 447 | 18335 | `ed77ca1cf1418564` |
+| `src/shared/SearchWell.jsx` | 447 | 18500 | `f4f1ff2d048612e2` |
 | `VERCEL_ENV_SETUP.md` | 120 | 3868 | `1b56398464e1fc5c` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 

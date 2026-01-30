@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useDraggableWindow } from '../hooks/useDraggableWindow';
 import { DEFAULT_BIBLE_VERSION, OSIS_TO_BOOK, USFM_MAPPING } from '../config/constants';
 import { doc, getDoc } from 'firebase/firestore';
@@ -67,32 +67,8 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     }
   }, [isOpen]);
 
-  // Fetch Bible versions when opened
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 100);
-      fetchBibleVersions();
-    }
-  }, [isOpen]);
-
-  // Handle initial query after version is selected
-  useEffect(() => {
-    if (isOpen && initialQuery && selectedVersion) {
-      setQuery(initialQuery);
-      performSearch(initialQuery);
-    }
-  }, [isOpen, initialQuery, selectedVersion]);
-
-  // Update search when initialQuery changes (for clicking different verse links)
-  useEffect(() => {
-    if (isOpen && initialQuery && selectedVersion && initialQuery !== query) {
-      setQuery(initialQuery);
-      performSearch(initialQuery);
-    }
-  }, [initialQuery]);
-
   // 📖 Fetch available Bible versions from /api/bibles
-  const fetchBibleVersions = async () => {
+  const fetchBibleVersions = useCallback(async () => {
     setVersionsLoading(true);
     try {
       const res = await fetch('/api/bibles');
@@ -134,9 +110,9 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     } finally {
       setVersionsLoading(false);
     }
-  };
+  }, [selectedVersion, user]);
 
-  const performSearch = async (searchTerm) => {
+  const performSearch = useCallback(async (searchTerm) => {
     if (!searchTerm || !selectedVersion) {
       console.log('Search blocked:', { searchTerm, selectedVersion });
       return;
@@ -276,7 +252,31 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
     } finally {
         setLoading(false);
     }
-  };
+  }, [selectedVersion]);
+
+  // Fetch Bible versions when opened
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+      fetchBibleVersions();
+    }
+  }, [isOpen, fetchBibleVersions]);
+
+  // Handle initial query after version is selected
+  useEffect(() => {
+    if (isOpen && initialQuery && selectedVersion) {
+      setQuery(initialQuery);
+      performSearch(initialQuery);
+    }
+  }, [isOpen, initialQuery, selectedVersion, performSearch]);
+
+  // Update search when initialQuery changes (for clicking different verse links)
+  useEffect(() => {
+    if (isOpen && initialQuery && selectedVersion && initialQuery !== query) {
+      setQuery(initialQuery);
+      performSearch(initialQuery);
+    }
+  }, [isOpen, initialQuery, selectedVersion, query, performSearch]);
 
   const handleResultClick = (r) => {
     if (!onJumpToVerse) return;
