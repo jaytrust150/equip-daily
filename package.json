@@ -8,7 +8,9 @@
     "dev:vite": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "docs:code": "node scripts/generate-code-doc.js",
+    "docs:check": "node scripts/generate-code-doc.js --check"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

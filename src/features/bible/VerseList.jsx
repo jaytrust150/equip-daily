@@ -30,7 +30,7 @@ function VerseList({
   };
 
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto', fontSize: `${fontSize}rem`, lineHeight: '1.6', color: isDark ? '#ccc' : '#333' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', fontSize: `${fontSize}rem`, lineHeight: '1.6', color: isDark ? '#ccc' : '#333' }}>
       {verses.map((v) => {
         const isSelected = selectedVerses.includes(v.verse);
         const verseNotes = notes.filter(n => n.verses.includes(v.verse));
@@ -55,7 +55,7 @@ function VerseList({
             </div>
 
             {showEditorHere && (
-              <div style={{ marginTop: '10px', padding: '15px', backgroundColor: isDark ? '#333' : '#f0f4f8', borderRadius: '8px', borderLeft: '4px solid #2196F3' }}>
+              <div style={{ marginTop: '10px', padding: '15px', backgroundColor: isDark ? '#333' : '#f0f4f8', borderRadius: '8px', borderLeft: '4px solid #2196F3', width: '100%', boxSizing: 'border-box' }}>
                   <div style={{ marginBottom: '5px', fontSize: '0.8rem', fontWeight: 'bold', color: '#888' }}>
                       {editingNoteId ? "Editing Note" : "New Note"}
                   </div>
@@ -64,7 +64,7 @@ function VerseList({
                       value={noteText} 
                       onChange={(e) => setNoteText(e.target.value)}
                       placeholder="Type your note here..."
-                      style={{ width: '100%', height: '80px', padding: '10px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit' }}
+                      style={{ width: '100%', minHeight: '120px', padding: '12px', borderRadius: '4px', border: '1px solid #ccc', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical', fontSize: `${fontSize}rem`, lineHeight: '1.6' }}
                   />
                   <div style={{ display: 'flex', gap: '8px', marginTop: '10px', justifyContent: 'flex-end' }}>
                       <button onClick={onSaveNote} style={{ padding: '5px 12px', backgroundColor: '#4caf50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>Save</button>

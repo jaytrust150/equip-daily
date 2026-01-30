@@ -1,0 +1,28 @@
+name: Update Docs
+
+on:
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: write
+
+jobs:
+  update-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Generate documentation
+        run: node scripts/generate-code-doc.js
+      
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add CODE_LINE_BY_LINE.md
+          git commit -m "docs: auto-update code stats" || exit 0
+          git push

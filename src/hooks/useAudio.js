@@ -14,17 +14,19 @@ export function useAudio() {
     setSleepTimeLeft(newMinutes ? newMinutes * 60 : null);
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (sleepTimeLeft === null) return;
     if (sleepTimeLeft <= 0) {
       if (audioRef.current) audioRef.current.pause();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSleepMinutes(null);
       setSleepTimeLeft(null);
       return;
     }
     const interval = setInterval(() => setSleepTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(interval);
-  }, [sleepTimeLeft]);
+  }, []);
 
   const handleTrackLoad = () => { if (audioRef.current?.textTracks?.[0]) audioRef.current.textTracks[0].mode = 'showing'; };
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuthState } from "react-firebase-hooks/auth";
 import confetti from 'canvas-confetti';
 
@@ -995,14 +995,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     e.preventDefault();
   };
 
-  const handleEditorMouseMove = (e) => {
+  const handleEditorMouseMove = useCallback((e) => {
     if (!isEditorDragging) return;
     setEditorPosition({ x: e.clientX - editorDragStart.current.x, y: e.clientY - editorDragStart.current.y });
-  };
+  }, [isEditorDragging]);
 
-  const handleEditorMouseUp = () => {
+  const handleEditorMouseUp = useCallback(() => {
     setIsEditorDragging(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isEditorDragging) {
