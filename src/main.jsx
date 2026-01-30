@@ -5,15 +5,24 @@
  * - React 18 StrictMode for development warnings
  * - Root app component mounting
  * - Global CSS imports
+ * - Error boundary for crash handling
+ * - Monitoring and analytics integration
  */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import ErrorBoundary from './shared/ErrorBoundary.jsx'
+import { initSentry } from './services/monitoring.js'
 
-// Create React root and render App component in StrictMode
+// Initialize Sentry error tracking
+initSentry()
+
+// Create React root and render App component with error boundary and strict mode
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </StrictMode>,
 )

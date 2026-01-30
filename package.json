@@ -13,6 +13,7 @@
     "docs:check": "node scripts/generate-code-doc.js --check"
   },
   "dependencies": {
+    "@sentry/react": "^10.38.0",
     "canvas-confetti": "^1.9.4",
     "firebase": "^12.7.0",
     "react": "^19.2.0",

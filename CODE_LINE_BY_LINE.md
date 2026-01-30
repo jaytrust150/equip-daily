@@ -22,6 +22,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 924 | 35128 | `14e97c57047476b1` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `eslint.config.js` | 42 | 1109 | `2fe8083c7b1a8a14` |
 | `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
@@ -30,8 +31,9 @@ This document provides comprehensive documentation for AI assistants and future 
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
 | `IMPLEMENTATION_SUMMARY.md` | 255 | 6800 | `e4896c9a7f3f7945` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
+| `MONITORING_SETUP.md` | 282 | 7114 | `d2dbf9dd32f57af9` |
 | `node generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
-| `package.json` | 35 | 900 | `1ca488ccbe9329f6` |
+| `package.json` | 36 | 933 | `35617f226c6af041` |
 | `PERSISTENCE_FIX.md` | 136 | 3845 | `fd2669dbd599dd1d` |
 | `PROJECT MANIFESTO.md` | 29 | 1494 | `07939e6b508e7f30` |
 | `public/1.1-devotional.txt` | 35 | 976 | `0be96fffeae79c40` |
@@ -796,11 +798,14 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
 | `src/hooks/useAudio.js` | 127 | 5478 | `fbb53cd11968375d` |
 | `src/hooks/useDraggableWindow.js` | 84 | 3235 | `cf223eb89f79f955` |
+| `src/hooks/useFirebaseAnalytics.js` | 111 | 2628 | `4f42e34b3cee2d57` |
 | `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
-| `src/main.jsx` | 20 | 470 | `64cc53cd11272fd0` |
+| `src/main.jsx` | 29 | 775 | `8e046febbbf0daa3` |
 | `src/services/firestoreService.js` | 305 | 11937 | `c92eb83daaa98a14` |
+| `src/services/monitoring.js` | 142 | 3800 | `4891d123e498b0c5` |
 | `src/shared/AudioPlayer.jsx` | 49 | 3390 | `582fb95262c7592e` |
 | `src/shared/CommunityFeed.jsx` | 136 | 7136 | `f353a71308a0575d` |
+| `src/shared/ErrorBoundary.jsx` | 176 | 4553 | `732671ec919f938b` |
 | `src/shared/HealthStatus.jsx` | 143 | 4703 | `bc1312ec93813477` |
 | `src/shared/LivingBookshelf.jsx` | 90 | 3188 | `70e45d52b821a138` |
 | `src/shared/Login.jsx` | 260 | 10068 | `a7e35327198b0fe7` |
@@ -808,6 +813,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 64 | 1888 | `cca1a6d7ad27a6cb` |
 
