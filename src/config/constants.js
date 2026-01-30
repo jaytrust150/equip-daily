@@ -118,5 +118,5 @@ export const AUDIO_BIBLE_MAP = {
 
 // Helper function to check if a Bible version has audio support
 export const hasAudioSupport = (bibleId) => {
-  return AUDIO_BIBLE_MAP.hasOwnProperty(bibleId);
+  return Object.prototype.hasOwnProperty.call(AUDIO_BIBLE_MAP, bibleId);
 };

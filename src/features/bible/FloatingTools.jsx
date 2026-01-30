@@ -100,7 +100,7 @@ function FloatingTools({
         window.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging]);
+  }, [isDragging, handleMouseMove]);
 
   if (!showNotebook) return null;
 

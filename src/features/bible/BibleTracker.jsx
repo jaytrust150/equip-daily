@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // ✅ FIXED IMPORT: Points to src/data/bibleData.js
 import { bibleData } from '../../data/bibleData';
 
-function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null, theme = 'light', onToggleRead }) {
+function BibleTracker({ readChapters = [], onNavigate, sectionFilter = null, theme = 'light' /* onToggleRead unused for now */ }) {
   
   const [selectedBook, setSelectedBook] = useState(null);
 
