@@ -1393,14 +1393,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                         style={{
                           background: isComplete 
                             ? '#ffd700' 
-                            : `linear-gradient(to right, #b3e5fc ${percent}%, #f5f5f5 ${percent}%)`,
-                          border: isComplete ? '1px solid #e6c200' : '1px solid #ddd',
-                          color: isComplete ? '#555' : '#333',
+                            : theme === 'dark'
+                              ? `linear-gradient(to right, #4b7fa3 ${percent}%, #2a2a2a ${percent}%)`
+                              : `linear-gradient(to right, #b3e5fc ${percent}%, #f5f5f5 ${percent}%)`,
+                          border: isComplete ? '1px solid #e6c200' : (theme === 'dark' ? '1px solid #444' : '1px solid #ddd'),
+                          color: isComplete ? '#555' : (theme === 'dark' ? '#ccc' : '#333'),
                           fontWeight: isComplete ? 'bold' : 'normal',
                           cursor: 'pointer',
                           minWidth: '80px',
                           textAlign: 'center',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                          boxShadow: theme === 'dark' ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.05)'
                         }}
                       >
                         {isComplete ? `🏆 ${bookData.name}` : percent > 0 ? `${bookData.name} ${percent}%` : bookData.name}
