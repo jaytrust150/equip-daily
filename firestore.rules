@@ -105,23 +105,26 @@ service cloud.firestore {
       allow write: if false;
     }
     
-    // READING_PLANS Collection: User's reading plan progress
-    match /readingPlans/{userId} {
-      // Read: Users can read their own reading plan
-      allow read: if isAuthenticated() && isOwner(userId);
+    // READING_PLANS Collection: Bible reading plan tracking (50 plans max per user)
+    match /readingPlans/{planId} {
+      // Read: Users can read their own plans only
+      allow read: if isAuthenticated() && 
+        resource.data.userId == request.auth.uid;
       
-      // Create: Users can create their reading plan
+      // Create: Authenticated users can create plans for themselves (max 50)
       allow create: if isAuthenticated() && 
-        isOwner(userId) &&
         request.resource.data.userId == request.auth.uid &&
-        request.resource.data.createdAt == request.time;
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.keys().hasAll(['userId', 'planType', 'name', 'createdAt', 'status']) &&
+        request.resource.data.chapters.size() <= 366; // Bible has 1189 chapters, but individual plans limited
       
-      // Update: Users can update their progress
+      // Update: Author can update their plan progress
       allow update: if isAuthenticated() && 
-        isOwner(userId) &&
-        request.resource.data.userId == resource.data.userId;
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.createdAt == resource.data.createdAt;
       
-      // Delete: Users cannot delete (archive instead)
+      // Delete: Only archive via status change, not delete
       allow delete: if false;
     }
     

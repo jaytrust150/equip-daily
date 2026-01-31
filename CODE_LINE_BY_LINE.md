@@ -14,6 +14,22 @@ This document provides comprehensive documentation for AI assistants and future 
 
 | File | Lines | Bytes | SHA256 Hash |
 |------|-------|-------|-------------|
+| `.husky/_/applypatch-msg` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/commit-msg` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/h` | 23 | 551 | `70200b200ca709b0` |
+| `.husky/_/husky.sh` | 9 | 160 | `21122903fca7209a` |
+| `.husky/_/post-applypatch` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-checkout` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-commit` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-merge` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-rewrite` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-applypatch` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-auto-gc` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-commit` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-merge-commit` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-push` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-rebase` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/prepare-commit-msg` | 2 | 39 | `34fe496008be71d8` |
 | `.husky/pre-commit` | 5 | 69 | `f0bc40a403f0a7b5` |
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
 | `api/__tests__/bible-audio.test.js` | 84 | 2552 | `aa2c02a21fe32085` |
@@ -30,11 +46,12 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/middleware/rateLimiter.js` | 87 | 2535 | `9d6ac2c5bd440f35` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1387 | 52308 | `cacc1159448095f1` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
 | `eslint.config.js` | 53 | 1755 | `9135b525cbce67ca` |
-| `firestore.rules` | 162 | 6184 | `cbcee2bd4d8f43a6` |
+| `firestore.rules` | 165 | 6558 | `e019bda65244f65a` |
 | `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
 | `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
@@ -788,6 +805,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `public/vite.svg` | 1 | 1497 | `4a748afd443918bb` |
 | `QUICK_DEPLOY.txt` | 130 | 5819 | `530773f99a57dbff` |
 | `QUICK_REFERENCE_FILE_EDITING.md` | 126 | 2753 | `0492978f861b9717` |
+| `READING_PLANS_DESIGN.md` | 361 | 10308 | `e8e033f55f0901b2` |
 | `README.md` | 183 | 5131 | `d0b32feae52f2c4d` |
 | `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
@@ -816,15 +834,18 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/features/bible/ControlBar.jsx` | 114 | 6117 | `41bd2f9f26d946ec` |
 | `src/features/bible/FloatingTools.jsx` | 275 | 8867 | `95e7155dad1e7216` |
 | `src/features/bible/VerseList.jsx` | 126 | 6367 | `c1f11657b5eaf1cc` |
-| `src/features/devotional/DailyDevotional.jsx` | 104 | 4473 | `51fbdcf9a611b9aa` |
+| `src/features/devotional/DailyDevotional.jsx` | 112 | 5092 | `2e8fd3f2799773c0` |
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
+| `src/features/ReadingPlans.jsx` | 374 | 15794 | `2c0e3e60948d6957` |
 | `src/hooks/useAudio.js` | 127 | 5478 | `fbb53cd11968375d` |
 | `src/hooks/useDraggableWindow.js` | 84 | 3235 | `cf223eb89f79f955` |
 | `src/hooks/useFirebaseAnalytics.js` | 111 | 2628 | `4f42e34b3cee2d57` |
+| `src/hooks/useReadingPlans.js` | 131 | 3133 | `65647d4ae9fa2816` |
 | `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
 | `src/main.jsx` | 43 | 1142 | `33de0f5c6e0fbed3` |
 | `src/services/firestoreService.js` | 336 | 12976 | `718cb9f68a4c78a6` |
 | `src/services/monitoring.js` | 193 | 5505 | `2781a3f72e84bcac` |
+| `src/services/readingPlansService.js` | 327 | 8215 | `b57c533b8c18d34e` |
 | `src/shared/AudioPlayer.jsx` | 49 | 3390 | `582fb95262c7592e` |
 | `src/shared/CommunityFeed.jsx` | 139 | 7375 | `36d09a86ca7ef35a` |
 | `src/shared/ErrorBoundary.jsx` | 178 | 4689 | `dcd982dc7e5d46e5` |
@@ -838,6 +859,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2237 | `8dcd045771b9e5e8` |
 | `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |
