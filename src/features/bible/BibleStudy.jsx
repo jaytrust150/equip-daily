@@ -1146,7 +1146,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
     segments.push(start === end ? `${start}` : `${start}-${end}`);
 
-    return `${book} ${chapter}:${segments.join(';')}`;
+    return `${book} ${chapter}:${segments.join(', ')}`;
   };
 
   const handleCancelEditNote = () => {

@@ -31,6 +31,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `.husky/_/pre-rebase` | 2 | 39 | `34fe496008be71d8` |
 | `.husky/_/prepare-commit-msg` | 2 | 39 | `34fe496008be71d8` |
 | `.husky/pre-commit` | 9 | 175 | `bec0e56a0535932c` |
+| `.push.sh` | 6 | 235 | `9c59810d63f2712c` |
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
 | `api/__tests__/bible-audio.test.js` | 84 | 2552 | `aa2c02a21fe32085` |
 | `api/__tests__/bible-chapter.test.js` | 81 | 2532 | `b2296109f7e80406` |
@@ -47,6 +48,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `ARCHITECTURE.md` | 474 | 12549 | `56d611522513a014` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1436 | 54680 | `b7f71d724619aa24` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -55,7 +57,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `generate_audio_files.js` | 55 | 1699 | `0a7de1d7bcb1d42d` |
 | `generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
-| `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
+| `health-check.sh` | 203 | 5857 | `041f9d1934bb85bb` |
 | `IMPLEMENTATION_COMPLETE.md` | 450 | 13845 | `0f524ae71fa8dfbc` |
 | `IMPLEMENTATION_SUMMARY.md` | 279 | 7873 | `ae42491fa797971f` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
@@ -832,11 +834,11 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 85 | 3944 | `8ddbe79233626005` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2510 | 108892 | `5f74d36738cc5a9c` |
+| `src/features/bible/BibleStudy.jsx` | 2510 | 108893 | `f317d99c7062789c` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7652 | `61855a7176bfb6de` |
 | `src/features/bible/BibleVersionPicker.jsx` | 274 | 9422 | `8358ad0843af6698` |
 | `src/features/bible/ControlBar.jsx` | 115 | 6313 | `ade0787332f371e9` |
-| `src/features/bible/FloatingTools.jsx` | 272 | 8924 | `406e3b2b9165cb2a` |
+| `src/features/bible/FloatingTools.jsx` | 296 | 9851 | `f95e8abbed2049a3` |
 | `src/features/bible/VerseList.jsx` | 127 | 6406 | `a5784bf54d07ccbf` |
 | `src/features/devotional/DailyDevotional.jsx` | 102 | 5718 | `1f9599c22e2a6955` |
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
@@ -864,6 +866,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `test-results/.last-run.json` | 10 | 292 | `516abb24dd802ab6` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2241 | `ff6f85bcecad7a85` |
 | `vitest.config.js` | 40 | 867 | `59f266cc5b13cfad` |

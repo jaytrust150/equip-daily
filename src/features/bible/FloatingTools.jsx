@@ -76,7 +76,7 @@ function FloatingTools({
     }
     segments.push(start === end ? `${start}` : `${start}-${end}`);
 
-    return `${book} ${chapter}:${segments.join(';')}`;
+    return `${book} ${chapter}:${segments.join(', ')}`;
   };
 
   // Reset copied state when selection changes
@@ -92,12 +92,29 @@ function FloatingTools({
     e.preventDefault();
   };
 
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      dragStart.current = { x: e.touches[0].clientX - position.x, y: e.touches[0].clientY - position.y };
+      e.preventDefault();
+    }
+  };
+
   const handleMouseMove = React.useCallback((e) => {
     if (!isDragging) return;
     setPosition({ x: e.clientX - dragStart.current.x, y: e.clientY - dragStart.current.y });
   }, [isDragging]);
 
+  const handleTouchMove = React.useCallback((e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    setPosition({ x: e.touches[0].clientX - dragStart.current.x, y: e.touches[0].clientY - dragStart.current.y });
+  }, [isDragging]);
+
   const handleMouseUp = React.useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  const handleTouchEnd = React.useCallback(() => {
     setIsDragging(false);
   }, []);
 
@@ -105,12 +122,16 @@ function FloatingTools({
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
       return () => {
         window.removeEventListener('mousemove', handleMouseMove);
         window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   if (!showNotebook) return null;
 
@@ -129,9 +150,12 @@ function FloatingTools({
         gap: '8px', 
         zIndex: 1000,
         userSelect: 'none',
-        border: theme === 'dark' ? '1px solid #444' : '1px solid #ddd'
+        border: theme === 'dark' ? '1px solid #444' : '1px solid #ddd',
+        cursor: 'grab',
+        touchAction: 'none'
       }}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
       {/* Color Palette Row */}
       <div className="flex-row flex-center gap-6 mb-5">
@@ -224,10 +248,10 @@ function FloatingTools({
               textOverflow: 'ellipsis',
               maxWidth: '200px'
             }}
-            title={isEditingNote ? `Save note on ${getVerseReference()}` : (selectedVerses.length > 0 ? `Open note at ${getVerseReference()}` : 'Select verses to open note')}
+            title={isEditingNote ? `Close note editor` : (selectedVerses.length > 0 ? `Open note at ${getVerseReference()}` : 'Select verses to open note')}
           >
             {isEditingNote
-              ? `💾 Save Note on ${getVerseReference()}`
+              ? `✖️ Close Note`
               : (selectedVerses.length > 0 
                 ? `📖 Open Note at ${getVerseReference()}` 
                 : '📖 Open Note')}
