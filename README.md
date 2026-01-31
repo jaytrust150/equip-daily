@@ -4,6 +4,8 @@
 
 A daily devotional web app with integrated Bible study features, built with React + Vite + Firebase.
 
+**🎯 Vision**: Multi-platform devotional and Bible study experience — currently available as a web app, with iOS and Android apps planned for the future.
+
 ## ✍️ Author
 
 Jonathan Vargas — Sebastian, Florida
@@ -33,11 +35,22 @@ Author of the devotionals and the application.
 - **🔊 Audio Playback** - Listen to chapters with fallback version support
 - **👈👉 Swipe Navigation** - Change chapters with left/right swipes (auto-scrolls to top)
 - **💡 Contextual Tips** - Smart header guidance for Bible and Devotional tabs
+- **🔗 Note Sharing** - Share verses with personal notes (future: collaborative viewing)
 
 ### Community Features
 - 👥 Community reflections per chapter
 - 🍎 Fruit of the Spirit reactions (9 fruits)
 - 📅 Reading Plans (calendar integration)
+
+## 📱 Platform Roadmap
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| Web App  | ✅ Live | Full-featured at equip-daily.vercel.app |
+| iOS App  | 🗓️ Planned | React Native or native Swift |
+| Android App | 🗓️ Planned | React Native or native Kotlin |
+
+All platforms will share the same backend API (Vercel serverless functions + Firebase).
 
 ## 🛠️ Tech Stack
 
@@ -47,6 +60,7 @@ Author of the devotionals and the application.
 - **Bible API**: API.Bible
 - **Styling**: CSS with custom themes
 - **PWA**: vite-plugin-pwa
+- **Backend**: Vercel Serverless Functions
 
 ## 📦 Installation
 

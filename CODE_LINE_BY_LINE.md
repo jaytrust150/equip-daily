@@ -63,6 +63,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `node generate_bible_audio.js` | 69 | 3666 | `baec84fcec1d24a3` |
 | `package.json` | 62 | 1657 | `7d074c94f1bacc39` |
 | `PERSISTENCE_FIX.md` | 136 | 3845 | `fd2669dbd599dd1d` |
+| `PLATFORM_ROADMAP.md` | 127 | 3712 | `23bf8c067b231892` |
 | `playwright.config.js` | 28 | 573 | `9587de4cae02afc1` |
 | `PROJECT MANIFESTO.md` | 29 | 1494 | `07939e6b508e7f30` |
 | `public/1.1-devotional.txt` | 35 | 976 | `0be96fffeae79c40` |
@@ -806,7 +807,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `QUICK_REFERENCE_FILE_EDITING.md` | 126 | 2753 | `0492978f861b9717` |
 | `READING_PLANS_DESIGN.md` | 361 | 10308 | `e8e033f55f0901b2` |
 | `READING_PLANS_FOUNDATION_SUMMARY.md` | 375 | 10592 | `8587c2985e351d7d` |
-| `README.md` | 201 | 6157 | `0c6aa1387c365c11` |
+| `README.md` | 215 | 6820 | `29b1e6879840f209` |
 | `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SECURITY_HARDENING.md` | 230 | 7174 | `880a9efe2ba22e4c` |
