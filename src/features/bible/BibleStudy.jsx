@@ -49,8 +49,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   const [audioVersion, setAudioVersion] = useState(null); // Track which version audio is from
   const [audioVerses, setAudioVerses] = useState([]); // Store fallback version text
   const [readChapters, setReadChapters] = useState([]); // Track read chapters
-  const [showIntroTip, setShowIntroTip] = useState(true);
-  const [introTipFading, setIntroTipFading] = useState(false);
   const [showBibleTracker, setShowBibleTracker] = useState(false); // Show/hide Bible tracker modal
   const [testamentFilter, setTestamentFilter] = useState(null); // 'OT' or 'NT' or null
   const [showTestamentNav, setShowTestamentNav] = useState(null); // 'OT' or 'NT' or null - for compact navigation
@@ -434,14 +432,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     return () => { isMounted = false; };
   }, []);
 
-  useEffect(() => {
-    const fadeTimer = setTimeout(() => setIntroTipFading(true), 7500);
-    const hideTimer = setTimeout(() => setShowIntroTip(false), 8000);
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(hideTimer);
-    };
-  }, []);
 
   // Function to toggle chapter read status
   const markChapterAsRead = async (bookName = book, chapterNum = chapter) => {
@@ -1530,14 +1520,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         </div>
 
         {/* Hint Text Below */}
-        {showIntroTip && (
-          <p
-            className="text-xs text-gray-500 text-center mt-2"
-            style={{ fontStyle: 'italic', opacity: introTipFading ? 0 : 1, transition: 'opacity 0.5s ease' }}
-          >
-            💡 Tip: Swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes
-          </p>
-        )}
       </div>
 
       {/* 📚 BIBLE TRACKER MODAL */}

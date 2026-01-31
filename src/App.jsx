@@ -54,6 +54,8 @@ function App() {
   const audioRef = useRef(null);
   const [sleepMinutes, setSleepMinutes] = useState(null); 
   const [sleepTimeLeft, setSleepTimeLeft] = useState(null); 
+  const [showBibleIntroTip, setShowBibleIntroTip] = useState(false);
+  const [bibleIntroTipFading, setBibleIntroTipFading] = useState(false);
   
   // 📺 NEW: YouTube Video State (derived from devotional)
   const youtubeIds = useMemo(() => {
@@ -266,6 +268,35 @@ function App() {
   }, [dayOffset]);
 
   useEffect(() => {
+    let showTimer;
+    let fadeTimer;
+    let hideTimer;
+
+    if (activeTab !== 'bible') {
+      showTimer = setTimeout(() => {
+        setShowBibleIntroTip(false);
+        setBibleIntroTipFading(false);
+      }, 0);
+      return () => {
+        clearTimeout(showTimer);
+      };
+    }
+
+    showTimer = setTimeout(() => {
+      setShowBibleIntroTip(true);
+      setBibleIntroTipFading(false);
+    }, 0);
+
+    fadeTimer = setTimeout(() => setBibleIntroTipFading(true), 7500);
+    hideTimer = setTimeout(() => setShowBibleIntroTip(false), 8000);
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [activeTab]);
+
+  useEffect(() => {
     if (!db) return;
     const dateKey = `${currentDate.getMonth() + 1}.${currentDate.getDate()}`;
     const q = query(collection(db, "reflections"), where("date", "==", dateKey));
@@ -365,6 +396,24 @@ function App() {
         }
       `}</style>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
+        {showBibleIntroTip && activeTab === 'bible' && (
+          <div style={{ position: 'absolute', top: '0', left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
+            <div
+              style={{
+                fontSize: '0.75rem',
+                color: theme === 'dark' ? '#bbb' : '#666',
+                fontStyle: 'italic',
+                padding: '4px 8px',
+                background: theme === 'dark' ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.85)',
+                borderRadius: '8px',
+                opacity: bibleIntroTipFading ? 0 : 1,
+                transition: 'opacity 0.5s ease'
+              }}
+            >
+              💡 Tip: Swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '8px' }}>
             {activeTab === 'profile' ? (
