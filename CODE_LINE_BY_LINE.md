@@ -828,7 +828,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
 | `src/main.jsx` | 43 | 1142 | `33de0f5c6e0fbed3` |
 | `src/services/firestoreService.js` | 336 | 12976 | `718cb9f68a4c78a6` |
-| `src/services/monitoring.js` | 193 | 5505 | `2781a3f72e84bcac` |
+| `src/services/monitoring.js` | 197 | 5410 | `17c8b952585cfc0e` |
 | `src/services/readingPlansService.js` | 327 | 8215 | `b57c533b8c18d34e` |
 | `src/shared/AudioPlayer.jsx` | 49 | 3390 | `582fb95262c7592e` |
 | `src/shared/CommunityFeed.jsx` | 139 | 7375 | `36d09a86ca7ef35a` |
