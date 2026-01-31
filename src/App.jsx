@@ -54,8 +54,9 @@ function App() {
   const audioRef = useRef(null);
   const [sleepMinutes, setSleepMinutes] = useState(null); 
   const [sleepTimeLeft, setSleepTimeLeft] = useState(null); 
-  const [showBibleIntroTip, setShowBibleIntroTip] = useState(false);
-  const [bibleIntroTipFading, setBibleIntroTipFading] = useState(false);
+  const [showHeaderTip, setShowHeaderTip] = useState(false);
+  const [headerTipFading, setHeaderTipFading] = useState(false);
+  const [headerTipText, setHeaderTipText] = useState('');
   
   // 📺 NEW: YouTube Video State (derived from devotional)
   const youtubeIds = useMemo(() => {
@@ -272,23 +273,29 @@ function App() {
     let fadeTimer;
     let hideTimer;
 
-    if (activeTab !== 'bible') {
+    if (activeTab !== 'bible' && activeTab !== 'devotional') {
       showTimer = setTimeout(() => {
-        setShowBibleIntroTip(false);
-        setBibleIntroTipFading(false);
+        setShowHeaderTip(false);
+        setHeaderTipFading(false);
+        setHeaderTipText('');
       }, 0);
       return () => {
         clearTimeout(showTimer);
       };
     }
 
+    const nextTipText = activeTab === 'bible'
+      ? '💡 Tip: While on the Bible tab, swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes'
+      : '💡 Tip: While on the Daily Devotional, tap 🔊 to listen • Use ← Prior/Next → to navigate days • Tap ✓ Mark as Read when finished';
+
     showTimer = setTimeout(() => {
-      setShowBibleIntroTip(true);
-      setBibleIntroTipFading(false);
+      setHeaderTipText(nextTipText);
+      setShowHeaderTip(true);
+      setHeaderTipFading(false);
     }, 0);
 
-    fadeTimer = setTimeout(() => setBibleIntroTipFading(true), 7500);
-    hideTimer = setTimeout(() => setShowBibleIntroTip(false), 8000);
+    fadeTimer = setTimeout(() => setHeaderTipFading(true), 7500);
+    hideTimer = setTimeout(() => setShowHeaderTip(false), 8000);
     return () => {
       clearTimeout(showTimer);
       clearTimeout(fadeTimer);
@@ -396,7 +403,7 @@ function App() {
         }
       `}</style>
       <header style={{ position: 'relative', textAlign: 'center', paddingTop: '20px' }}>
-        {showBibleIntroTip && activeTab === 'bible' && (
+        {showHeaderTip && (activeTab === 'bible' || activeTab === 'devotional') && (
           <div style={{ position: 'absolute', top: '0', left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
             <div
               style={{
@@ -406,11 +413,11 @@ function App() {
                 padding: '4px 8px',
                 background: theme === 'dark' ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.85)',
                 borderRadius: '8px',
-                opacity: bibleIntroTipFading ? 0 : 1,
+                opacity: headerTipFading ? 0 : 1,
                 transition: 'opacity 0.5s ease'
               }}
             >
-              💡 Tip: Swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes
+              {headerTipText}
             </div>
           </div>
         )}
