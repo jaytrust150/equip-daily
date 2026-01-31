@@ -340,16 +340,42 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         }
       };
       
+      // Helper to get next book/chapter with wraparound
+      const getNextChapterInfo = () => {
+        const bookIndex = bibleData.findIndex(b => b.name === book);
+        const chapterCount = bibleData[bookIndex]?.chapters || 1;
+        if (chapter < chapterCount) {
+          return { book, chapter: chapter + 1 };
+        }
+        if (bookIndex < bibleData.length - 1) {
+          return { book: bibleData[bookIndex + 1].name, chapter: 1 };
+        }
+        // Wrap to Genesis 1
+        return { book: bibleData[0].name, chapter: 1 };
+      };
+      
+      // Helper to get previous book/chapter with wraparound
+      const getPrevChapterInfo = () => {
+        const bookIndex = bibleData.findIndex(b => b.name === book);
+        if (chapter > 1) {
+          return { book, chapter: chapter - 1 };
+        }
+        if (bookIndex > 0) {
+          const prevBook = bibleData[bookIndex - 1];
+          return { book: prevBook.name, chapter: prevBook.chapters };
+        }
+        // Wrap to Revelation last chapter
+        const lastBook = bibleData[bibleData.length - 1];
+        return { book: lastBook.name, chapter: lastBook.chapters };
+      };
+      
       // Preload next chapter
-      const currentChapterCount = bibleData.find(b => b.name === book)?.chapters || 1;
-      if (chapter < currentChapterCount) {
-        preloadChapter(book, chapter + 1);
-      }
+      const nextInfo = getNextChapterInfo();
+      preloadChapter(nextInfo.book, nextInfo.chapter);
       
       // Preload previous chapter
-      if (chapter > 1) {
-        preloadChapter(book, chapter - 1);
-      }
+      const prevInfo = getPrevChapterInfo();
+      preloadChapter(prevInfo.book, prevInfo.chapter);
     }, 800); // Debounce 800ms to avoid hammer API during fast clicking
     
     return () => {
@@ -696,6 +722,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       const prevBook = bibleData[bookIndex - 1];
       setBook(prevBook.name);
       setChapter(prevBook.chapters);
+    } else {
+      // Wrap around: Genesis 1 previous → Revelation last chapter
+      const lastBook = bibleData[bibleData.length - 1];
+      setBook(lastBook.name);
+      setChapter(lastBook.chapters);
     }
   };
 
@@ -709,6 +740,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     if (bookIndex < bibleData.length - 1) {
       const nextBook = bibleData[bookIndex + 1];
       setBook(nextBook.name);
+      setChapter(1);
+    } else {
+      // Wrap around: Revelation last chapter next → Genesis 1
+      const firstBook = bibleData[0];
+      setBook(firstBook.name);
       setChapter(1);
     }
   };
