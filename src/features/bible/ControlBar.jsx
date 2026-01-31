@@ -99,8 +99,9 @@ function ControlBar({
 
       {/* Bottom row: navigation and study tools */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-        {/* Chapter navigation buttons */}
-        <button onClick={onPrev}>← Prev</button><button onClick={onNext}>Next →</button>
+        {/* Chapter navigation buttons - matched sizes */}
+        <button onClick={onPrev} style={{ padding: '6px 12px', minWidth: '75px' }}>← Prev</button>
+        <button onClick={onNext} style={{ padding: '6px 12px', minWidth: '75px' }}>Next →</button>
         {/* Highlight button with current color preview */}
         <button onClick={onHighlightClick} style={{ backgroundColor: activeHighlightColor.code }}>Highlight</button>
         {/* Study mode toggle button */}

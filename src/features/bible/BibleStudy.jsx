@@ -1647,12 +1647,14 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               {/* Font Size Controls (shrunk) */}
               <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '2px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease', color: theme === 'dark' ? '#ffffff' : undefined }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>-</button>
               <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '8px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease', color: theme === 'dark' ? '#ffffff' : undefined }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>+</button>
-              {/* Prev Button */}
+              {/* Prev Button - Matched to Next button size */}
               <button onClick={goToPrevChapter} style={{ 
-                padding: '4px 9px', 
-                fontSize: '0.9rem', 
-                borderRadius: '8px', 
-                marginRight: '8px', 
+                padding: '3px 7px', 
+                fontSize: '0.82rem', 
+                borderRadius: '6px', 
+                marginRight: '6px',
+                minWidth: '38px', 
+                height: '26px', 
                 opacity: loading ? 0.5 : 1, 
                 transition: 'opacity 0.3s ease',
                 backgroundColor: theme === 'dark' ? '#0ea5a4' : '#059669',

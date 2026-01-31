@@ -25,7 +25,11 @@ function App() {
   const [previousTab, setPreviousTab] = useState('devotional');
   const [viewingProfileUid, setViewingProfileUid] = useState(null); 
   
-  const [theme, setTheme] = useState('light');
+  // 🎨 THEME STATE: Manual control with localStorage persistence (defaults to light)
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('app-theme');
+    return savedTheme || 'light';
+  });
 
   // --- 📖 BIBLE STATE ---
   const [bibleBook, setBibleBook] = useState('Genesis');
@@ -72,7 +76,11 @@ function App() {
   const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setTheme(prev => {
+      const newTheme = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('app-theme', newTheme);
+      return newTheme;
+    });
   };
 
   const increaseFont = () => setFontSize(prev => Math.min(prev + 0.1, 2.0));
