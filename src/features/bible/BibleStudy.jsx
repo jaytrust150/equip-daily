@@ -1276,7 +1276,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
           >
             ✝️ New Testament
           </button>
-          {!showSearchWell ? (
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
             <button
               onClick={() => setShowSearchWell(v => !v)}
               style={{ 
@@ -1295,8 +1295,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             >
               🔍
             </button>
-          ) : (
-            <div className="flex gap-2 items-center">
+            {showSearchWell && (
+              <div className="flex gap-2 items-center" style={{ position: 'absolute', left: '100%', top: '50%', transform: 'translateY(-50%)', marginLeft: '8px', zIndex: 5, padding: '4px' }}>
                 <input
                   type="text"
                   name="bibleSearch"
@@ -1352,8 +1352,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               </div>
             )}
             </div>
+          </div>
 
-          {/* Compact Testament Navigation */}
+        {/* Compact Testament Navigation */}
         {showTestamentNav && bibleData && (
           <div
             className="mb-3 p-3 rounded-lg"
