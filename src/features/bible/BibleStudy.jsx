@@ -599,7 +599,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               headers: { 'api-key': apiKey.trim() }
             });
           } else {
-            response = await fetch(`/api/bible-chapter?bibleId=${AUDIO_FALLBACK_VERSION}&chapterId=${bookId}.${chapter}`);
+            response = await fetch(`/api/bible-chapter?bibleId=${AUDIO_FALLBACK_VERSION}&bookId=${bookId}&chapter=${chapter}`);
           }
           
           if (response.ok) {

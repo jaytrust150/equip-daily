@@ -812,7 +812,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 85 | 3944 | `8ddbe79233626005` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2333 | 98654 | `7a9cfa2139a6aa12` |
+| `src/features/bible/BibleStudy.jsx` | 2333 | 98659 | `965b68a38292e08d` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7652 | `61855a7176bfb6de` |
 | `src/features/bible/BibleVersionPicker.jsx` | 273 | 9387 | `32798358073ad634` |
 | `src/features/bible/ControlBar.jsx` | 114 | 6117 | `41bd2f9f26d946ec` |
@@ -839,7 +839,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/Login.jsx` | 260 | 10068 | `a7e35327198b0fe7` |
 | `src/shared/MemberCard.jsx` | 91 | 6968 | `5f678b356b11d6d1` |
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
-| `src/shared/SearchWell.jsx` | 441 | 18167 | `19f8128d851467f0` |
+| `src/shared/SearchWell.jsx` | 441 | 18215 | `2d6c6d9a514acf76` |
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |

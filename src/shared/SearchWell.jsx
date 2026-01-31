@@ -130,12 +130,12 @@ function SearchWell({ theme, isOpen, onClose, initialQuery, onJumpToVerse, user 
         const chapterId = `${bookCode}.${verseRef.chapter}`;
         
         // Try selected version first
-        let res = await fetch(`/api/bible-chapter?bibleId=${selectedVersion}&chapterId=${chapterId}`);
+        let res = await fetch(`/api/bible-chapter?bibleId=${selectedVersion}&bookId=${bookCode}&chapter=${verseRef.chapter}`);
         
         // If 400 error, try fallback to default version (NLT)
         if (!res.ok && res.status === 400 && selectedVersion !== DEFAULT_BIBLE_VERSION) {
           console.warn(`Chapter not found in selected version, trying ${DEFAULT_BIBLE_VERSION}`);
-          res = await fetch(`/api/bible-chapter?bibleId=${DEFAULT_BIBLE_VERSION}&chapterId=${chapterId}`);
+          res = await fetch(`/api/bible-chapter?bibleId=${DEFAULT_BIBLE_VERSION}&bookId=${bookCode}&chapter=${verseRef.chapter}`);
         }
         
         if (!res.ok) {
