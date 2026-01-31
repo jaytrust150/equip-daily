@@ -12,6 +12,7 @@ function FloatingTools({
   onCopyVerses,
   onPasteVerses,
   onDeleteNote,
+  onOpenNote,
   theme = 'light',
   activeColor,
   setActiveHighlightColor,
@@ -19,6 +20,7 @@ function FloatingTools({
 }) {
   const [position, setPosition] = useState(initialPosition || { x: window.innerWidth - 350, y: 100 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isEditingNote, setIsEditingNote] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
 
   // Update position when initialPosition changes and notebook is shown
@@ -172,12 +174,12 @@ function FloatingTools({
         </div>
 
           <button 
-            onClick={onCopyVerses}
+            onClick={versesCopied ? onPasteVerses : onCopyVerses}
             disabled={selectedVerses.length === 0}
             style={{ 
               padding: '6px 10px', 
               fontSize: '0.85rem',
-              background: selectedVerses.length > 0 ? '#4caf50' : '#ccc',
+              background: versesCopied ? '#9c27b0' : (selectedVerses.length > 0 ? '#4caf50' : '#ccc'),
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -188,52 +190,47 @@ function FloatingTools({
               textOverflow: 'ellipsis',
               maxWidth: '200px'
             }}
-            title={selectedVerses.length > 0 ? `Copy ${getVerseReference()}` : 'Select verses to copy'}
+            title={versesCopied ? `Paste ${getVerseReference()}` : (selectedVerses.length > 0 ? `Copy ${getVerseReference()}` : 'Select verses to copy')}
           >
-            {selectedVerses.length > 0 
-              ? `📋 Copy ${getVerseReference()}` 
-              : '📋 Copy Verses'}
+            {versesCopied
+              ? `📋 Paste ${getVerseReference()}`
+              : (selectedVerses.length > 0 
+                ? `📋 Copy ${getVerseReference()}` 
+                : '📋 Copy Verses')}
           </button>
 
           <button 
-            onClick={onPasteVerses}
-            disabled={!versesCopied || selectedVerses.length === 0}
+            onClick={() => {
+              if (!isEditingNote) {
+                setIsEditingNote(true);
+                onOpenNote();
+              } else {
+                setIsEditingNote(false);
+                onSaveNote();
+              }
+            }}
+            disabled={selectedVerses.length === 0}
             style={{ 
               padding: '6px 10px', 
               fontSize: '0.85rem',
-              background: (versesCopied && selectedVerses.length > 0) ? '#9c27b0' : '#ccc',
+              background: isEditingNote ? '#276749' : (selectedVerses.length > 0 ? '#2196f3' : '#ccc'),
               color: 'white',
               border: 'none',
               borderRadius: '6px',
-              cursor: (versesCopied && selectedVerses.length > 0) ? 'pointer' : 'not-allowed',
+              cursor: selectedVerses.length > 0 ? 'pointer' : 'not-allowed',
               fontWeight: 'bold',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               maxWidth: '200px'
             }}
-            title={(versesCopied && selectedVerses.length > 0) ? `Paste reference: ${getVerseReference()}` : 'Copy verses first'}
+            title={isEditingNote ? `Save note on ${getVerseReference()}` : (selectedVerses.length > 0 ? `Open note at ${getVerseReference()}` : 'Select verses to open note')}
           >
-            {(versesCopied && selectedVerses.length > 0)
-              ? '📌 Paste reference of verses'
-              : '📌 Paste Ref'}
-          </button>
-
-          <button 
-            onClick={onSaveNote}
-            disabled={selectedVerses.length === 0}
-            style={{ 
-              padding: '6px 10px', 
-              fontSize: '0.85rem',
-              background: selectedVerses.length > 0 ? '#276749' : '#ccc',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: selectedVerses.length > 0 ? 'pointer' : 'not-allowed',
-              fontWeight: 'bold'
-            }}
-          >
-            💾 Save Note
+            {isEditingNote
+              ? `💾 Save Note on ${getVerseReference()}`
+              : (selectedVerses.length > 0 
+                ? `📖 Open Note at ${getVerseReference()}` 
+                : '📖 Open Note')}
           </button>
 
         <button 
