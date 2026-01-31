@@ -37,7 +37,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/__tests__/bible-search.test.js` | 82 | 2496 | `ba65f526b3fdd03c` |
 | `api/__tests__/bibles.test.js` | 69 | 1916 | `51320157a61a88fb` |
 | `api/__tests__/health.test.js` | 53 | 1518 | `966869133b657201` |
-| `api/__tests__/testUtils.js` | 25 | 602 | `9f1ca98c1888567d` |
+| `api/__tests__/testUtils.js` | 32 | 705 | `5641bb59776269db` |
 | `api/bible-audio.js` | 108 | 3734 | `0c5904be6f0c1b42` |
 | `api/bible-chapter.js` | 128 | 4542 | `6972e0d9780103ec` |
 | `api/bible-search.js` | 118 | 3928 | `59b73082b57cbf77` |
@@ -47,6 +47,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `ARCHITECTURE.md` | 474 | 12549 | `56d611522513a014` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1436 | 54680 | `b7f71d724619aa24` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -65,6 +66,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `package.json` | 62 | 1657 | `7d074c94f1bacc39` |
 | `PERSISTENCE_FIX.md` | 136 | 3845 | `fd2669dbd599dd1d` |
 | `PLATFORM_ROADMAP.md` | 127 | 3712 | `23bf8c067b231892` |
+| `playwright-report/index.html` | 85 | 530364 | `dbadc2bc32ab7f5c` |
 | `playwright.config.js` | 28 | 573 | `9587de4cae02afc1` |
 | `PROJECT MANIFESTO.md` | 29 | 1494 | `07939e6b508e7f30` |
 | `public/1.1-devotional.txt` | 35 | 976 | `0be96fffeae79c40` |
@@ -816,7 +818,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `SERVERLESS_PROXY_GUIDE.md` | 257 | 7019 | `8939f3957677ed48` |
 | `src/__tests__/features/BibleStudy.test.jsx` | 96 | 2480 | `a433a3970d0f1327` |
 | `src/__tests__/hooks/useAudio.test.js` | 193 | 4743 | `ea22b913f62a3786` |
-| `src/__tests__/services/firestoreService.test.js` | 265 | 6542 | `2fe68e9facf73356` |
+| `src/__tests__/services/firestoreService.test.js` | 267 | 6580 | `2b5e1722015c9dbb` |
 | `src/__tests__/setup.js` | 115 | 2628 | `b3ae3a612fea8666` |
 | `src/__tests__/shared/AudioPlayer.test.js` | 172 | 3986 | `3d406c4a049cdff1` |
 | `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
@@ -859,8 +861,10 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/MemberProfile.jsx` | 328 | 15738 | `676f0566a795a7f3` |
 | `src/shared/SearchWell.jsx` | 441 | 18215 | `2d6c6d9a514acf76` |
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
+| `test-results/.last-run.json` | 10 | 292 | `516abb24dd802ab6` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2241 | `ff6f85bcecad7a85` |
 | `vitest.config.js` | 40 | 867 | `59f266cc5b13cfad` |

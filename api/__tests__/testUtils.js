@@ -1,7 +1,14 @@
 import { vi } from 'vitest';
 
-export function createReq({ method = 'GET', query = {} } = {}) {
-  return { method, query };
+export function createReq({ method = 'GET', query = {}, headers = {} } = {}) {
+  return { 
+    method, 
+    query,
+    headers: {
+      'x-forwarded-for': '127.0.0.1',
+      ...headers
+    }
+  };
 }
 
 export function createRes() {
