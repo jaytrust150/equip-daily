@@ -1690,7 +1690,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 className={`font-medium transition border-indigo-600`}
                 title={showNotes ? `Switch to Reading Mode • Background shows current highlighter color • Double click to highlight` : `Switch to Study Mode • Enable multiple verses & adding notes via long press + floating tool bar`}
               >
-                {showNotes ? '� Study Mode' : '📖 Reading Mode'}
+                {showNotes ? '📖 Study Mode' : '📝 Reading Mode'}
               </button>
               {/* Font Size Controls (shrunk) */}
               <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ 
@@ -1989,16 +1989,35 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         ))}
 
                                         {/* READING MODE: Show note pills */}
-                                        {!showNotes && verseNotes.map(note => (
-                                            note.id !== editingNoteId && (
+                                        {!showNotes && verseNotes.map(note => {
+                                            if (note.id === editingNoteId) return null;
+                                            const isExpanded = expandedNotes[note.id];
+                                            const notePillStyle = {
+                                              display: 'inline-block',
+                                              padding: '4px 10px',
+                                              borderRadius: '999px',
+                                              fontSize: '0.75rem',
+                                              fontWeight: 600,
+                                              cursor: 'pointer',
+                                              border: '1px solid',
+                                              transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
+                                              boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+                                              background: isExpanded
+                                                ? (theme === 'dark' ? '#4338ca' : '#2563eb')
+                                                : (theme === 'dark' ? '#1f2937' : '#dbeafe'),
+                                              color: isExpanded
+                                                ? '#ffffff'
+                                                : (theme === 'dark' ? '#e5e7eb' : '#1d4ed8'),
+                                              borderColor: isExpanded
+                                                ? (theme === 'dark' ? '#6366f1' : '#1d4ed8')
+                                                : (theme === 'dark' ? '#374151' : '#bfdbfe')
+                                            };
+
+                                            return (
                                                 <div key={note.id} className="mt-2">
                                                     <button
                                                         onClick={() => setExpandedNotes(prev => ({ ...prev, [note.id]: !prev[note.id] }))}
-                                                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                                                          expandedNotes[note.id] 
-                                                            ? 'bg-indigo-600 text-white' 
-                                                            : (theme === 'dark' ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')
-                                                        }`}
+                                                        style={notePillStyle}
                                                     >
                                                         📌 Note: {book} {chapter}:{note.verses.join(',')}
                                                     </button>
@@ -2035,8 +2054,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                         </div>
                                                     )}
                                                 </div>
-                                            )
-                                        ))}
+                                              );
+                                            })}
                                       </>
                                     )}
                                 </div>
