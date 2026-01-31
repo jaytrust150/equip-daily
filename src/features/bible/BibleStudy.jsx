@@ -1690,7 +1690,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 className={`font-medium transition border-indigo-600`}
                 title={showNotes ? `Switch to Reading Mode • Background shows current highlighter color • Double click to highlight` : `Switch to Study Mode • Enable multiple verses & adding notes via long press + floating tool bar`}
               >
-                {showNotes ? '📖 Study Mode' : '📝 Reading Mode'}
+                {showNotes ? '� Study Mode' : '📖 Reading Mode'}
               </button>
               {/* Font Size Controls (shrunk) */}
               <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ 
@@ -1919,8 +1919,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                         </span>
                                     </div>
 
-                                    {/* Inline Note Editor */}
-                                    {showEditorHere && (
+                                    {/* Inline Note Editor - Only visible in Study Mode */}
+                                    {showEditorHere && showNotes && (
                                       <div
                                         className={`mt-3 p-4 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-blue-50 border-blue-400'}`}
                                         style={{ width: '100%' }}
@@ -2024,32 +2024,65 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
                                                     {/* Note Peek View */}
                                                     {expandedNotes[note.id] && (
-                                                        <div className={`mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}>
-                                                            <div className="flex justify-between items-start mb-2">
-                                                                <p className="text-sm whitespace-pre-wrap flex-1">{note.text}</p>
+                                                        <div style={{
+                                                          marginTop: '8px',
+                                                          padding: '12px',
+                                                          borderRadius: '8px',
+                                                          borderLeft: '4px solid',
+                                                          backgroundColor: theme === 'dark' ? '#374151' : '#fef3c7',
+                                                          borderLeftColor: theme === 'dark' ? '#6366f1' : '#f59e0b'
+                                                        }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                                                                <p style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap', flex: 1, margin: 0, color: theme === 'dark' ? '#f3f4f6' : '#1f2937' }}>{note.text}</p>
                                                                 <button
                                                                     onClick={() => setExpandedNotes(prev => ({ ...prev, [note.id]: false }))}
-                                                                    className="text-gray-500 hover:text-gray-700 ml-2 text-lg leading-none"
+                                                                    style={{
+                                                                      marginLeft: '8px',
+                                                                      fontSize: '1.125rem',
+                                                                      lineHeight: 1,
+                                                                      background: 'none',
+                                                                      border: 'none',
+                                                                      cursor: 'pointer',
+                                                                      color: theme === 'dark' ? '#9ca3af' : '#6b7280',
+                                                                      padding: 0,
+                                                                      transition: 'color 0.2s'
+                                                                    }}
                                                                 >
                                                                     ✕
                                                                 </button>
                                                             </div>
-                                                          <div className="flex flex-wrap items-center gap-3 text-xs mt-2">
+                                                          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.75rem', marginTop: '8px' }}>
                                                             <button
                                                               onClick={() => handleShareVerseNote(note)}
-                                                              className="text-emerald-600 hover:text-emerald-800 font-semibold"
+                                                              style={{
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                color: theme === 'dark' ? '#10b981' : '#059669',
+                                                                fontWeight: 600,
+                                                                cursor: 'pointer',
+                                                                padding: 0,
+                                                                transition: 'color 0.2s'
+                                                              }}
                                                               title="Share verse & note"
                                                             >
                                                               🔗 Share
                                                             </button>
                                                             <button
                                                               onClick={() => handleDeleteNoteById(note.id)}
-                                                              className="text-red-600 hover:text-red-800 font-semibold"
+                                                              style={{
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                color: theme === 'dark' ? '#ef4444' : '#dc2626',
+                                                                fontWeight: 600,
+                                                                cursor: 'pointer',
+                                                                padding: 0,
+                                                                transition: 'color 0.2s'
+                                                              }}
                                                               title="Delete note"
                                                             >
                                                               🗑️
                                                             </button>
-                                                            <span className="text-gray-500 ml-auto">{formatNoteDate(note)}</span>
+                                                            <span style={{ color: theme === 'dark' ? '#9ca3af' : '#6b7280', marginLeft: 'auto', fontSize: '0.75rem' }}>{formatNoteDate(note)}</span>
                                                           </div>
                                                         </div>
                                                     )}
