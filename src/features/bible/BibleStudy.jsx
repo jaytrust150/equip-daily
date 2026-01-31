@@ -1647,10 +1647,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   });
                 }}
                 style={{ 
-                  padding: '5px 10px', 
+                  padding: '4px 10px', 
                   fontSize: '0.85rem', 
                   borderRadius: '8px', 
                   border: '1px solid',
+                  height: '26px',
                   background: activeHighlightColor.code,
                   color: theme === 'dark' ? '#222' : '#fff',
                   fontWeight: 'bold',
@@ -1792,7 +1793,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     background: isChapterRead ? '#16a34a' : (theme === 'dark' ? '#333' : '#f0f0f0'),
                     color: isChapterRead ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
                     border: isChapterRead ? '1px solid #16a34a' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
-                    padding: '2px 5px', 
+                    padding: '3px 6px', 
                     fontSize: '0.72rem', 
                     borderRadius: '5px', 
                     display: 'inline-flex', 
@@ -1800,7 +1801,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     gap: '3px', 
                     marginLeft: '4px', 
                     minWidth: '60px', 
-                    height: '24px', 
+                    height: '26px', 
                     opacity: loading ? 0.5 : 1, 
                     transition: 'all 0.2s ease',
                     fontWeight: 'bold',
