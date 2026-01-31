@@ -285,7 +285,7 @@ function App() {
     }
 
     const nextTipText = activeTab === 'bible'
-      ? '💡 Tip: While on the Bible tab, swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes'
+      ? '💡 Tip: While on the Bible, swipe left/right to change chapters • Double click to highlight • Long-press verses to add notes'
       : '💡 Tip: While on the Daily Devotional, tap 🔊 to listen and read along';
 
     showTimer = setTimeout(() => {
