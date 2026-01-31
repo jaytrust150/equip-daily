@@ -820,7 +820,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
 | `src/__tests__/shared/SearchWell.test.jsx` | 61 | 1379 | `02e6feb262cfa719` |
 | `src/App.css` | 223 | 5048 | `e69656b2921b9b1c` |
-| `src/App.jsx` | 693 | 35716 | `2e5257a79ac461f7` |
+| `src/App.jsx` | 693 | 35752 | `1db4c02ed08a2d14` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 103 | 2492 | `a6226d017bb76830` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
