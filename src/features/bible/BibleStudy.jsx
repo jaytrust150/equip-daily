@@ -1690,7 +1690,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 className={`font-medium transition border-indigo-600`}
                 title={showNotes ? `Switch to Reading Mode • Background shows current highlighter color • Double click to highlight` : `Switch to Study Mode • Enable multiple verses & adding notes via long press + floating tool bar`}
               >
-                {showNotes ? '� Study Mode' : '📖 Reading Mode'}
+                {showNotes ? '✏️ Study Mode' : '📖 Reading Mode'}
               </button>
               {/* Font Size Controls (shrunk) */}
               <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ 
@@ -1939,8 +1939,36 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                             />
                                             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                                               <div className="flex flex-wrap gap-2 ml-auto">
-                                                <button onClick={() => handleCopyFromEditor()} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: versesCopied ? '#9c27b0' : (theme === 'dark' ? '#333' : '#f0f0f0'), color: 'white', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>{versesCopied ? '📋 Paste' : '📋 Copy'}</button>
-                                                <button onClick={handlePasteVerses} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>📌 Paste</button>
+                                                <button 
+                                                  onClick={() => {
+                                                    if (versesCopied) {
+                                                      handlePasteVerses();
+                                                    } else {
+                                                      handleCopyFromEditor();
+                                                    }
+                                                  }}
+                                                  disabled={selectedVerses.length === 0 && !versesCopied}
+                                                  style={{ 
+                                                    padding: '6px 12px', 
+                                                    fontSize: '12px', 
+                                                    fontWeight: '500', 
+                                                    background: versesCopied ? '#9c27b0' : (selectedVerses.length > 0 ? '#4caf50' : '#ccc'),
+                                                    color: 'white', 
+                                                    border: 'none', 
+                                                    borderRadius: '8px', 
+                                                    cursor: (selectedVerses.length > 0 || versesCopied) ? 'pointer' : 'not-allowed',
+                                                    transition: '0.2s', 
+                                                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                                    opacity: (selectedVerses.length > 0 || versesCopied) ? 1 : 0.6
+                                                  }}
+                                                  title={versesCopied ? `Paste ${selectedVerses.length > 0 ? formatVerseReference(selectedVerses) : 'verses'}` : (selectedVerses.length > 0 ? `Copy ${formatVerseReference(selectedVerses)}` : 'Select verses to copy')}
+                                                >
+                                                  {versesCopied 
+                                                    ? `📋 Paste ${selectedVerses.length > 0 ? formatVerseReference(selectedVerses) : 'verses'}`
+                                                    : (selectedVerses.length > 0 
+                                                      ? `📋 Copy ${formatVerseReference(selectedVerses)}`
+                                                      : '📋 Copy Verses')}
+                                                </button>
                                                 <button onClick={handleSaveNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>💾 Save</button>
                                                 {editingNoteId && <button onClick={handleDeleteNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>🗑️ Delete</button>}
                                                 <button onClick={handleCancelEditNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Cancel</button>
@@ -1957,32 +1985,63 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                             note.id !== editingNoteId && (
                                                 <div 
                                                   key={note.id} 
-                                                  className={`mt-2 p-3 rounded-lg border-l-4 ${theme === 'dark' ? 'bg-gray-800 border-indigo-500' : 'bg-yellow-50 border-yellow-400'}`}
-                                                    style={{ fontSize: '0.9rem' }}
+                                                  style={{
+                                                    marginTop: '8px',
+                                                    padding: '12px',
+                                                    borderRadius: '8px',
+                                                    borderLeft: '4px solid',
+                                                    backgroundColor: theme === 'dark' ? '#374151' : '#fef3c7',
+                                                    borderLeftColor: theme === 'dark' ? '#6366f1' : '#f59e0b',
+                                                    fontSize: '0.9rem'
+                                                  }}
                                                 >
-                                                    <p className="text-sm mb-1 whitespace-pre-wrap">{note.text}</p>
-                                                  <div className="flex flex-wrap items-center gap-3 text-xs mt-2">
+                                                    <p style={{ fontSize: '0.875rem', marginBottom: '8px', marginTop: 0, whiteSpace: 'pre-wrap', color: theme === 'dark' ? '#f3f4f6' : '#1f2937' }}>{note.text}</p>
+                                                  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', fontSize: '0.75rem', marginTop: '8px' }}>
                                                     <button 
                                                       onClick={() => handleEditNote(note)}
-                                                      className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                                                      style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: theme === 'dark' ? '#818cf8' : '#4f46e5',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        padding: 0,
+                                                        transition: 'color 0.2s'
+                                                      }}
                                                     >
                                                       Edit
                                                     </button>
                                                     <button
                                                       onClick={() => handleDeleteNoteById(note.id)}
-                                                      className="text-red-600 hover:text-red-800 font-semibold"
+                                                      style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: theme === 'dark' ? '#ef4444' : '#dc2626',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        padding: 0,
+                                                        transition: 'color 0.2s'
+                                                      }}
                                                       title="Delete note"
                                                     >
                                                       🗑️
                                                     </button>
                                                     <button
                                                       onClick={() => handleShareVerseNote(note)}
-                                                      className="text-emerald-600 hover:text-emerald-800 font-semibold"
+                                                      style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: theme === 'dark' ? '#10b981' : '#059669',
+                                                        fontWeight: 600,
+                                                        cursor: 'pointer',
+                                                        padding: 0,
+                                                        transition: 'color 0.2s'
+                                                      }}
                                                       title="Share verse & note"
                                                     >
                                                       🔗 Share
                                                     </button>
-                                                    <span className="text-gray-500 ml-auto">{formatNoteDate(note)}</span>
+                                                    <span style={{ color: theme === 'dark' ? '#9ca3af' : '#6b7280', marginLeft: 'auto', fontSize: '0.75rem' }}>{formatNoteDate(note)}</span>
                                                   </div>
                                                 </div>
                                             )
