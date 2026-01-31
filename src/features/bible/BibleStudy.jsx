@@ -72,6 +72,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   // ✅ FEEDBACK STATES
   // eslint-disable-next-line no-unused-vars
   const [copyFeedback, setCopyFeedback] = useState("");
+  // eslint-disable-next-line no-unused-vars
   const [noteFeedback, setNoteFeedback] = useState({}); 
   const [versesCopied, setVersesCopied] = useState(false); // Track if verses are copied
 
@@ -2187,43 +2188,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         </div>
 
         {/* RIGHT: Notes & Tools */}
-        {showNotes && !longPressVerse && (
-        <div className="space-y-4">
-            
-            {/* Note Editor */}
-            <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    ✏️ Note Editor
-                </h3>
-                
-                {!user ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-gray-500 mb-3">Sign in to add notes to your selected verses.</p>
-                    <Login theme={theme} />
-                  </div>
-                ) : (
-                  <>
-                    <textarea
-                      name="noteEditor"
-                        value={currentNoteText}
-                        onChange={(e) => setCurrentNoteText(e.target.value)}
-                        placeholder="Type a note for this verse..."
-                        className={`w-full p-3 rounded-lg border h-32 mb-2 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}
-                    />
-                    <button 
-                        onClick={handleSaveNote}
-                        disabled={!currentNoteText.trim()}
-                        style={{ width: '100%', padding: '8px 12px', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: !currentNoteText.trim() ? 'not-allowed' : 'pointer', fontWeight: '500', transition: '0.2s', opacity: !currentNoteText.trim() ? 0.5 : 1 }}
-                    >
-                        Save Note
-                    </button>
-                    {noteFeedback.msg && <p className="text-green-500 text-sm mt-2 text-center">{noteFeedback.msg}</p>}
-                  </>
-                )}
-            </div>
-
-        </div>
-        )}
         </div>
       </div>
 
