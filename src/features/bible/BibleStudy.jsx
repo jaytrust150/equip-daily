@@ -1330,7 +1330,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     fontSize: '0.85rem', 
                     borderRadius: '10px', 
                     border: '1px solid #ccc', 
-                    width: '200px',
+                    width: '160px',
+                    maxWidth: '160px',
                     background: theme === 'dark' ? '#333' : '#f5f5f5',
                     color: theme === 'dark' ? '#fff' : '#333'
                   }}
