@@ -1605,7 +1605,15 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             {(COLOR_PALETTE || []).map((color) => (
               <button
                   key={color.name}
-                  onClick={() => setActiveHighlightColor(color)}
+                  onClick={() => {
+                    setActiveHighlightColor(color);
+                    // Apply highlight to all selected verses
+                    if (selectedVerses.length > 0) {
+                      selectedVerses.forEach(verseNum => {
+                        handleVerseHighlight(verseNum);
+                      });
+                    }
+                  }}
                   className={`w-8 h-8 rounded-full border-2 transition-transform hover:scale-110 ${activeHighlightColor.name === color.name ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                   style={{ backgroundColor: color.code, borderColor: color.border }}
                   title={color.name}
