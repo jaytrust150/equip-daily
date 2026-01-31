@@ -1246,15 +1246,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 setTestamentDrillBook(null);
               }}
               style={{ 
+                background: showTestamentNav === 'OT' ? '#6366f1' : (theme === 'dark' ? '#333' : '#f0f0f0'),
+                color: showTestamentNav === 'OT' ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
+                border: showTestamentNav === 'OT' ? '1px solid #6366f1' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
                 padding: '6px 14px', 
                 fontSize: '0.85rem', 
-                borderRadius: '10px'
+                borderRadius: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                transition: 'all 0.2s ease'
               }}
-              className={`font-medium transition shadow-sm ${
-                showTestamentNav === 'OT'
-                  ? 'bg-indigo-600 text-white border-indigo-600' 
-                  : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
-              }`}
               title="Browse Old Testament"
             >
               📖 Old Testament
@@ -1265,15 +1267,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 setTestamentDrillBook(null);
               }}
               style={{ 
+                background: showTestamentNav === 'NT' ? '#6366f1' : (theme === 'dark' ? '#333' : '#f0f0f0'),
+                color: showTestamentNav === 'NT' ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
+                border: showTestamentNav === 'NT' ? '1px solid #6366f1' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
                 padding: '6px 14px', 
                 fontSize: '0.85rem', 
-                borderRadius: '10px'
+                borderRadius: '10px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                transition: 'all 0.2s ease'
               }}
-              className={`font-medium transition shadow-sm ${
-                showTestamentNav === 'NT'
-                  ? 'bg-indigo-600 text-white border-indigo-600' 
-                  : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
-              }`}
               title="Browse New Testament"
             >
               ✝️ New Testament
@@ -1286,13 +1290,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               <button
                 onClick={() => setShowSearchWell(v => !v)}
                 style={{ 
+                  background: theme === 'dark' ? '#333' : '#f0f0f0',
+                  color: theme === 'dark' ? '#fff' : '#333',
+                  border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
                   padding: '6px 14px', 
                   fontSize: '0.85rem', 
-                  borderRadius: '10px'
+                  borderRadius: '10px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                  transition: 'all 0.2s ease'
                 }}
-                className={`font-medium transition shadow-sm ${
-                  theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
                 title="Search"
               >
                 🔍
@@ -1654,8 +1662,38 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 {showNotes ? '📖' : '📝'}
               </button>
               {/* Font Size Controls (shrunk) */}
-              <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '2px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease', color: theme === 'dark' ? '#ffffff' : undefined }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>-</button>
-              <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '8px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease', color: theme === 'dark' ? '#ffffff' : undefined }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>+</button>
+              <button onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))} style={{ 
+                background: theme === 'dark' ? '#333' : '#f0f0f0',
+                color: theme === 'dark' ? '#fff' : '#333',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
+                padding: '2px 6px', 
+                fontSize: '0.85rem', 
+                borderRadius: '6px', 
+                marginRight: '2px', 
+                minWidth: '22px', 
+                height: '22px', 
+                opacity: loading ? 0.5 : 1, 
+                transition: 'opacity 0.3s ease',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+              }}>-</button>
+              <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ 
+                background: theme === 'dark' ? '#333' : '#f0f0f0',
+                color: theme === 'dark' ? '#fff' : '#333',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
+                padding: '2px 6px', 
+                fontSize: '0.85rem', 
+                borderRadius: '6px', 
+                marginRight: '8px', 
+                minWidth: '22px', 
+                height: '22px', 
+                opacity: loading ? 0.5 : 1, 
+                transition: 'opacity 0.3s ease',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+              }}>+</button>
               {/* Prev Button - Matched to Next button size */}
               <button onClick={goToPrevChapter} style={{ 
                 padding: '3px 7px', 
@@ -1751,10 +1789,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 <button
                   onClick={() => markChapterAsRead(book, chapter)}
                   style={{ 
+                    background: isChapterRead ? '#16a34a' : (theme === 'dark' ? '#333' : '#f0f0f0'),
+                    color: isChapterRead ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
+                    border: isChapterRead ? '1px solid #16a34a' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
                     padding: '2px 5px', 
                     fontSize: '0.72rem', 
                     borderRadius: '5px', 
-                    border: '1px solid', 
                     display: 'inline-flex', 
                     alignItems: 'center', 
                     gap: '3px', 
@@ -1762,10 +1802,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     minWidth: '60px', 
                     height: '24px', 
                     opacity: loading ? 0.5 : 1, 
-                    transition: 'opacity 0.3s ease',
-                    color: theme === 'dark' && !isChapterRead ? '#ffffff' : undefined
+                    transition: 'all 0.2s ease',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
                   }}
-                  className={`font-medium transition ${isChapterRead ? 'bg-green-600 text-white border-green-600' : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')}`}
                   title={isChapterRead ? "Chapter marked as read" : "Mark chapter as read"}
                 >
                   <span style={{ fontSize: '0.9em' }}>{isChapterRead ? '✓' : '☐'}</span>
