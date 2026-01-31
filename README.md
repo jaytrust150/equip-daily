@@ -12,14 +12,32 @@ Author of the devotionals and the application.
 
 ## 🚀 Features
 
-- 📖 Daily devotional readings
+### Core Features
+- 📖 Daily devotional readings (365 days)
 - 📚 Integrated Bible study with multiple translations
 - 🔍 Bible search functionality
 - ✏️ Personal notes and highlights
-- 🎨 Color-coded highlighting system
+- 🎨 6-color highlighting system
 - 🔐 User authentication with Firebase
 - 📱 Progressive Web App (PWA) support
 - 🌙 Dark mode support
+
+### Bible Study Features
+- **📖 Reading Mode** - Passive reading with note pills, perfect for meditation
+- **📝 Study Mode** - Active annotation with verse selection and inline note editor
+- **🎨 Color Palette** - Instant multi-verse highlighting (yellow, blue, green, pink, orange, purple)
+- **📋 Copy/Paste** - Clipboard integration for flexible note composition
+- **👆 Long Press** - Quick note entry on selected verses (Study Mode)
+- **✅ Verse Selection** - Multi-select verses with checkmarks
+- **📍 Chapter Tracking** - Mark chapters as read with progress visualization
+- **🔊 Audio Playback** - Listen to chapters with fallback version support
+- **👈👉 Swipe Navigation** - Change chapters with left/right swipes (auto-scrolls to top)
+- **💡 Contextual Tips** - Smart header guidance for Bible and Devotional tabs
+
+### Community Features
+- 👥 Community reflections per chapter
+- 🍎 Fruit of the Spirit reactions (9 fruits)
+- 📅 Reading Plans (calendar integration)
 
 ## 🛠️ Tech Stack
 
