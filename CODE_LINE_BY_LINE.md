@@ -14,22 +14,6 @@ This document provides comprehensive documentation for AI assistants and future 
 
 | File | Lines | Bytes | SHA256 Hash |
 |------|-------|-------|-------------|
-| `.husky/_/applypatch-msg` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/commit-msg` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/h` | 23 | 551 | `70200b200ca709b0` |
-| `.husky/_/husky.sh` | 9 | 160 | `21122903fca7209a` |
-| `.husky/_/post-applypatch` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-checkout` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-commit` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-merge` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-rewrite` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-applypatch` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-auto-gc` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-commit` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-merge-commit` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-push` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-rebase` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/prepare-commit-msg` | 2 | 39 | `34fe496008be71d8` |
 | `.husky/pre-commit` | 9 | 175 | `bec0e56a0535932c` |
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
 | `api/__tests__/bible-audio.test.js` | 84 | 2552 | `aa2c02a21fe32085` |
@@ -46,7 +30,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/middleware/rateLimiter.js` | 87 | 2535 | `9d6ac2c5bd440f35` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1421 | 53623 | `32e0602f7e434b9b` |
-| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -860,7 +843,6 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
-| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2241 | `ff6f85bcecad7a85` |
 | `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |
