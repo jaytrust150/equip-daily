@@ -6,11 +6,17 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: write
+
 jobs:
   verify-docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -20,9 +26,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 🔥 CRITICAL: Check docs before linting
-      - name: Verify documentation is up-to-date
-        run: npm run docs:check
+      # 🔥 Keep docs in sync
+      - name: Generate documentation
+        run: npm run docs:code
+
+      - name: Verify documentation is up-to-date (PRs)
+        if: github.event_name == 'pull_request'
+        run: git diff --exit-code CODE_LINE_BY_LINE.md
+
+      - name: Auto-commit docs (push)
+        if: github.event_name == 'push'
+        run: |
+          if ! git diff --quiet CODE_LINE_BY_LINE.md; then
+            git config --local user.email "action@github.com"
+            git config --local user.name "GitHub Action"
+            git add CODE_LINE_BY_LINE.md
+            git commit -m "docs: auto-update code stats" || exit 0
+            git push
+          fi
 
   lint-and-build:
     runs-on: ubuntu-latest
