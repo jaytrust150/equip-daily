@@ -107,6 +107,18 @@ header h1 {
   border-radius: 8px; /* */
   cursor: pointer; /* */
 }
+
+@media (max-width: 640px) {
+  .bible-nav-row {
+    justify-content: center !important;
+  }
+
+  .bible-nav-title {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+}
 /* --- BIBLE APP STYLES --- */
 
 /* The Verse Box */

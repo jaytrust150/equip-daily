@@ -1618,7 +1618,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               </div>
             )}
             
-            <div className="flex items-center mb-4" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: '8px', rowGap: '8px' }}>
+            <div className="flex items-center mb-4 bible-nav-row" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: '8px', rowGap: '8px' }}>
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
                 onClick={(e) => {
@@ -1709,62 +1709,63 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 cursor: 'pointer',
                 boxShadow: theme === 'dark' ? '0 2px 6px rgba(14, 165, 164, 0.25)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>← Prev</button>
-              {/* Book Selector (inline, styled as title) */}
-              <select
-                name="bookSelectHeader"
-                value={book}
-                onChange={(e) => { setBook(e.target.value); setChapter(1); }}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  fontWeight: 'bold',
-                  fontSize: '2rem',
-                  color: theme === 'dark' ? '#f0f0f0' : '#2c3e50',
-                  cursor: 'pointer',
-                  appearance: 'none',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  padding: 0,
-                  margin: 0,
-                  textAlign: 'center',
-                  minWidth: '80px',
-                  lineHeight: 1
-                }}
-                className="focus:ring-0 focus:outline-none"
-                aria-label="Select book"
-              >
-                {bibleData && bibleData.map(bookData => (
-                  <option key={bookData.name} value={bookData.name} style={{color: '#333', fontSize: '1.1rem'}}>{bookData.name}</option>
-                ))}
-              </select>
-              {/* Chapter Selector (inline, styled as title) */}
-              <select
-                name="chapterSelectHeader"
-                value={chapter}
-                onChange={(e) => setChapter(Number(e.target.value))}
-                style={{
-                  border: 'none',
-                  background: 'transparent',
-                  fontWeight: 'bold',
-                  fontSize: '2rem',
-                  color: theme === 'dark' ? '#f0f0f0' : '#2c3e50',
-                  cursor: 'pointer',
-                  appearance: 'none',
-                  outline: 'none',
-                  fontFamily: 'inherit',
-                  padding: 0,
-                  margin: 0,
-                  width: chapter > 99 ? '45px' : (chapter > 9 ? '35px' : '25px'),
-                  textAlign: 'center',
-                  lineHeight: 1
-                }}
-                className="focus:ring-0 focus:outline-none"
-                aria-label="Select chapter"
-              >
-                {bibleData && bibleData.find(b => b.name === book) && [...Array(bibleData.find(b => b.name === book).chapters).keys()].map(i => (
-                  <option key={i+1} value={i+1} style={{color: '#333', fontSize: '1.1rem'}}>{i+1}</option>
-                ))}
-              </select>
+              {/* Book & Chapter Title */}
+              <div className="bible-nav-title" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <select
+                  name="bookSelectHeader"
+                  value={book}
+                  onChange={(e) => { setBook(e.target.value); setChapter(1); }}
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    fontWeight: 'bold',
+                    fontSize: '2rem',
+                    color: theme === 'dark' ? '#f0f0f0' : '#2c3e50',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                    padding: 0,
+                    margin: 0,
+                    textAlign: 'center',
+                    minWidth: '80px',
+                    lineHeight: 1
+                  }}
+                  className="focus:ring-0 focus:outline-none"
+                  aria-label="Select book"
+                >
+                  {bibleData && bibleData.map(bookData => (
+                    <option key={bookData.name} value={bookData.name} style={{color: '#333', fontSize: '1.1rem'}}>{bookData.name}</option>
+                  ))}
+                </select>
+                <select
+                  name="chapterSelectHeader"
+                  value={chapter}
+                  onChange={(e) => setChapter(Number(e.target.value))}
+                  style={{
+                    border: 'none',
+                    background: 'transparent',
+                    fontWeight: 'bold',
+                    fontSize: '2rem',
+                    color: theme === 'dark' ? '#f0f0f0' : '#2c3e50',
+                    cursor: 'pointer',
+                    appearance: 'none',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                    padding: 0,
+                    margin: 0,
+                    width: chapter > 99 ? '45px' : (chapter > 9 ? '35px' : '25px'),
+                    textAlign: 'center',
+                    lineHeight: 1
+                  }}
+                  className="focus:ring-0 focus:outline-none"
+                  aria-label="Select chapter"
+                >
+                  {bibleData && bibleData.find(b => b.name === book) && [...Array(bibleData.find(b => b.name === book).chapters).keys()].map(i => (
+                    <option key={i+1} value={i+1} style={{color: '#333', fontSize: '1.1rem'}}>{i+1}</option>
+                  ))}
+                </select>
+              </div>
               {/* Next Button */}
               <button onClick={goToNextChapter} style={{ 
                 padding: '3px 7px', 
