@@ -1668,7 +1668,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   transition: 'background 0.2s, color 0.2s',
                 }}
                 className={`font-medium transition border-indigo-600`}
-                title={showNotes ? `Switch to Reading Mode • Background shows current highlighter color` : `Switch to Study Mode • Enable multiple verses & adding notes via long press + floating tool bar`}
+                title={showNotes ? `Switch to Reading Mode • Background shows current highlighter color • Double click to highlight` : `Switch to Study Mode • Enable multiple verses & adding notes via long press + floating tool bar`}
               >
                 {showNotes ? '📖 Study Mode' : '📝 Reading Mode'}
               </button>
