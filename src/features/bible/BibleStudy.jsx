@@ -1207,6 +1207,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         <div className="flex gap-1 mb-3 justify-center items-center flex-nowrap">
           {/* Bible Version Picker (tiny, functional dropdown) */}
           <select
+            name="bibleVersionTop"
             value={version}
             onChange={e => setVersion(e.target.value)}
             style={{
@@ -1292,6 +1293,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             <div className="flex gap-2 items-center">
               <input
                 type="text"
+                name="bibleSearch"
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
                 onKeyDown={e => {
@@ -1662,6 +1664,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               }}>← Prev</button>
               {/* Book Selector (inline, styled as title) */}
               <select
+                name="bookSelectHeader"
                 value={book}
                 onChange={(e) => { setBook(e.target.value); setChapter(1); }}
                 style={{
@@ -1689,6 +1692,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               </select>
               {/* Chapter Selector (inline, styled as title) */}
               <select
+                name="chapterSelectHeader"
                 value={chapter}
                 onChange={(e) => setChapter(Number(e.target.value))}
                 style={{
@@ -1846,6 +1850,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                           {editingNoteId ? `Editing Note on ${getNoteReferenceLabel(verse.number)}` : `Note on ${getNoteReferenceLabel(verse.number)}`}
                                             </div>
                                             <textarea
+                                              name="inlineNote"
                                                 ref={noteEditorRef}
                                                 value={currentNoteText}
                                                 onChange={(e) => setCurrentNoteText(e.target.value)}
@@ -2009,6 +2014,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 ) : (
                   <>
                     <textarea
+                      name="personalNote"
                         value={currentNoteText}
                         onChange={(e) => setCurrentNoteText(e.target.value)}
                         placeholder="Type a reflection here..."
@@ -2060,6 +2066,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       <div className="max-w-4xl mx-auto flex justify-center gap-3 mt-8 mb-10 flex-wrap items-center">
         {/* Bible Version Selector - Small and Compact */}
         <select
+          name="bibleVersionBottom"
           value={version}
           onChange={e => setVersion(e.target.value)}
           style={{
@@ -2085,6 +2092,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
         {/* Book and Chapter Selectors */}
         <select 
+          name="bookSelectBottom"
           value={book} 
           onChange={(e) => { setBook(e.target.value); setChapter(1); }}
           style={{ 
@@ -2108,6 +2116,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         </select>
 
         <select 
+          name="chapterSelectBottom"
           value={chapter} 
           onChange={(e) => setChapter(Number(e.target.value))}
           style={{ 

@@ -94,6 +94,7 @@ function VerseList({
                       {editingNoteId ? "Editing Note" : "New Note"}
                   </div>
                   <textarea 
+                      name="verseNote"
                       ref={editorRef}
                       value={noteText} 
                       onChange={(e) => setNoteText(e.target.value)}

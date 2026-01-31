@@ -79,12 +79,12 @@ function ControlBar({
         </button>
 
         {/* Book selector dropdown - resets chapter to 1 when changed */}
-        <select value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }}>{bibleData.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}</select>
+        <select name="book" value={book} onChange={(e) => { setBook(e.target.value); setChapter(1); }}>{bibleData.map(b => <option key={b.name} value={b.name}>{b.name}</option>)}</select>
         {/* Chapter selector dropdown - dynamically populated based on selected book */}
-        <select value={chapter} onChange={(e) => setChapter(Number(e.target.value))}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select>
+        <select name="chapter" value={chapter} onChange={(e) => setChapter(Number(e.target.value))}>{[...Array(getChapterCount())].map((_, i) => <option key={i+1} value={i+1}>{i+1}</option>)}</select>
         
         {/* Bible version selector dropdown */}
-        <select value={version} onChange={(e) => setVersion(e.target.value)}>
+        <select name="version" value={version} onChange={(e) => setVersion(e.target.value)}>
             {BIBLE_VERSIONS.map(v => (
                 <option key={v.id} value={v.id}>{v.label}</option>
             ))}
@@ -92,7 +92,7 @@ function ControlBar({
 
         {/* Search form - positioned at right end of flex container */}
         <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
-            <input value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search..." style={{ padding: '4px 8px', borderRadius: '4px 0 0 4px', border: '1px solid #ccc', borderRight: 'none', width: '120px' }} />
+          <input name="search" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} placeholder="Search..." style={{ padding: '4px 8px', borderRadius: '4px 0 0 4px', border: '1px solid #ccc', borderRight: 'none', width: '120px' }} />
             <button type="submit" style={{ padding: '4px 8px', borderRadius: '0 4px 4px 0', border: '1px solid #ccc', borderLeft: 'none', background: '#eee', cursor: 'pointer' }}>🔍</button>
         </form>
       </div>
@@ -106,7 +106,7 @@ function ControlBar({
         {/* Study mode toggle button */}
         <button onClick={() => setShowNotes(!showNotes)} style={{ backgroundColor: showNotes ? '#2196F3' : '' }}>{showNotes ? 'Reading Mode' : 'Study Mode'}</button>
         {/* Chapter read tracking checkbox */}
-        <label><input type="checkbox" checked={isChapterRead} onChange={toggleChapterRead} /> Track Read</label>
+        <label><input type="checkbox" name="trackRead" checked={isChapterRead} onChange={toggleChapterRead} /> Track Read</label>
       </div>
     </div>
   );

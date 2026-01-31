@@ -140,6 +140,7 @@ function BibleVersionPicker({ selectedVersion, onVersionChange, theme = 'light',
           <div className="p-10" style={{ borderBottom: `1px solid ${borderColor}` }}>
             <input
               type="text"
+              name="versionSearch"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search versions..."

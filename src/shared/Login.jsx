@@ -208,10 +208,10 @@ function Login({ theme }) {
       {authMode === 'email' && (
         <form onSubmit={handleEmailAuth}>
           {isSignUp && (
-            <input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} />
+            <input type="text" name="fullName" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} />
           )}
-          <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} />
-          <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
+          <input type="email" name="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required style={inputStyle} />
+          <input type="password" name="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={inputStyle} />
           
           <button type="submit" style={{ ...btnStyle, background: '#276749' }}>
             {isSignUp ? "Sign Up" : "Login"}
@@ -237,8 +237,8 @@ function Login({ theme }) {
         <>
           {!codeSent ? (
             <form onSubmit={handleSendCode}>
-               <input type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} />
-               <input type="tel" placeholder="Mobile Number (e.g. 555-0123)" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required style={inputStyle} />
+               <input type="text" name="phoneName" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} />
+               <input type="tel" name="phoneNumber" placeholder="Mobile Number (e.g. 555-0123)" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required style={inputStyle} />
                <div id="recaptcha-container"></div> 
                <button type="submit" style={{ ...btnStyle, background: '#276749' }}>Send Code</button>
                <button type="button" onClick={goBack} style={linkBtnStyle}>← Cancel</button>
@@ -246,7 +246,7 @@ function Login({ theme }) {
           ) : (
             <form onSubmit={handleVerifyCode}>
               <p style={{marginBottom: '10px'}}>Sent code to {phoneNumber}</p>
-              <input type="text" placeholder="Enter 6-digit Code" value={otp} onChange={(e) => setOtp(e.target.value)} required style={inputStyle} />
+              <input type="text" name="otp" placeholder="Enter 6-digit Code" value={otp} onChange={(e) => setOtp(e.target.value)} required style={inputStyle} />
               <button type="submit" style={{ ...btnStyle, background: '#276749' }}>Verify & Login</button>
               <button type="button" onClick={() => setCodeSent(false)} style={linkBtnStyle}>Wrong Number?</button>
             </form>
