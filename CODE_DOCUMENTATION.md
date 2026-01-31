@@ -1,5 +1,5 @@
 # Equip Daily - Code Documentation
-**Generated:** January 30, 2026
+**Generated:** January 31, 2026
 **Author:** Jonathan Vargas — Sebastian, Florida
 **Purpose:** Document each component's functionality for AI context and debugging
 
@@ -9,7 +9,7 @@
 
 ### Core Application Files
 
-#### **src/App.jsx** (549 lines)
+#### **src/App.jsx** (614 lines)
 **Purpose:** Main application component and router
 **Functionality:**
 - Manages global state (user auth, theme, active tab navigation)
@@ -19,6 +19,7 @@
 - Handles devotional text processing with clickable verse links
 - Community reflections subscription and management
 - YouTube video embedding from devotional content
+- Rewires 📅 calendar icon to open Reading Plans entry panel
 
 **Key Functions:**
 - `jumpToVerse(book, chapter, verseNum)` - Navigates to Bible with optional verse highlighting
@@ -129,7 +130,7 @@
 
 ---
 
-#### **src/services/firestoreService.js** (159 lines)
+#### **src/services/firestoreService.js** (305 lines)
 **Purpose:** All Firebase Firestore database operations with comprehensive JSDoc documentation
 **Functionality:**
 - CRUD operations for notes, reflections, highlights
@@ -138,6 +139,8 @@
 - Chapter read status tracking
 - Atomic updates using arrayUnion/arrayRemove
 - Graceful permission-denied error handling
+- Adds query limits for reflections and notes
+- Limits bulk highlight operations for safety
 
 **Functions:**
 
@@ -1377,7 +1380,38 @@ A comprehensive Bible reading tracker system integrated into the Devotional sect
 
 ---
 
-**Documentation Last Updated:** January 30, 2026
+## 📅 READING PLANS FEATURE (FOUNDATION)
+
+#### **src/features/ReadingPlans.jsx** (400+ lines)
+**Purpose:** Reading Plans UI entry panel (accessed via the existing 📅 calendar icon in Devotional header)
+**Functionality:**
+- Displays plan templates (5-day, 30-day, 365-day, custom)
+- Shows progress bar, streak stats, and daily recommendations
+- Supports plan actions (pause, resume, complete, delete)
+- Dark/light theme support with responsive layout
+
+#### **src/services/readingPlansService.js** (280+ lines)
+**Purpose:** Firestore operations for reading plans
+**Functionality:**
+- Create/update/delete plans
+- Track chapter completion and streaks
+- Subscribe to real-time plan updates
+- Calculate progress stats and daily recommendations
+
+#### **src/hooks/useReadingPlans.js** (120+ lines)
+**Purpose:** Custom hook for Reading Plans state management
+**Functionality:**
+- Subscribes to user plans
+- Exposes plan actions to UI
+- Computes stats and daily reading list
+
+#### **Firestore Rules Update**
+**File:** `firestore.rules`
+- Adds `readingPlans` collection rules
+- Restricts access to the plan owner
+- Enforces plan field validation and chapter limits
+
+**Documentation Last Updated:** January 31, 2026
 **Total Project Files:** 200+ files across src/, api/, public/, scripts/
 **Build Size:** 3.1M (dist folder)
 **Test Coverage:** 69 tests passing (baseline)
