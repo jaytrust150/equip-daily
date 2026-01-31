@@ -1204,147 +1204,156 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       {/* 🟢 TOP CONTROLS */}
       <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20" style={{ maxWidth: '960px', margin: '0 auto', width: '100%' }}>
         {/* Testament Navigation Buttons + Version Selector */}
-        <div className="flex mb-3 justify-center items-center" style={{ gap: '8px', flexWrap: 'wrap' }}>
-          {/* Bible Version Picker (tiny, functional dropdown) */}
-          <select
-            name="bibleVersionTop"
-            value={version}
-            onChange={e => setVersion(e.target.value)}
-            style={{
-              fontSize: '0.8rem',
-              padding: '4px 8px',
-              borderRadius: '10px',
-              border: '1px solid #ccc',
-              background: theme === 'dark' ? '#333' : '#f5f5f5',
-              color: theme === 'dark' ? '#aaa' : '#666',
-              fontWeight: 600,
-              minWidth: '90px',
-              height: '30px',
-              lineHeight: 1,
-              textAlign: 'center',
-              appearance: 'none',
-              outline: 'none',
-              margin: 0,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-            title="Bible Version"
-          >
-            {bibleVersions.map(v => (
-              <option key={v.id} value={v.id} style={{fontSize: '0.7rem'}}>{v.abbreviation}</option>
-            ))}
-          </select>
-          <button
-            onClick={() => {
-              setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
-              setTestamentDrillBook(null);
-            }}
-            style={{ 
-              padding: '6px 14px', 
-              fontSize: '0.85rem', 
-              borderRadius: '10px'
-            }}
-            className={`font-medium transition shadow-sm ${
-              showTestamentNav === 'OT'
-                ? 'bg-indigo-600 text-white border-indigo-600' 
-                : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
-            }`}
-            title="Browse Old Testament"
-          >
-            📖 Old Testament
-          </button>
-          <button
-            onClick={() => {
-              setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
-              setTestamentDrillBook(null);
-            }}
-            style={{ 
-              padding: '6px 14px', 
-              fontSize: '0.85rem', 
-              borderRadius: '10px'
-            }}
-            className={`font-medium transition shadow-sm ${
-              showTestamentNav === 'NT'
-                ? 'bg-indigo-600 text-white border-indigo-600' 
-                : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
-            }`}
-            title="Browse New Testament"
-          >
-            ✝️ New Testament
-          </button>
-          {/* Search Input or Icon - Inline */}
-          {!showSearchWell ? (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          {/* Left side - Bible Version Picker */}
+          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+            <select
+              name="bibleVersionTop"
+              value={version}
+              onChange={e => setVersion(e.target.value)}
+              style={{
+                fontSize: '0.8rem',
+                padding: '4px 8px',
+                borderRadius: '10px',
+                border: '1px solid #ccc',
+                background: theme === 'dark' ? '#333' : '#f5f5f5',
+                color: theme === 'dark' ? '#aaa' : '#666',
+                fontWeight: 600,
+                minWidth: '90px',
+                height: '30px',
+                lineHeight: 1,
+                textAlign: 'center',
+                appearance: 'none',
+                outline: 'none',
+                margin: 0,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Bible Version"
+            >
+              {bibleVersions.map(v => (
+                <option key={v.id} value={v.id} style={{fontSize: '0.7rem'}}>{v.abbreviation}</option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Center - Testament Buttons (Dead Center) */}
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <button
-              onClick={() => setShowSearchWell(v => !v)}
+              onClick={() => {
+                setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
+                setTestamentDrillBook(null);
+              }}
               style={{ 
                 padding: '6px 14px', 
                 fontSize: '0.85rem', 
                 borderRadius: '10px'
               }}
               className={`font-medium transition shadow-sm ${
-                theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                showTestamentNav === 'OT'
+                  ? 'bg-indigo-600 text-white border-indigo-600' 
+                  : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
               }`}
-              title="Search"
+              title="Browse Old Testament"
             >
-              🔍
+              📖 Old Testament
             </button>
-          ) : (
-            <div className="flex gap-2 items-center">
-              <input
-                type="text"
-                name="bibleSearch"
-                value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && onSearch && searchInput.trim()) {
-                    onSearch(searchInput);
-                    setSearchInput('');  // Clear after searching
-                    setShowSearchWell(false);
-                  }
-                  if (e.key === 'Escape') {
-                    setSearchInput('');  // Clear on cancel
-                    setShowSearchWell(false);
-                  }
-                }}
-                placeholder="Search scripture or keywords..."
-                style={{ 
-                  padding: '6px 12px', 
-                  fontSize: '0.85rem', 
-                  borderRadius: '10px', 
-                  border: '1px solid #ccc', 
-                  width: '200px',
-                  background: theme === 'dark' ? '#333' : '#f5f5f5',
-                  color: theme === 'dark' ? '#fff' : '#333'
-                }}
-                autoFocus
-              />
+            <button
+              onClick={() => {
+                setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
+                setTestamentDrillBook(null);
+              }}
+              style={{ 
+                padding: '6px 14px', 
+                fontSize: '0.85rem', 
+                borderRadius: '10px'
+              }}
+              className={`font-medium transition shadow-sm ${
+                showTestamentNav === 'NT'
+                  ? 'bg-indigo-600 text-white border-indigo-600' 
+                  : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
+              }`}
+              title="Browse New Testament"
+            >
+              ✝️ New Testament
+            </button>
+          </div>
+          
+          {/* Right side - Search */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {!showSearchWell ? (
               <button
-                onClick={() => {
-                  if (onSearch && searchInput.trim()) {
-                    onSearch(searchInput);
-                    setSearchInput('');  // Clear after searching
-                    setShowSearchWell(false);
-                  }
+                onClick={() => setShowSearchWell(v => !v)}
+                style={{ 
+                  padding: '6px 14px', 
+                  fontSize: '0.85rem', 
+                  borderRadius: '10px'
                 }}
-                disabled={!searchInput.trim()}
-                style={{ padding: '6px 10px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid #ccc', background: searchInput.trim() ? (theme === 'dark' ? '#2196F3' : '#2196F3') : '#ddd', color: searchInput.trim() ? '#fff' : '#999', cursor: searchInput.trim() ? 'pointer' : 'not-allowed' }}
+                className={`font-medium transition shadow-sm ${
+                  theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
                 title="Search"
               >
-                ✓
+                🔍
               </button>
-              <button
-                onClick={() => {
-                  setSearchInput('');  // Clear on cancel
-                  setShowSearchWell(false);
-                }}
-                style={{ padding: '6px 10px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid #ccc', background: theme === 'dark' ? '#333' : '#f5f5f5', color: '#c00', cursor: 'pointer' }}
-                title="Close"
-              >
-                ✕
-              </button>
-            </div>
-          )}
+            ) : (
+              <div className="flex gap-2 items-center">
+                <input
+                  type="text"
+                  name="bibleSearch"
+                  value={searchInput}
+                  onChange={e => setSearchInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && onSearch && searchInput.trim()) {
+                      onSearch(searchInput);
+                      setSearchInput('');  // Clear after searching
+                      setShowSearchWell(false);
+                    }
+                    if (e.key === 'Escape') {
+                      setSearchInput('');  // Clear on cancel
+                      setShowSearchWell(false);
+                    }
+                  }}
+                  placeholder="Search scripture or keywords..."
+                  style={{ 
+                    padding: '6px 12px', 
+                    fontSize: '0.85rem', 
+                    borderRadius: '10px', 
+                    border: '1px solid #ccc', 
+                    width: '200px',
+                    background: theme === 'dark' ? '#333' : '#f5f5f5',
+                    color: theme === 'dark' ? '#fff' : '#333'
+                  }}
+                  autoFocus
+                />
+                <button
+                  onClick={() => {
+                    if (onSearch && searchInput.trim()) {
+                      onSearch(searchInput);
+                      setSearchInput('');  // Clear after searching
+                      setShowSearchWell(false);
+                    }
+                  }}
+                  disabled={!searchInput.trim()}
+                  style={{ padding: '6px 10px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid #ccc', background: searchInput.trim() ? (theme === 'dark' ? '#2196F3' : '#2196F3') : '#ddd', color: searchInput.trim() ? '#fff' : '#999', cursor: searchInput.trim() ? 'pointer' : 'not-allowed' }}
+                  title="Search"
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={() => {
+                    setSearchInput('');  // Clear on cancel
+                    setShowSearchWell(false);
+                  }}
+                  style={{ padding: '6px 10px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid #ccc', background: theme === 'dark' ? '#333' : '#f5f5f5', color: '#c00', cursor: 'pointer' }}
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Compact Testament Navigation */}
