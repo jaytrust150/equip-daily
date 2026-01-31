@@ -804,7 +804,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
 | `src/__tests__/shared/SearchWell.test.jsx` | 61 | 1379 | `02e6feb262cfa719` |
 | `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
-| `src/App.jsx` | 614 | 31640 | `4ea7e6b22348c285` |
+| `src/App.jsx` | 624 | 32247 | `c6b4132d9da570df` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 103 | 2492 | `a6226d017bb76830` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
@@ -818,7 +818,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/features/bible/ControlBar.jsx` | 114 | 6117 | `41bd2f9f26d946ec` |
 | `src/features/bible/FloatingTools.jsx` | 275 | 8867 | `95e7155dad1e7216` |
 | `src/features/bible/VerseList.jsx` | 126 | 6367 | `c1f11657b5eaf1cc` |
-| `src/features/devotional/DailyDevotional.jsx` | 112 | 5092 | `2e8fd3f2799773c0` |
+| `src/features/devotional/DailyDevotional.jsx` | 104 | 4473 | `51fbdcf9a611b9aa` |
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
 | `src/features/ReadingPlans.jsx` | 374 | 15794 | `2c0e3e60948d6957` |
 | `src/hooks/useAudio.js` | 127 | 5478 | `fbb53cd11968375d` |
