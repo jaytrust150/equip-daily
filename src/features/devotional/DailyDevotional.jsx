@@ -27,10 +27,10 @@ function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
-         <button onClick={() => setShowAudio(!showAudio)}>{showAudio ? '🔇' : '🔊'}</button>
-         <button onClick={() => setDayOffset(p => p - 1)}>← Prior</button>
-         <button onClick={() => setDayOffset(0)}>Today</button>
-         <button onClick={() => setDayOffset(p => p + 1)}>Next →</button>
+         <button onClick={() => setShowAudio(!showAudio)} style={{ padding: '8px 12px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>{showAudio ? '🔇' : '🔊'}</button>
+         <button onClick={() => setDayOffset(p => p - 1)} style={{ padding: '8px 12px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>← Prior</button>
+         <button onClick={() => setDayOffset(0)} style={{ padding: '8px 12px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Today</button>
+         <button onClick={() => setDayOffset(p => p + 1)} style={{ padding: '8px 12px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Next →</button>
       </div>
       {showAudio && <AudioPlayer src={`${AUDIO_BASE_PATH}${dateKey}-devotional.mp3`} captionsSrc={`${AUDIO_BASE_PATH}${dateKey}-devotional.vtt`} theme={theme} />}
       <DevotionalContent text={content} theme={theme} fontSize={1.1} onVerseClick={onVerseClick} />
@@ -40,22 +40,20 @@ function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
         <button
           onClick={handleMarkAsRead}
           style={{
-            padding: '12px 24px',
-            fontSize: '1rem',
-            fontWeight: '600',
-            backgroundColor: '#10b981',
-            color: 'white',
-            border: 'none',
+            padding: '8px 16px',
+            fontSize: '14px',
+            fontWeight: '500',
+            background: theme === 'dark' ? '#333' : '#f0f0f0',
+            color: theme === 'dark' ? '#fff' : '#333',
+            border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
             borderRadius: '8px',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            transition: 'all 0.2s'
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            transition: '0.2s'
           }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
         >
           <span>✓</span>
           Mark as Read

@@ -1903,11 +1903,11 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                             />
                                             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                                               <div className="flex flex-wrap gap-2 ml-auto">
-                                                <button onClick={() => handleCopyFromEditor()} className="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 font-medium transition shadow-sm">📋 Copy</button>
-                                                <button onClick={handlePasteVerses} className="px-3 py-1.5 bg-purple-600 text-white text-xs rounded-lg hover:bg-purple-700 font-medium transition shadow-sm">📌 Paste</button>
-                                                <button onClick={handleSaveNote} className="px-3 py-1.5 bg-emerald-600 text-white text-xs rounded-lg hover:bg-emerald-700 font-medium transition shadow-sm">💾 Save</button>
-                                                {editingNoteId && <button onClick={handleDeleteNote} className="px-3 py-1.5 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 font-medium transition shadow-sm">🗑️ Delete</button>}
-                                                <button onClick={handleCancelEditNote} className={`px-3 py-1.5 text-xs rounded-lg font-medium transition shadow-sm border ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}>Cancel</button>
+                                                <button onClick={() => handleCopyFromEditor()} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>📋 Copy</button>
+                                                <button onClick={handlePasteVerses} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>📌 Paste</button>
+                                                <button onClick={handleSaveNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>💾 Save</button>
+                                                {editingNoteId && <button onClick={handleDeleteNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>🗑️ Delete</button>}
+                                                <button onClick={handleCancelEditNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Cancel</button>
                                               </div>
                                             </div>
                                         </div>
@@ -2185,19 +2185,35 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
         <button 
           onClick={goToPrevChapter}
-          style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
-          className={`font-medium transition shadow-sm ${
-            theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
+          style={{ 
+            background: theme === 'dark' ? '#333' : '#f0f0f0',
+            color: theme === 'dark' ? '#fff' : '#333',
+            border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
+            padding: '6px 14px',
+            fontSize: '0.85rem',
+            borderRadius: '10px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+            transition: 'all 0.2s ease'
+          }}
         >
           ← Prev
         </button>
         <button 
           onClick={goToNextChapter}
-          style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
-          className={`font-medium transition shadow-sm ${
-            theme === 'dark' ? 'bg-gray-800 border-gray-700 text-gray-200 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-          }`}
+          style={{ 
+            background: theme === 'dark' ? '#333' : '#f0f0f0',
+            color: theme === 'dark' ? '#fff' : '#333',
+            border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
+            padding: '6px 14px',
+            fontSize: '0.85rem',
+            borderRadius: '10px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+            transition: 'all 0.2s ease'
+          }}
         >
           Next →
         </button>
