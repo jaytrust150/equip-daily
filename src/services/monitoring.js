@@ -25,18 +25,7 @@ export function initSentry() {
     Sentry.init({
       dsn: import.meta.env.VITE_SENTRY_DSN || "",
       environment: import.meta.env.MODE,
-      enableLogs: true, // Enable structured logging
       tracesSampleRate: 0.1, // Sample 10% of transactions for performance monitoring
-      replaysSessionSampleRate: 0.1, // Sample 10% of sessions for replay
-      replaysOnErrorSampleRate: 1.0, // Always capture replays on errors
-      integrations: [
-        new Sentry.Replay({
-          maskAllText: true,
-          blockAllMedia: true,
-        }),
-        // Automatically send console.warn and console.error to Sentry as logs
-        Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
-      ],
       beforeSend(event) {
         // Optionally filter events before sending to Sentry
         return event;
@@ -161,7 +150,18 @@ export function startSpan(options, callback) {
     return callback({ setAttribute: () => {} });
   }
 
-  return Sentry.startSpan(options, callback);
+  // Simple implementation that wraps the callback
+  try {
+    const result = callback({ setAttribute: () => {} });
+    return result;
+  } catch (error) {
+    Sentry.captureException(error, {
+      contexts: {
+        operation: options,
+      },
+    });
+    throw error;
+  }
 }
 
 /**
@@ -173,16 +173,20 @@ export function startSpan(options, callback) {
 export function startPerformanceMonitoring(name) {
   if (!import.meta.env.PROD) return () => {};
 
-  const transaction = Sentry.startTransaction({
-    name,
-    op: "task",
-  });
-
+  // Return a simple callback that tracks the operation
+  const start = performance.now();
+  
   return (tags = {}) => {
-    Object.entries(tags).forEach(([key, value]) => {
-      transaction.setTag(key, value);
+    const duration = performance.now() - start;
+    Sentry.captureMessage(`Performance: ${name} completed in ${duration.toFixed(2)}ms`, 'info', {
+      contexts: {
+        performance: {
+          name,
+          duration,
+          ...tags,
+        },
+      },
     });
-    transaction.finish();
   };
 }
 
