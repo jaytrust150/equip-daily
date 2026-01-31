@@ -1368,7 +1368,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             {testamentDrillBook ? (
               <div>
                 {/* Back Button & Book Title with Progress */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center mb-3" style={{ position: 'relative' }}>
                   <button
                     onClick={() => setTestamentDrillBook(null)}
                     className="text-sm font-medium px-3 py-1 rounded transition"
@@ -1379,7 +1379,17 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                   >
                     ← Back
                   </button>
-                  <div className="text-sm font-bold" style={{ color: theme === 'dark' ? '#fff' : '#333' }}>
+                  <div
+                    className="text-sm font-bold"
+                    style={{
+                      color: theme === 'dark' ? '#fff' : '#333',
+                      textAlign: 'center',
+                      width: '100%',
+                      position: 'absolute',
+                      left: 0,
+                      right: 0
+                    }}
+                  >
                     {testamentDrillBook.name}{' '}
                     <span className="ml-2 text-xs font-normal" style={{ color: theme === 'dark' ? '#999' : '#666' }}>
                       {drillPercent}%
