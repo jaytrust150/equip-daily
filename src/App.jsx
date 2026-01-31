@@ -6,6 +6,7 @@ import './App.css';
 
 // ✅ FIXED IMPORTS: Pointing to new folder structure
 const BibleStudy = lazy(() => import('./features/bible/BibleStudy'));
+const ReadingPlans = lazy(() => import('./features/ReadingPlans'));
 const MemberProfile = lazy(() => import('./shared/MemberProfile'));
 import MemberCard from './shared/MemberCard';
 import Login from './shared/Login';
@@ -41,6 +42,7 @@ function App() {
   const [devotional, setDevotional] = useState("Loading the Word...");
   const [dayOffset, setDayOffset] = useState(0);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [showReadingPlans, setShowReadingPlans] = useState(false);
 
   // --- 🎧 AUDIO & VIDEO STATE ---
   const [showAudio, setShowAudio] = useState(false);
@@ -470,7 +472,7 @@ function App() {
                   <button onClick={() => setDayOffset(0)} className="nav-btn" style={{ ...navBtnStyle, backgroundColor: theme === 'dark' ? '#444' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333' }}>Today</button>
                   <button onClick={() => setDayOffset(dayOffset + 1)} className="nav-btn" style={navBtnStyle}>Next →</button>
                   
-                  <button onClick={() => setDayOffset(0)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title="Calendar">
+                  <button onClick={() => setShowReadingPlans((prev) => !prev)} style={{ ...navBtnStyle, fontSize: '1.2rem', padding: '0 5px', background: 'none', border: 'none', cursor: 'pointer' }} title="Reading Plans">
                     📅
                   </button>
 
@@ -479,6 +481,14 @@ function App() {
                   <button onClick={() => setIsWellOpen(!isWellOpen)} style={{ padding: '6px 15px', borderRadius: '20px', backgroundColor: isWellOpen ? '#2196F3' : 'transparent', color: isWellOpen ? 'white' : '#2196F3', border: '1px solid #2196F3', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}>🔍 Bible Search & Concordance</button>
                 </div>
               </div>
+
+              {showReadingPlans && (
+                <div style={{ margin: '0 auto 20px auto', maxWidth: '900px', padding: '10px' }}>
+                  <Suspense fallback={<div style={{ padding: '20px' }}><LoadingSkeleton type="text" count={6} height="18px" /></div>}>
+                    <ReadingPlans user={user} theme={theme} onClose={() => setShowReadingPlans(false)} />
+                  </Suspense>
+                </div>
+              )}
 
               {showAudio && (
                 <div style={{ margin: '0 auto 20px auto', maxWidth: '600px', padding: '10px', backgroundColor: theme === 'dark' ? '#222' : '#f8f9fa', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px', animation: 'fadeIn 0.5s' }}>

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import DevotionalContent from './DevotionalContent';
 import CommunityFeed from '../../shared/CommunityFeed';
 import AudioPlayer from '../../shared/AudioPlayer';
-import ReadingPlans from '../ReadingPlans';
 import { AUDIO_BASE_PATH } from '../../config/constants';
 
 function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
@@ -10,7 +9,6 @@ function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
   const [dayOffset, setDayOffset] = useState(0);
   const [content, setContent] = useState("Loading...");
   const [showAudio, setShowAudio] = useState(false);
-  const [showReadingPlans, setShowReadingPlans] = useState(false);
 
   useEffect(() => {
     const target = new Date(); target.setDate(target.getDate() + dayOffset);
@@ -33,13 +31,7 @@ function DailyDevotional({ user, theme, onVerseClick, onProfileClick }) {
          <button onClick={() => setDayOffset(p => p - 1)}>← Prior</button>
          <button onClick={() => setDayOffset(0)}>Today</button>
          <button onClick={() => setDayOffset(p => p + 1)}>Next →</button>
-        <button onClick={() => setShowReadingPlans(!showReadingPlans)} title="Reading Plans (Secret Feature)">📅</button>
       </div>
-           {showReadingPlans && (
-             <div style={{ marginBottom: '30px', padding: '20px', backgroundColor: theme === 'dark' ? '#1f2937' : '#f3f4f6', borderRadius: '12px', border: `2px solid ${theme === 'dark' ? '#4b5563' : '#d1d5db'}` }}>
-               <ReadingPlans user={user} theme={theme} onClose={() => setShowReadingPlans(false)} />
-             </div>
-           )}
       {showAudio && <AudioPlayer src={`${AUDIO_BASE_PATH}${dateKey}-devotional.mp3`} captionsSrc={`${AUDIO_BASE_PATH}${dateKey}-devotional.vtt`} theme={theme} />}
       <DevotionalContent text={content} theme={theme} fontSize={1.1} onVerseClick={onVerseClick} />
       
