@@ -1106,19 +1106,21 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       : '';
     const text = `${verseTexts ? `${verseTexts}\n\n` : ''}Note: ${note.text}\n— ${verseRefs}`;
 
+    // Always copy to clipboard first
+    try {
+      await navigator.clipboard.writeText(text);
+      setNoteFeedback({ type: 'success', msg: 'Note copied for sharing' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+    } catch (error) {
+      console.error('Copy failed:', error);
+    }
+
+    // Then open share if available
     if (navigator.share) {
       try {
         await navigator.share({ title: 'Equip Daily', text, url: window.location.href });
       } catch {
         // Share cancelled
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(text);
-        setNoteFeedback({ type: 'success', msg: 'Note copied for sharing' });
-        setTimeout(() => setNoteFeedback({}), 2000);
-      } catch (error) {
-        console.error('Share copy failed:', error);
       }
     }
   };
@@ -2126,21 +2128,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                                               title="Share verse & note"
                                                             >
                                                               🔗 Share
-                                                            </button>
-                                                            <button
-                                                              onClick={() => handleDeleteNoteById(note.id)}
-                                                              style={{
-                                                                background: 'none',
-                                                                border: 'none',
-                                                                color: theme === 'dark' ? '#ef4444' : '#dc2626',
-                                                                fontWeight: 600,
-                                                                cursor: 'pointer',
-                                                                padding: 0,
-                                                                transition: 'color 0.2s'
-                                                              }}
-                                                              title="Delete note"
-                                                            >
-                                                              🗑️
                                                             </button>
                                                             <span style={{ color: theme === 'dark' ? '#9ca3af' : '#6b7280', marginLeft: 'auto', fontSize: '0.75rem' }}>{formatNoteDate(note)}</span>
                                                           </div>
