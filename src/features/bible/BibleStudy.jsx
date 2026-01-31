@@ -1608,7 +1608,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               </div>
             )}
             
-            <div className="flex items-center gap-2 mb-4" style={{ flexWrap: 'wrap', justifyContent: 'center', rowGap: '6px' }}>
+            <div className="flex items-center mb-4" style={{ flexWrap: 'wrap', justifyContent: 'center', gap: '8px', rowGap: '8px' }}>
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
                 onClick={(e) => {
@@ -1660,7 +1660,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 padding: '2px 6px', 
                 fontSize: '0.85rem', 
                 borderRadius: '6px', 
-                marginRight: '2px', 
                 minWidth: '22px', 
                 height: '26px', 
                 opacity: loading ? 0.5 : 1, 
@@ -1676,7 +1675,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 padding: '2px 6px', 
                 fontSize: '0.85rem', 
                 borderRadius: '6px', 
-                marginRight: '8px', 
                 minWidth: '22px', 
                 height: '26px', 
                 opacity: loading ? 0.5 : 1, 
@@ -1690,7 +1688,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 padding: '3px 7px', 
                 fontSize: '0.82rem', 
                 borderRadius: '6px', 
-                marginRight: '6px',
                 minWidth: '38px', 
                 height: '26px', 
                 opacity: loading ? 0.5 : 1, 
@@ -1763,7 +1760,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 padding: '3px 7px', 
                 fontSize: '0.82rem', 
                 borderRadius: '6px', 
-                marginLeft: '6px', 
                 minWidth: '38px', 
                 height: '26px', 
                 opacity: loading ? 0.5 : 1, 
@@ -1789,7 +1785,6 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     display: 'inline-flex', 
                     alignItems: 'center', 
                     gap: '3px', 
-                    marginLeft: '4px', 
                     minWidth: '60px', 
                     height: '26px', 
                     opacity: loading ? 0.5 : 1, 
@@ -2115,7 +2110,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       </div>
 
       {/* Chapter Navigation Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '30px', marginBottom: '40px', flexWrap: 'wrap', alignItems: 'center', maxWidth: '960px', margin: '30px auto 40px auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '30px', marginBottom: '40px', flexWrap: 'wrap', alignItems: 'center', maxWidth: '960px', margin: '30px auto 40px auto' }}>
         {/* Bible Version Selector - Small and Compact */}
         <select
           name="bibleVersionBottom"

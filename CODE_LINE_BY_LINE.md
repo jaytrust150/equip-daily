@@ -820,7 +820,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
 | `src/__tests__/shared/SearchWell.test.jsx` | 61 | 1379 | `02e6feb262cfa719` |
 | `src/App.css` | 211 | 4867 | `e6e6a97a6f343511` |
-| `src/App.jsx` | 634 | 33417 | `ab316250b7c895ab` |
+| `src/App.jsx` | 636 | 33601 | `334b7391e8c19f9b` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 103 | 2492 | `a6226d017bb76830` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
@@ -828,7 +828,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 85 | 3944 | `8ddbe79233626005` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2410 | 102607 | `17aaf902ba0b073c` |
+| `src/features/bible/BibleStudy.jsx` | 2405 | 102426 | `cdef2e19acfc1081` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7652 | `61855a7176bfb6de` |
 | `src/features/bible/BibleVersionPicker.jsx` | 274 | 9422 | `8358ad0843af6698` |
 | `src/features/bible/ControlBar.jsx` | 115 | 6313 | `ade0787332f371e9` |
