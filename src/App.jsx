@@ -407,14 +407,15 @@ function App() {
           <div style={{ position: 'absolute', top: '0', left: 0, right: 0, display: 'flex', justifyContent: 'center', pointerEvents: 'none' }}>
             <div
               style={{
-                fontSize: '0.75rem',
+                fontSize: '0.7rem',
                 color: theme === 'dark' ? '#bbb' : '#666',
                 fontStyle: 'italic',
-                padding: '4px 8px',
+                padding: '2px 8px',
                 background: theme === 'dark' ? 'rgba(0,0,0,0.35)' : 'rgba(255,255,255,0.85)',
                 borderRadius: '8px',
                 opacity: headerTipFading ? 0 : 1,
-                transition: 'opacity 0.5s ease'
+                transition: 'opacity 0.5s ease',
+                lineHeight: '1.2'
               }}
             >
               {headerTipText}
