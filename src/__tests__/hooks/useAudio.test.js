@@ -12,10 +12,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 describe('useAudio Hook', () => {
-  let mockAudioUrl
+  let _mockAudioUrl
 
   beforeEach(() => {
-    mockAudioUrl = 'https://api.example.com/audio/john-3-16.mp3'
+    _mockAudioUrl = 'https://api.example.com/audio/john-3-16.mp3'
     vi.useFakeTimers()
   })
 
@@ -27,7 +27,7 @@ describe('useAudio Hook', () => {
     it('should import without errors', async () => {
       // Test that the module can be imported
       expect(async () => {
-        const { useAudio } = await import('../../hooks/useAudio')
+        await import('../../hooks/useAudio')
       }).not.toThrow()
     })
   })
@@ -65,12 +65,11 @@ describe('useAudio Hook', () => {
     it('should handle edge case URLs', () => {
       const edgeCaseUrls = ['', undefined, null]
 
-      edgeCaseUrls.forEach((url) => {
-        // Should not throw
-        expect(() => {
-          // Pseudo-call
-        }).not.toThrow()
-      })
+      // Should not throw
+      expect(() => {
+        // Pseudo-call with edge cases
+        edgeCaseUrls.forEach(() => {})
+      }).not.toThrow()
     })
   })
 
@@ -105,8 +104,6 @@ describe('useAudio Hook', () => {
 
   describe('Error Handling', () => {
     it('should handle invalid URL gracefully', () => {
-      const invalidUrl = 'not-a-valid-url'
-
       // Should not throw
       expect(() => {
         // Hook usage would be in component

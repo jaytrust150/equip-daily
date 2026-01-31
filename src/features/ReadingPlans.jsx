@@ -11,9 +11,8 @@ import { useReadingPlans } from '../hooks/useReadingPlans';
 import { READING_PLAN_TEMPLATES, createReadingPlan } from '../services/readingPlansService';
 
 function ReadingPlans({ user, theme, onClose }) {
-  const { plans, currentPlan, loading, markChapterComplete, getStats, getTodayReading, switchPlan, handleCompletePlan, handlePausePlan, handleResumePlan, handleDeletePlan } = useReadingPlans(user?.uid);
+  const { plans, currentPlan, loading, getStats, getTodayReading, switchPlan, handleCompletePlan, handlePausePlan, handleResumePlan, handleDeletePlan } = useReadingPlans(user?.uid);
   const [showCreatePlan, setShowCreatePlan] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   if (!user) {
     return (
@@ -35,7 +34,6 @@ function ReadingPlans({ user, theme, onClose }) {
     try {
       await createReadingPlan(user.uid, template.id);
       setShowCreatePlan(false);
-      setSelectedTemplate(null);
     } catch (error) {
       console.error('Error creating plan:', error);
     }

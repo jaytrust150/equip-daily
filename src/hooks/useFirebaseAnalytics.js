@@ -35,7 +35,7 @@ export function useFirebaseAnalytics() {
     } catch (error) {
       // Analytics may not be initialized in development
       if (!import.meta.env.PROD) {
-        console.debug('Firebase Analytics not initialized:', error.message);
+        console.warn('Firebase Analytics not initialized:', error.message);
       }
     }
   }, [user]);

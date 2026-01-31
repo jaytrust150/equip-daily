@@ -53,8 +53,6 @@ vi.mock('../../config/firebase', () => ({
 
 describe('Firestore Service', () => {
   let mockUserId
-  let mockReflection
-  let mockNote
   let mockUser
 
   beforeEach(() => {
@@ -63,20 +61,6 @@ describe('Firestore Service', () => {
       uid: mockUserId,
       displayName: 'Test User',
       email: 'test@example.com',
-    }
-    mockReflection = {
-      id: 'reflection-1',
-      userId: mockUserId,
-      text: 'Test reflection content',
-      timestamp: new Date(),
-    }
-    mockNote = {
-      id: 'note-1',
-      userId: mockUserId,
-      book: 'John',
-      chapter: 3,
-      verses: '16',
-      text: 'Test note',
     }
 
     vi.clearAllMocks()
@@ -148,15 +132,11 @@ describe('Firestore Service', () => {
 
   describe('User Profile', () => {
     it('should provide user profile subscription', () => {
-      const callback = vi.fn()
-
       // Function should exist and be callable
       expect(typeof subscribeToUserProfile).toBe('function')
     })
 
     it('should handle missing user gracefully', () => {
-      const callback = vi.fn()
-
       // Should be callable even with undefined user
       expect(() => {
         // Function exists
@@ -166,7 +146,7 @@ describe('Firestore Service', () => {
 
   describe('Chapter Read Tracking', () => {
     it('should toggle chapter read status', async () => {
-      const result = await toggleChapterReadStatus(
+      await toggleChapterReadStatus(
         mockUserId,
         'John1',
         true
@@ -177,7 +157,7 @@ describe('Firestore Service', () => {
     })
 
     it('should mark chapter as read', async () => {
-      const result = await toggleChapterReadStatus(
+      await toggleChapterReadStatus(
         mockUserId,
         'Genesis1',
         true
@@ -188,7 +168,7 @@ describe('Firestore Service', () => {
     })
 
     it('should mark chapter as unread', async () => {
-      const result = await toggleChapterReadStatus(
+      await toggleChapterReadStatus(
         mockUserId,
         'Exodus1',
         false

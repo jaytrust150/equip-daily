@@ -8,7 +8,6 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   subscribeToReadingPlans,
   completeChapter,
-  updatePlanProgress,
   updateStreak,
   completePlan,
   pausePlan,
@@ -21,17 +20,15 @@ import {
 export const useReadingPlans = (userId) => {
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!userId);
   const [error, setError] = useState(null);
 
   // Subscribe to reading plans on mount
   useEffect(() => {
     if (!userId) {
-      setLoading(false);
       return;
     }
 
-    setLoading(true);
     const unsubscribe = subscribeToReadingPlans(userId, (data) => {
       setPlans(data);
       // Set first active plan as current

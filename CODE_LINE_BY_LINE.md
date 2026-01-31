@@ -46,6 +46,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/middleware/rateLimiter.js` | 87 | 2535 | `9d6ac2c5bd440f35` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1421 | 53623 | `32e0602f7e434b9b` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -813,10 +814,10 @@ This document provides comprehensive documentation for AI assistants and future 
 | `SENTRY_VERCEL_SETUP.md` | 250 | 6296 | `dc4cb62856295461` |
 | `SERVERLESS_PROXY_GUIDE.md` | 257 | 7019 | `8939f3957677ed48` |
 | `src/__tests__/features/BibleStudy.test.jsx` | 96 | 2480 | `a433a3970d0f1327` |
-| `src/__tests__/hooks/useAudio.test.js` | 196 | 4806 | `3abe82bd68f70c4f` |
-| `src/__tests__/services/firestoreService.test.js` | 285 | 6988 | `1ba1db3244f2300c` |
-| `src/__tests__/setup.js` | 115 | 2636 | `f237d0ed2ae83b71` |
-| `src/__tests__/shared/AudioPlayer.test.js` | 172 | 4005 | `f5318dc475cfe7c7` |
+| `src/__tests__/hooks/useAudio.test.js` | 193 | 4743 | `ea22b913f62a3786` |
+| `src/__tests__/services/firestoreService.test.js` | 265 | 6542 | `2fe68e9facf73356` |
+| `src/__tests__/setup.js` | 115 | 2628 | `b3ae3a612fea8666` |
+| `src/__tests__/shared/AudioPlayer.test.js` | 172 | 3986 | `3d406c4a049cdff1` |
 | `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
 | `src/__tests__/shared/SearchWell.test.jsx` | 61 | 1379 | `02e6feb262cfa719` |
 | `src/App.css` | 223 | 5048 | `e69656b2921b9b1c` |
@@ -836,11 +837,11 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/features/bible/VerseList.jsx` | 127 | 6406 | `a5784bf54d07ccbf` |
 | `src/features/devotional/DailyDevotional.jsx` | 102 | 5718 | `1f9599c22e2a6955` |
 | `src/features/devotional/DevotionalContent.jsx` | 73 | 2718 | `8fb4a5ecaf54bd13` |
-| `src/features/ReadingPlans.jsx` | 374 | 15794 | `2c0e3e60948d6957` |
+| `src/features/ReadingPlans.jsx` | 372 | 15674 | `7e6592dbff3e14e0` |
 | `src/hooks/useAudio.js` | 127 | 5478 | `fbb53cd11968375d` |
 | `src/hooks/useDraggableWindow.js` | 84 | 3235 | `cf223eb89f79f955` |
-| `src/hooks/useFirebaseAnalytics.js` | 111 | 2628 | `4f42e34b3cee2d57` |
-| `src/hooks/useReadingPlans.js` | 131 | 3133 | `65647d4ae9fa2816` |
+| `src/hooks/useFirebaseAnalytics.js` | 111 | 2627 | `c6208535c31f584d` |
+| `src/hooks/useReadingPlans.js` | 128 | 3068 | `3d214845a6410a36` |
 | `src/index.css` | 64 | 1300 | `0117cc45690b80ce` |
 | `src/main.jsx` | 41 | 1104 | `378787ffaae1c75f` |
 | `src/services/firestoreService.js` | 336 | 12976 | `718cb9f68a4c78a6` |
@@ -859,9 +860,10 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2241 | `ff6f85bcecad7a85` |
-| `vitest.config.js` | 35 | 774 | `f5b8c84831524938` |
+| `vitest.config.js` | 40 | 867 | `59f266cc5b13cfad` |
 
 <!-- AUTO-GENERATED-END -->
 

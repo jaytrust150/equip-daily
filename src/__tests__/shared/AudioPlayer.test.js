@@ -8,7 +8,7 @@
  * @module AudioPlayer.test
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 
 describe('AudioPlayer Component', () => {
   let mockAudioUrl
@@ -20,7 +20,7 @@ describe('AudioPlayer Component', () => {
   describe('Module Import', () => {
     it('should import without errors', async () => {
       expect(async () => {
-        const module = await import('../../shared/AudioPlayer.jsx')
+        await import('../../shared/AudioPlayer.jsx')
       }).toBeDefined()
     })
 
