@@ -923,6 +923,15 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     }
   };
 
+  const handleOpenNote = () => {
+    if (selectedVerses.length === 0) return;
+    // Open inline editor at the last selected verse
+    const lastVerseNum = selectedVerses[selectedVerses.length - 1];
+    setLongPressVerse(lastVerseNum);
+    setCurrentNoteText("");
+    setIsNoteMode(true);
+  };
+
   const handleCopyVerses = async () => {
     if (selectedVerses.length === 0) return;
     try {
@@ -2417,6 +2426,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
         onCopyVerses={handleCopyVerses}
         onPasteVerses={handlePasteVerses}
         onDeleteNote={handleClearNote}
+        onOpenNote={handleOpenNote}
         theme={theme}
         activeColor={activeHighlightColor}
         setActiveHighlightColor={setActiveHighlightColor}
