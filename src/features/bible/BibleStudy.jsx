@@ -2106,7 +2106,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       </div>
 
       {/* Chapter Navigation Buttons */}
-      <div className="max-w-4xl mx-auto flex justify-center gap-3 mt-8 mb-10 flex-wrap items-center">
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '30px', marginBottom: '40px', flexWrap: 'wrap', alignItems: 'center', maxWidth: '960px', margin: '30px auto 40px auto' }}>
         {/* Bible Version Selector - Small and Compact */}
         <select
           name="bibleVersionBottom"
