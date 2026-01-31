@@ -1597,7 +1597,8 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       )}
 
       {/* 📖 MAIN CONTENT */}
-      <div className={`mx-auto grid grid-cols-1 ${showNotes ? 'md:grid-cols-[1fr_300px]' : ''} gap-6`} style={{ maxWidth: '960px', width: '100%' }}>
+      <div style={{ maxWidth: showNotes ? '960px' : '800px', margin: '0 auto', padding: '20px' }}>
+        <div className={`mx-auto grid grid-cols-1 ${showNotes ? 'md:grid-cols-[1fr_300px]' : ''} gap-6`} style={{ width: '100%' }}>
         
         {/* LEFT: Bible Text */}
         <div 
@@ -2084,6 +2085,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
         </div>
         )}
+        </div>
       </div>
 
       {/* Mark as Read Button */}
