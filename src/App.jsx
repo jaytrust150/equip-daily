@@ -294,8 +294,8 @@ function App() {
       setHeaderTipFading(false);
     }, 0);
 
-    fadeTimer = setTimeout(() => setHeaderTipFading(true), 7500);
-    hideTimer = setTimeout(() => setShowHeaderTip(false), 8000);
+    fadeTimer = setTimeout(() => setHeaderTipFading(true), 11500);
+    hideTimer = setTimeout(() => setShowHeaderTip(false), 12000);
     return () => {
       clearTimeout(showTimer);
       clearTimeout(fadeTimer);
