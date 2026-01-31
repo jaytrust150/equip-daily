@@ -876,6 +876,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
 
   // Long press handlers for inline note editor
   const handleMouseDown = (verseNum) => {
+    // Only allow long-press note entry in Study Mode
+    if (!showNotes) return;
+    
     longPressTimer.current = setTimeout(() => {
       setLongPressVerse(verseNum);
       setCurrentNoteText(""); // Clear any existing text
