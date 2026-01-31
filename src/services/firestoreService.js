@@ -13,10 +13,29 @@
 import { db } from "../config/firebase";
 import { 
   doc, setDoc, updateDoc, deleteDoc, addDoc, getDoc, 
-  collection, query, where, onSnapshot, 
+  collection, query, where, onSnapshot, limit,
   serverTimestamp, arrayUnion, arrayRemove 
 } from "firebase/firestore";
 import { CITY_NAME, DEFAULT_NOTE_COLOR } from "../config/constants";
+
+// Query limits to prevent excessive data fetching
+const QUERY_LIMITS = {
+  reflections: 50,        // Max 50 reflections per query
+  notes: 100,            // Max 100 notes per chapter
+  userHighlights: 1000,  // Max 1000 highlights per user
+  favorites: 500,        // Max 500 favorites per user
+};
+
+/**
+ * Validate and limit array size for bulk operations
+ * @param {Array} array - Array to validate
+ * @param {number} maxSize - Maximum size allowed
+ * @returns {Array} Limited array
+ */
+const limitArraySize = (array, maxSize = 100) => {
+  if (!Array.isArray(array)) return [];
+  return array.slice(0, Math.min(array.length, maxSize));
+};
 
 /**
  * Subscribe to reflections in real-time
@@ -31,9 +50,11 @@ import { CITY_NAME, DEFAULT_NOTE_COLOR } from "../config/constants";
  */
 export const subscribeToReflections = (keyField, keyValue, callback) => {
   // Create Firestore query to filter reflections by the specified field
+  // Query limit: 50 reflections per topic to prevent excessive data fetching
   const q = query(
     collection(db, "reflections"), 
-    where(keyField, "==", keyValue)
+    where(keyField, "==", keyValue),
+    limit(QUERY_LIMITS.reflections)
   );
   // Set up real-time listener
   return onSnapshot(
@@ -225,6 +246,9 @@ export const subscribeToUserProfile = (userId, callback) => {
  * @param {string} colorCode - Color code to apply, or null to remove highlights
  */
 export const updateUserHighlightsBulk = async (userId, verseKeys, colorCode) => {
+  // Limit bulk operations to prevent excessive writes
+  const limitedVerseKeys = limitArraySize(verseKeys, 100);
+  
   const userRef = doc(db, "users", userId);
   const docSnap = await getDoc(userRef);
   
@@ -232,7 +256,7 @@ export const updateUserHighlightsBulk = async (userId, verseKeys, colorCode) => 
     const currentHighlights = docSnap.data().highlights || [];
     // Remove all existing highlights for these specific verses first
     // Extract just the verse keys (without color) from existing highlights
-    const keysToRemove = verseKeys.map(k => k.split('|')[0]);
+    const keysToRemove = limitedVerseKeys.map(k => k.split('|')[0]);
     const toRemove = currentHighlights.filter(h => keysToRemove.includes(h.split('|')[0]));
     
     // Remove old highlights using Firestore arrayRemove
@@ -242,7 +266,7 @@ export const updateUserHighlightsBulk = async (userId, verseKeys, colorCode) => 
   // Add new highlights with the selected color (if color provided)
   if (colorCode) {
     // Format: "book|chapter|verse|colorCode"
-    const toAdd = verseKeys.map(k => `${k}|${colorCode}`);
+    const toAdd = limitedVerseKeys.map(k => `${k}|${colorCode}`);
     await updateDoc(userRef, { highlights: arrayUnion(...toAdd) });
   }
 };
@@ -260,7 +284,14 @@ export const updateUserHighlightsBulk = async (userId, verseKeys, colorCode) => 
  */
 export const subscribeToNotes = (userId, book, chapter, callback) => {
     // Create Firestore query to filter notes by user, book, and chapter
-    const q = query(collection(db, "notes"), where("userId", "==", userId), where("book", "==", book), where("chapter", "==", parseInt(chapter)));
+    // Query limit: 100 notes per chapter to prevent excessive data fetching
+    const q = query(
+      collection(db, "notes"), 
+      where("userId", "==", userId), 
+      where("book", "==", book), 
+      where("chapter", "==", parseInt(chapter)),
+      limit(QUERY_LIMITS.notes)
+    );
     // Set up real-time listener
     return onSnapshot(
         q, 

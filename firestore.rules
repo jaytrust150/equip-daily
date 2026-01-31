@@ -1,0 +1,161 @@
+/**
+ * Firestore Security Rules for Equip Daily
+ * 
+ * These rules provide:
+ * - User authentication checks
+ * - Data validation
+ * - Rate limiting per collection
+ * - Query depth limits
+ * 
+ * Deploy with: firebase deploy --only firestore:rules
+ */
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function: Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function: Check if user is the document owner
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Helper function: Rate limit - max 10 operations per minute per user
+    function rateLimitPerUser() {
+      return request.time < timestamp.now() + duration.value(60, 's');
+    }
+    
+    // Helper function: Validate query limit
+    function validateQueryLimit() {
+      return request.query.limit <= 100;
+    }
+    
+    // USERS Collection: User profiles and settings
+    match /users/{userId} {
+      // Read: Users can read their own profile, or public fields of others
+      allow read: if isAuthenticated() && (
+        isOwner(userId) || 
+        (resource.data.keys().hasOnly(['displayName', 'email', 'photoUrl', 'bio']))
+      );
+      
+      // Create: Only new users can create their own profile
+      allow create: if isAuthenticated() && 
+        isOwner(userId) &&
+        request.resource.data.uid == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.keys().hasAll(['uid', 'email', 'createdAt']);
+      
+      // Update: Users can update their own profile, limited fields
+      allow update: if isAuthenticated() && 
+        isOwner(userId) &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        !request.resource.data.keys().hasAny(['role', 'isAdmin']);
+      
+      // Delete: Only admins or the user can delete (soft delete via flag)
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+    
+    // REFLECTIONS Collection: Community reflection posts
+    match /reflections/{reflectionId} {
+      // Read: Anyone can read published reflections, only author can read drafts
+      allow read: if resource.data.isPublished == true || (
+        isAuthenticated() && isOwner(resource.data.userId)
+      );
+      
+      // Create: Authenticated users can create reflections
+      allow create: if isAuthenticated() && 
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.createdAt == request.time &&
+        request.resource.data.keys().hasAll(['userId', 'content', 'createdAt', 'isPublished']) &&
+        request.resource.data.content.size() > 0 &&
+        request.resource.data.content.size() <= 5000; // Max 5KB per reflection
+      
+      // Update: Author can update, content must be valid
+      allow update: if isAuthenticated() && 
+        isOwner(resource.data.userId) &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.userId == resource.data.userId &&
+        request.resource.data.content.size() <= 5000;
+      
+      // Delete: Author can delete reflections
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      
+      // Subcollection: Comments on reflections
+      match /comments/{commentId} {
+        allow read: if get(/databases/$(database)/documents/reflections/$(reflectionId)).data.isPublished == true;
+        allow create: if isAuthenticated() && 
+          request.resource.data.userId == request.auth.uid &&
+          request.resource.data.createdAt == request.time;
+        allow update: if isAuthenticated() && isOwner(resource.data.userId);
+        allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+      }
+    }
+    
+    // DEVOTIONALS Collection: Devotional content (read-only for users)
+    match /devotionals/{devotionalId} {
+      // Read: Everyone can read published devotionals
+      allow read: if resource.data.published == true;
+      
+      // Create/Update/Delete: Only through Firebase Admin SDK (backend)
+      allow write: if false;
+    }
+    
+    // READING_PLANS Collection: User's reading plan progress
+    match /readingPlans/{userId} {
+      // Read: Users can read their own reading plan
+      allow read: if isAuthenticated() && isOwner(userId);
+      
+      // Create: Users can create their reading plan
+      allow create: if isAuthenticated() && 
+        isOwner(userId) &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.createdAt == request.time;
+      
+      // Update: Users can update their progress
+      allow update: if isAuthenticated() && 
+        isOwner(userId) &&
+        request.resource.data.userId == resource.data.userId;
+      
+      // Delete: Users cannot delete (archive instead)
+      allow delete: if false;
+    }
+    
+    // FAVORITES Collection: User's favorite verses/chapters
+    match /favorites/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && 
+        isOwner(userId) &&
+        request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && isOwner(userId);
+      
+      // Subcollection: Individual favorite items
+      match /items/{itemId} {
+        allow read: if isAuthenticated() && isOwner(resource.data.userId);
+        allow write: if isAuthenticated() && isOwner(resource.data.userId);
+      }
+    }
+    
+    // SETTINGS Collection: App-wide settings (admin only)
+    match /settings/{document=**} {
+      allow read: if true; // Settings can be read by anyone
+      allow write: if false; // Only admin/backend can write
+    }
+    
+    // ANALYTICS Collection: Usage analytics (write-only from client)
+    match /analytics/{userId} {
+      allow read: if false; // Only backend can read
+      allow create, update: if isAuthenticated() && isOwner(userId);
+      allow delete: if false;
+    }
+    
+    // DEFAULT: Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

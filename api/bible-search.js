@@ -17,6 +17,10 @@
 // Serverless function to proxy Bible API search requests
 // This keeps your API key secure and avoids CORS issues
 /* eslint-disable no-console */
+import { createRateLimiter, getClientIp } from './middleware/rateLimiter.js';
+
+// Rate limiter: 20 requests per minute per IP (search is more expensive than chapter fetch)
+const limiter = createRateLimiter({ requests: 20, windowMs: 60000 });
 
 export default async function handler(request, response) {
   // Set CORS headers to allow requests from frontend
@@ -29,6 +33,15 @@ export default async function handler(request, response) {
   if (request.method === 'OPTIONS') {
     response.status(200).end();
     return;
+  }
+
+  // Rate limit check
+  const clientIp = getClientIp(request);
+  if (!limiter(clientIp)) {
+    return response.status(429).json({ 
+      error: 'Too many requests',
+      message: 'Rate limit exceeded. Maximum 20 requests per minute.'
+    });
   }
 
   // Only allow GET requests

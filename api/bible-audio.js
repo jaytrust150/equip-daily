@@ -13,6 +13,11 @@
  * @returns {Object} Error object if audio not found or request fails
  */
 // Vercel Serverless Function: Fetch audio URL from API.Bible
+import { createRateLimiter, getClientIp } from './middleware/rateLimiter.js';
+
+// Rate limiter: 40 requests per minute per IP (audio fetch is a lightweight operation)
+const limiter = createRateLimiter({ requests: 40, windowMs: 60000 });
+
 export default async function handler(req, res) {
   // Set CORS headers to allow requests from frontend
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -24,6 +29,15 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
+  }
+
+  // Rate limit check
+  const clientIp = getClientIp(req);
+  if (!limiter(clientIp)) {
+    return res.status(429).json({ 
+      error: 'Too many requests',
+      message: 'Rate limit exceeded. Maximum 40 requests per minute.'
+    });
   }
 
   // Only allow GET requests
