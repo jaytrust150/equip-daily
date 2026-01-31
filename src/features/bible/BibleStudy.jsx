@@ -975,8 +975,10 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       return;
     }
     const verseRefs = formatVerseReference(selectedVerses);
-    setNoteFeedback({ type: 'info', msg: `Reference: ${verseRefs}` });
-    setTimeout(() => setNoteFeedback({}), 3000);
+    // Paste the reference into the note editor
+    setCurrentNoteText(prev => prev ? `${prev}\n${verseRefs}` : verseRefs);
+    setNoteFeedback({ type: 'success', msg: `Pasted: ${verseRefs}` });
+    setTimeout(() => setNoteFeedback({}), 2000);
   };
 
   const handleClearNote = () => {
