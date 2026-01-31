@@ -1579,7 +1579,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       )}
 
       {/* 📖 MAIN CONTENT */}
-      <div className={`max-w-4xl mx-auto grid grid-cols-1 ${showNotes ? 'md:grid-cols-[1fr_300px]' : ''} gap-6`}>
+      <div className={`mx-auto grid grid-cols-1 ${showNotes ? 'md:grid-cols-[1fr_300px]' : ''} gap-6`} style={{ maxWidth: '960px', width: '100%' }}>
         
         {/* LEFT: Bible Text */}
         <div 
