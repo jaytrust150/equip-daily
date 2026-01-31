@@ -44,6 +44,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/bibles.js` | 84 | 2911 | `87a9cda7b1f61060` |
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `api/middleware/rateLimiter.js` | 87 | 2535 | `9d6ac2c5bd440f35` |
+| `ARCHITECTURE.md` | 474 | 12549 | `56d611522513a014` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
 | `CODE_DOCUMENTATION.md` | 1436 | 54680 | `b7f71d724619aa24` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
