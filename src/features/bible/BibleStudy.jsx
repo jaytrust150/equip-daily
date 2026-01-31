@@ -2080,7 +2080,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       </div>
 
       {/* Mark as Read Button */}
-      <div className="max-w-4xl mx-auto mt-10 flex justify-center">
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '30px', marginBottom: '30px' }}>
         <button
           onClick={() => {
             const chapterKey = `${book} ${chapter}`;
@@ -2090,14 +2090,21 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             goToNextChapter();
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="px-6 py-3 font-semibold rounded-lg transition shadow-md flex items-center gap-2"
           style={{
-            backgroundColor: '#10b981',
-            color: 'white',
-            fontSize: '1rem'
+            padding: '10px 20px',
+            fontSize: '0.95rem',
+            fontWeight: '500',
+            background: theme === 'dark' ? '#333' : '#f0f0f0',
+            color: theme === 'dark' ? '#fff' : '#333',
+            border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: '0.2s',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
           }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#059669'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#10b981'}
           title="Mark this chapter as read, track your progress, and advance to the next chapter 🎉"
         >
           <span>✓</span>
