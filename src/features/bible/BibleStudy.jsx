@@ -2094,21 +2094,29 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             padding: '10px 20px',
             fontSize: '0.95rem',
             fontWeight: '500',
-            background: theme === 'dark' ? '#333' : '#f0f0f0',
-            color: theme === 'dark' ? '#fff' : '#333',
-            border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
+            background: readChapters.includes(`${book} ${chapter}`) 
+              ? (theme === 'dark' ? '#1f4e3c' : '#e8f5e9')
+              : (theme === 'dark' ? '#333' : '#f0f0f0'),
+            color: readChapters.includes(`${book} ${chapter}`)
+              ? (theme === 'dark' ? '#81c784' : '#2e7d32')
+              : (theme === 'dark' ? '#fff' : '#333'),
+            border: readChapters.includes(`${book} ${chapter}`)
+              ? (theme === 'dark' ? '1px solid #4caf50' : '1px solid #4caf50')
+              : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
             borderRadius: '8px',
             cursor: 'pointer',
-            transition: '0.2s',
+            transition: 'all 0.3s ease',
             boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}
-          title="Mark this chapter as read, track your progress, and advance to the next chapter 🎉"
+          title={readChapters.includes(`${book} ${chapter}`) 
+            ? "Chapter marked as read! Click to advance to next chapter"
+            : "Mark this chapter as read, track your progress, and advance to the next chapter 🎉"}
         >
-          <span>✓</span>
-          Mark as Read
+          <span>{readChapters.includes(`${book} ${chapter}`) ? '✓' : '☐'}</span>
+          {readChapters.includes(`${book} ${chapter}`) ? 'Marked as Read' : 'Mark as Read'}
         </button>
       </div>
 
