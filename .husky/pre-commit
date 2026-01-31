@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Keep docs in sync before commit so CI docs:check passes
+npm run docs:code
+git add CODE_LINE_BY_LINE.md
+
 npx lint-staged
