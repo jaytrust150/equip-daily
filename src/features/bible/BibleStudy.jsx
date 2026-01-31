@@ -1001,8 +1001,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     touchStartY.current = null;
 
     if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      if (deltaX < 0) goToNextChapter();
-      else goToPrevChapter();
+      if (deltaX < 0) {
+        goToNextChapter();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        goToPrevChapter();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
