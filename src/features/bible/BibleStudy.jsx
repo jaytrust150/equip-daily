@@ -2062,21 +2062,21 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
             {/* Note Editor */}
             <div className={`p-4 rounded-xl border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                 <h3 className="font-semibold mb-2 flex items-center gap-2">
-                    ✏️ Personal Notes
+                    ✏️ Note Editor
                 </h3>
                 
                 {!user ? (
                   <div className="text-center py-8">
-                    <p className="text-sm text-gray-500 mb-3">Sign in to save personal notes and track your study progress.</p>
+                    <p className="text-sm text-gray-500 mb-3">Sign in to add notes to your selected verses.</p>
                     <Login theme={theme} />
                   </div>
                 ) : (
                   <>
                     <textarea
-                      name="personalNote"
+                      name="noteEditor"
                         value={currentNoteText}
                         onChange={(e) => setCurrentNoteText(e.target.value)}
-                        placeholder="Type a reflection here..."
+                        placeholder="Type a note for this verse..."
                         className={`w-full p-3 rounded-lg border h-32 mb-2 focus:ring-2 focus:ring-indigo-500 outline-none ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}
                     />
                     <button 
