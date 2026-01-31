@@ -45,7 +45,8 @@ This document provides comprehensive documentation for AI assistants and future 
 | `api/health.js` | 158 | 4906 | `ae2ceef60acd6b8d` |
 | `api/middleware/rateLimiter.js` | 87 | 2535 | `9d6ac2c5bd440f35` |
 | `AUDIO_FALLBACK_IMPLEMENTATION.md` | 107 | 3378 | `5871af1cfa7f1a65` |
-| `CODE_DOCUMENTATION.md` | 1421 | 53623 | `32e0602f7e434b9b` |
+| `CODE_DOCUMENTATION.md` | 1436 | 54680 | `b7f71d724619aa24` |
+| `deploy.log` | 60 | 2854 | `ee36e0ca4f7d7a35` |
 | `DEPLOYMENT.md` | 201 | 5925 | `da7cb4eab73a6a82` |
 | `DOCUMENTATION_UPDATED.md` | 198 | 6027 | `cab66a0e387a6e6d` |
 | `e2e/critical-flows.spec.js` | 88 | 3034 | `cb82e015ac80fbde` |
@@ -56,7 +57,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `HEALTH_CHECK.md` | 221 | 6345 | `c6955bb0b795f0c6` |
 | `health-check.sh` | 71 | 2059 | `075e2475491aec8b` |
 | `IMPLEMENTATION_COMPLETE.md` | 450 | 13845 | `0f524ae71fa8dfbc` |
-| `IMPLEMENTATION_SUMMARY.md` | 255 | 6800 | `e4896c9a7f3f7945` |
+| `IMPLEMENTATION_SUMMARY.md` | 279 | 7873 | `ae42491fa797971f` |
 | `index.html` | 14 | 360 | `e2374ffe32e2bfdc` |
 | `lighthouserc.js` | 24 | 663 | `ee644473ee1c505f` |
 | `MONITORING_SETUP.md` | 282 | 7114 | `d2dbf9dd32f57af9` |
@@ -859,6 +860,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/shared/withErrorBoundary.jsx` | 19 | 700 | `528f1b87faad4788` |
 | `TESTING_GUIDE.md` | 439 | 9147 | `141ba12731e43dd4` |
 | `VERCEL_ENV_SETUP.md` | 124 | 3925 | `45c1443a7093de4b` |
+| `vercel-dev.log` | 21 | 509 | `e84a99e8cfd1cf9f` |
 | `vercel.json` | 34 | 633 | `056732170d0ad36b` |
 | `vite.config.js` | 84 | 2241 | `ff6f85bcecad7a85` |
 | `vitest.config.js` | 40 | 867 | `59f266cc5b13cfad` |

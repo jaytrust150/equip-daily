@@ -235,6 +235,30 @@ After deploying:
 
 ---
 
+## 🔧 CI/CD Pipeline Fixed (January 31, 2026)
+
+### Issues Resolved:
+1. **GitHub Actions Deprecation** - Updated `upload-artifact@v3` → `@v4`
+2. **ESLint Errors** - Fixed 10+ unused variable violations across test files and components
+3. **ESM Module Errors** - Added Vitest configuration for `@codemirror` packages
+
+### Files Modified:
+- `.github/workflows/ci.yml` - Updated deprecated actions
+- `src/hooks/useFirebaseAnalytics.js` - Changed `console.debug` → `console.warn`
+- `src/hooks/useReadingPlans.js` - Removed unused imports, fixed setState in effect
+- `src/features/ReadingPlans.jsx` - Cleaned up unused variables
+- `vitest.config.js` - Added ESM server.deps.inline configuration
+- `src/__tests__/` - Fixed 4 test files with unused variable errors
+
+### Results:
+✅ All CI/CD checks now passing (lint-and-build, tests, e2e-tests, verify-docs)
+✅ Automated deployment to Vercel restored
+✅ No blocking errors in GitHub Actions
+
+**Commit:** `993a8a7` - "Fix CI/CD pipeline: update upload-artifact to v4, fix all lint errors, add ESM support for tests"
+
+---
+
 ## 🎉 You're Ready!
 
 Everything is implemented and tested. Just:

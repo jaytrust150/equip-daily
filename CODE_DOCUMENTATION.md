@@ -20,6 +20,7 @@
 - Community reflections subscription and management
 - YouTube video embedding from devotional content
 - Rewires 📅 calendar icon to open Reading Plans entry panel
+- **Header Tips** - Context-aware tips for Bible and Devotional tabs (12-second display with fade at 11.5s)
 
 **Key Functions:**
 - `jumpToVerse(book, chapter, verseNum)` - Navigates to Bible with optional verse highlighting
@@ -32,10 +33,13 @@
 - `bibleBook`, `bibleChapter` - Current Bible location
 - `isWellOpen` - SearchWell visibility
 - `wellQuery` - Current search query
+- `showHeaderTip` - Boolean for header tip visibility
+- `headerTipFading` - Boolean for fade-out animation state
+- `headerTipText` - String with context-specific tip content
 
 ---
 
-#### **src/features/bible/BibleStudy.jsx** (2213 lines)
+#### **src/features/bible/BibleStudy.jsx** (2448 lines)
 **Purpose:** Main Bible reading interface with study tools
 **Functionality:**
 - Displays Bible chapters with verse-by-verse rendering
@@ -47,22 +51,33 @@
 - Community reflections per chapter
 - Reading progress tracking
 - Floating toolbar for study tools
+- **Reading Mode (📖)** - Read-only, passive reading with note pills
+- **Study Mode (📝)** - Active annotation with verse selection and long-press notes
+- Swipe left/right to change chapters (scrolls to top automatically)
+- Color palette for instant multi-verse highlighting
+- Copy/Paste clipboard integration for note composition
 
 **Key Functions:**
 - `markChapterAsRead()` - Toggles chapter read status, shows confetti
-- `handleVerseClick(verseNum)` - Handles highlighting/selection
-- `handleLongPress()` - Opens inline note editor
+- `handleVerseClick(verseNum)` - Handles highlighting/selection in Study Mode
+- `handleLongPress()` - Opens inline note editor (Study Mode only)
 - `saveCurrentNote()` - Saves note to Firestore
-- `handleHighlight(verseNum)` - Applies highlight color to verse
+- `handleVerseHighlight(verseNum)` - Applies highlight color to verse
+- `handleOpenNote()` - Opens inline editor at last selected verse
+- `handlePasteVerses()` - Pastes from clipboard into note editor
 - `toggleAudio()` - Plays/pauses chapter audio
+- `handleTouchStart/End()` - Swipe gestures for chapter navigation
 
 **State Variables:**
 - `readChapters` - Array of read chapter keys ("Genesis 1", etc.)
+- `showNotes` - Boolean for Reading/Study Mode toggle
 - `showTestamentNav` - Shows OT/NT navigation ('OT'|'NT'|null)
 - `highlightsMap` - Object mapping verse numbers to highlight colors
 - `userNotes` - Array of notes for current chapter
-- `selectedVerses` - Array of selected verse numbers
+- `selectedVerses` - Array of selected verse numbers with checkmarks
 - `activeHighlightColor` - Currently selected highlight color
+- `versesCopied` - Boolean tracking if verses were copied to clipboard
+- `isEditingInline` - Boolean for inline note editor visibility
 
 **Integration Points:**
 - Uses `BibleTracker` component for progress visualization
