@@ -1204,51 +1204,85 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       {/* 🟢 TOP CONTROLS */}
       <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20" style={{ maxWidth: '960px', margin: '0 auto', width: '100%' }}>
         {/* Testament Navigation Buttons + Version Selector */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          {/* Left side - Bible Version Picker */}
-          <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-            <select
-              name="bibleVersionTop"
-              value={version}
-              onChange={e => setVersion(e.target.value)}
-              style={{
-                fontSize: '0.8rem',
-                padding: '4px 8px',
-                borderRadius: '10px',
-                border: '1px solid #ccc',
-                background: theme === 'dark' ? '#333' : '#f5f5f5',
-                color: theme === 'dark' ? '#aaa' : '#666',
-                fontWeight: 600,
-                minWidth: '90px',
-                height: '30px',
-                lineHeight: 1,
-                textAlign: 'center',
-                appearance: 'none',
-                outline: 'none',
-                margin: 0,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              title="Bible Version"
-            >
-              {bibleVersions.map(v => (
-                <option key={v.id} value={v.id} style={{fontSize: '0.7rem'}}>{v.abbreviation}</option>
-              ))}
-            </select>
-          </div>
-          
-          {/* Center - Testament Buttons (Dead Center) */}
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          <select
+            name="bibleVersionTop"
+            value={version}
+            onChange={e => setVersion(e.target.value)}
+            style={{
+              fontSize: '0.8rem',
+              padding: '4px 8px',
+              borderRadius: '10px',
+              border: '1px solid #ccc',
+              background: theme === 'dark' ? '#333' : '#f5f5f5',
+              color: theme === 'dark' ? '#aaa' : '#666',
+              fontWeight: 600,
+              minWidth: '90px',
+              height: '30px',
+              lineHeight: 1,
+              textAlign: 'center',
+              appearance: 'none',
+              outline: 'none',
+              margin: 0,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="Bible Version"
+          >
+            {bibleVersions.map(v => (
+              <option key={v.id} value={v.id} style={{fontSize: '0.7rem'}}>{v.abbreviation}</option>
+            ))}
+          </select>
+          <button
+            onClick={() => {
+              setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
+              setTestamentDrillBook(null);
+            }}
+            style={{ 
+              background: showTestamentNav === 'OT' ? '#6366f1' : (theme === 'dark' ? '#333' : '#f0f0f0'),
+              color: showTestamentNav === 'OT' ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
+              border: showTestamentNav === 'OT' ? '1px solid #6366f1' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
+              padding: '6px 14px', 
+              fontSize: '0.85rem', 
+              borderRadius: '10px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease'
+            }}
+            title="Browse Old Testament"
+          >
+            📖 Old Testament
+          </button>
+          <button
+            onClick={() => {
+              setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
+              setTestamentDrillBook(null);
+            }}
+            style={{ 
+              background: showTestamentNav === 'NT' ? '#6366f1' : (theme === 'dark' ? '#333' : '#f0f0f0'),
+              color: showTestamentNav === 'NT' ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
+              border: showTestamentNav === 'NT' ? '1px solid #6366f1' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
+              padding: '6px 14px', 
+              fontSize: '0.85rem', 
+              borderRadius: '10px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease'
+            }}
+            title="Browse New Testament"
+          >
+            ✝️ New Testament
+          </button>
+          {!showSearchWell ? (
             <button
-              onClick={() => {
-                setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
-                setTestamentDrillBook(null);
-              }}
+              onClick={() => setShowSearchWell(v => !v)}
               style={{ 
-                background: showTestamentNav === 'OT' ? '#6366f1' : (theme === 'dark' ? '#333' : '#f0f0f0'),
-                color: showTestamentNav === 'OT' ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
-                border: showTestamentNav === 'OT' ? '1px solid #6366f1' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
+                background: theme === 'dark' ? '#333' : '#f0f0f0',
+                color: theme === 'dark' ? '#fff' : '#333',
+                border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
                 padding: '6px 14px', 
                 fontSize: '0.85rem', 
                 borderRadius: '10px',
@@ -1257,56 +1291,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
                 transition: 'all 0.2s ease'
               }}
-              title="Browse Old Testament"
+              title="Search"
             >
-              📖 Old Testament
+              🔍
             </button>
-            <button
-              onClick={() => {
-                setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
-                setTestamentDrillBook(null);
-              }}
-              style={{ 
-                background: showTestamentNav === 'NT' ? '#6366f1' : (theme === 'dark' ? '#333' : '#f0f0f0'),
-                color: showTestamentNav === 'NT' ? '#fff' : (theme === 'dark' ? '#fff' : '#333'),
-                border: showTestamentNav === 'NT' ? '1px solid #6366f1' : (theme === 'dark' ? '1px solid #444' : '1px solid #ccc'),
-                padding: '6px 14px', 
-                fontSize: '0.85rem', 
-                borderRadius: '10px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s ease'
-              }}
-              title="Browse New Testament"
-            >
-              ✝️ New Testament
-            </button>
-          </div>
-          
-          {/* Right side - Search */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            {!showSearchWell ? (
-              <button
-                onClick={() => setShowSearchWell(v => !v)}
-                style={{ 
-                  background: theme === 'dark' ? '#333' : '#f0f0f0',
-                  color: theme === 'dark' ? '#fff' : '#333',
-                  border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc',
-                  padding: '6px 14px', 
-                  fontSize: '0.85rem', 
-                  borderRadius: '10px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                  transition: 'all 0.2s ease'
-                }}
-                title="Search"
-              >
-                🔍
-              </button>
-            ) : (
-              <div className="flex gap-2 items-center">
+          ) : (
+            <div className="flex gap-2 items-center">
                 <input
                   type="text"
                   name="bibleSearch"
@@ -1361,10 +1351,9 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 </button>
               </div>
             )}
-          </div>
-        </div>
+            </div>
 
-        {/* Compact Testament Navigation */}
+          {/* Compact Testament Navigation */}
         {showTestamentNav && bibleData && (
           <div
             className="mb-3 p-3 rounded-lg"
