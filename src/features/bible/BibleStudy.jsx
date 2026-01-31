@@ -968,22 +968,18 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
     return `${bookLabel} ${chapter}:${segments.join(', ')}`;
   };
 
-  const handlePasteVerses = () => {
-    if (!versesCopied) {
-      setNoteFeedback({ type: 'error', msg: 'No verses copied' });
+  const handlePasteVerses = async () => {
+    try {
+      // Try to read from browser clipboard
+      const clipboardText = await navigator.clipboard.readText();
+      setCurrentNoteText(prev => prev ? `${prev}\n${clipboardText}` : clipboardText);
+      setNoteFeedback({ type: 'success', msg: 'Pasted from clipboard' });
       setTimeout(() => setNoteFeedback({}), 2000);
-      return;
-    }
-    if (selectedVerses.length === 0) {
-      setNoteFeedback({ type: 'error', msg: 'No verses to reference' });
+    } catch (err) {
+      console.error('Paste failed:', err);
+      setNoteFeedback({ type: 'error', msg: 'Failed to paste from clipboard' });
       setTimeout(() => setNoteFeedback({}), 2000);
-      return;
     }
-    const verseRefs = formatVerseReference(selectedVerses);
-    // Paste the reference into the note editor
-    setCurrentNoteText(prev => prev ? `${prev}\n${verseRefs}` : verseRefs);
-    setNoteFeedback({ type: 'success', msg: `Pasted: ${verseRefs}` });
-    setTimeout(() => setNoteFeedback({}), 2000);
   };
 
   const handleClearNote = () => {
@@ -1926,7 +1922,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                                             />
                                             <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
                                               <div className="flex flex-wrap gap-2 ml-auto">
-                                                <button onClick={() => handleCopyFromEditor()} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>📋 Copy</button>
+                                                <button onClick={() => handleCopyFromEditor()} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: versesCopied ? '#9c27b0' : (theme === 'dark' ? '#333' : '#f0f0f0'), color: 'white', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>{versesCopied ? '📋 Paste' : '📋 Copy'}</button>
                                                 <button onClick={handlePasteVerses} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>📌 Paste</button>
                                                 <button onClick={handleSaveNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>💾 Save</button>
                                                 {editingNoteId && <button onClick={handleDeleteNote} style={{ padding: '6px 12px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>🗑️ Delete</button>}
