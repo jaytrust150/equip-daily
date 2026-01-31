@@ -810,6 +810,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `READING_PLANS_DESIGN.md` | 361 | 10308 | `e8e033f55f0901b2` |
 | `READING_PLANS_FOUNDATION_SUMMARY.md` | 375 | 10592 | `8587c2985e351d7d` |
 | `README.md` | 215 | 6820 | `29b1e6879840f209` |
+| `REFACTORING_ROADMAP.md` | 2271 | 62121 | `0d60183d80b0b78c` |
 | `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SECURITY_HARDENING.md` | 230 | 7174 | `880a9efe2ba22e4c` |
