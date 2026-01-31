@@ -1,8 +1,14 @@
+/* 🧱 App Shell (full-width background) */
+.app-shell {
+  width: 100%;
+}
+
 /* 🏠 Main Container Centering */
 .app-container {
-  max-width: 800px;    /* Keeps the app from getting too wide */
+  width: 100%;
+  max-width: 960px;    /* Keeps the app from getting too wide */
   margin: 0 auto;      /* Centers the whole box on the screen */
-  padding: 2rem;
+  padding: 2rem 1.5rem;
   text-align: center;  /* 🎯 This centers all your titles and text! */
   font-family: 'Inter', -apple-system, sans-serif;
 }

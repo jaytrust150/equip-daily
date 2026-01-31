@@ -345,7 +345,8 @@ function App() {
   if (loading) return <div className="app-container"><h3>Loading User Data...</h3></div>;
 
   return (
-    <div className="app-container" style={appStyle}>
+    <div className="app-shell" style={{ ...appStyle, minHeight: '100vh' }}>
+      <div className="app-container">
       <style>{`
         video::cue {
             font-size: 1.25rem;
@@ -618,6 +619,7 @@ function App() {
           user={user}
         />
       </Suspense>
+      </div>
     </div>
   );
 }

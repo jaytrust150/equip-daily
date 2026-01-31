@@ -4,8 +4,8 @@
   font-weight: 400;
 
   /* Removed: color-scheme: light dark; to prevent system preference override */
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #111827;
+  background-color: #f9fafb;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -28,6 +28,13 @@ body {
   display: block; 
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--page-bg, #f9fafb);
+  color: var(--page-text, #111827);
+}
+
+[data-theme="dark"] {
+  --page-bg: #0f172a;
+  --page-text: #f8fafc;
 }
 
 h1 {

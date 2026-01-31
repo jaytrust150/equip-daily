@@ -1202,32 +1202,32 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
       )}
       
       {/* 🟢 TOP CONTROLS */}
-      <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20">
+      <div className="mb-6 bg-white/5 p-3 rounded-xl shadow-sm border border-gray-200/20" style={{ maxWidth: '960px', margin: '0 auto', width: '100%' }}>
         {/* Testament Navigation Buttons + Version Selector */}
-        <div className="flex gap-1 mb-3 justify-center items-center flex-nowrap">
+        <div className="flex mb-3 justify-center items-center" style={{ gap: '8px', flexWrap: 'wrap' }}>
           {/* Bible Version Picker (tiny, functional dropdown) */}
           <select
             name="bibleVersionTop"
             value={version}
             onChange={e => setVersion(e.target.value)}
             style={{
-              fontSize: '0.7rem',
-              padding: '0 2px',
+              fontSize: '0.8rem',
+              padding: '4px 8px',
               borderRadius: '10px',
               border: '1px solid #ccc',
               background: theme === 'dark' ? '#333' : '#f5f5f5',
               color: theme === 'dark' ? '#aaa' : '#666',
               fontWeight: 600,
-              minWidth: 0,
-              maxWidth: '80px',
-              height: '24px',
+              minWidth: '90px',
+              height: '30px',
               lineHeight: 1,
               textAlign: 'center',
               appearance: 'none',
               outline: 'none',
               margin: 0,
-              display: 'inline-block',
-              verticalAlign: 'middle',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
             title="Bible Version"
           >
@@ -1601,7 +1601,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               </div>
             )}
             
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 mb-4" style={{ flexWrap: 'wrap', justifyContent: 'center', rowGap: '6px' }}>
               {/* Study/Reading Mode Button - background color always matches highlight color */}
               <button 
                 onClick={(e) => {
@@ -1649,18 +1649,18 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               <button onClick={() => setFontSize(f => Math.min(2.0, f + 0.1))} style={{ padding: '2px 6px', fontSize: '0.85rem', borderRadius: '6px', marginRight: '8px', minWidth: '22px', height: '22px', opacity: loading ? 0.5 : 1, transition: 'opacity 0.3s ease', color: theme === 'dark' ? '#ffffff' : undefined }} className={`font-bold ${theme === 'dark' ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 text-black hover:bg-gray-300'}`}>+</button>
               {/* Prev Button */}
               <button onClick={goToPrevChapter} style={{ 
-                padding: '5px 10px', 
-                fontSize: '1rem', 
+                padding: '4px 9px', 
+                fontSize: '0.9rem', 
                 borderRadius: '8px', 
                 marginRight: '8px', 
                 opacity: loading ? 0.5 : 1, 
                 transition: 'opacity 0.3s ease',
-                backgroundColor: theme === 'dark' ? '#10b981' : '#059669',
+                backgroundColor: theme === 'dark' ? '#0ea5a4' : '#059669',
                 color: '#ffffff',
                 border: 'none',
                 fontWeight: 600,
                 cursor: 'pointer',
-                boxShadow: theme === 'dark' ? '0 2px 6px rgba(16, 185, 129, 0.3)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
+                boxShadow: theme === 'dark' ? '0 2px 6px rgba(14, 165, 164, 0.25)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>← Prev</button>
               {/* Book Selector (inline, styled as title) */}
               <select
@@ -1728,12 +1728,12 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                 height: '26px', 
                 opacity: loading ? 0.5 : 1, 
                 transition: 'opacity 0.3s ease',
-                backgroundColor: theme === 'dark' ? '#10b981' : '#059669',
+                backgroundColor: theme === 'dark' ? '#0ea5a4' : '#059669',
                 color: '#ffffff',
                 border: 'none',
                 fontWeight: 600,
                 cursor: 'pointer',
-                boxShadow: theme === 'dark' ? '0 2px 6px rgba(16, 185, 129, 0.3)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
+                boxShadow: theme === 'dark' ? '0 2px 6px rgba(14, 165, 164, 0.25)' : '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>Next →</button>
               {/* Mark as Read Button (tight, full label) - Positioned right of Next button */}
               {user && (

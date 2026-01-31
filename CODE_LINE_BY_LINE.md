@@ -819,8 +819,8 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/__tests__/shared/AudioPlayer.test.js` | 172 | 4005 | `f5318dc475cfe7c7` |
 | `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
 | `src/__tests__/shared/SearchWell.test.jsx` | 61 | 1379 | `02e6feb262cfa719` |
-| `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
-| `src/App.jsx` | 624 | 32247 | `c6b4132d9da570df` |
+| `src/App.css` | 211 | 4867 | `e6e6a97a6f343511` |
+| `src/App.jsx` | 626 | 32321 | `10c9c303c107c9b5` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
 | `src/bibleData.ts` | 103 | 2492 | `a6226d017bb76830` |
 | `src/config/constants.js` | 122 | 6873 | `b115db72bceea125` |
@@ -828,7 +828,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/data/authorizedBibles.json` | 109 | 2456 | `8e1aed20f300735a` |
 | `src/data/bibleData.js` | 85 | 3944 | `8ddbe79233626005` |
 | `src/data/bibleTranslations.json` | 393 | 8699 | `51eb7b9918b8ceb3` |
-| `src/features/bible/BibleStudy.jsx` | 2342 | 99025 | `41ca02e15a86aad1` |
+| `src/features/bible/BibleStudy.jsx` | 2342 | 99194 | `634be2e4692b55fb` |
 | `src/features/bible/BibleTracker.jsx` | 181 | 7652 | `61855a7176bfb6de` |
 | `src/features/bible/BibleVersionPicker.jsx` | 274 | 9422 | `8358ad0843af6698` |
 | `src/features/bible/ControlBar.jsx` | 114 | 6188 | `19992212033cbc8d` |
@@ -841,7 +841,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `src/hooks/useDraggableWindow.js` | 84 | 3235 | `cf223eb89f79f955` |
 | `src/hooks/useFirebaseAnalytics.js` | 111 | 2628 | `4f42e34b3cee2d57` |
 | `src/hooks/useReadingPlans.js` | 131 | 3133 | `65647d4ae9fa2816` |
-| `src/index.css` | 57 | 1166 | `d4ed882ef99baf38` |
+| `src/index.css` | 64 | 1300 | `0117cc45690b80ce` |
 | `src/main.jsx` | 41 | 1104 | `378787ffaae1c75f` |
 | `src/services/firestoreService.js` | 336 | 12976 | `718cb9f68a4c78a6` |
 | `src/services/monitoring.js` | 197 | 5410 | `17c8b952585cfc0e` |
