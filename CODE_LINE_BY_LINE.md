@@ -14,22 +14,6 @@ This document provides comprehensive documentation for AI assistants and future 
 
 | File | Lines | Bytes | SHA256 Hash |
 |------|-------|-------|-------------|
-| `.husky/_/applypatch-msg` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/commit-msg` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/h` | 23 | 551 | `70200b200ca709b0` |
-| `.husky/_/husky.sh` | 9 | 160 | `21122903fca7209a` |
-| `.husky/_/post-applypatch` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-checkout` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-commit` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-merge` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/post-rewrite` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-applypatch` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-auto-gc` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-commit` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-merge-commit` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-push` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/pre-rebase` | 2 | 39 | `34fe496008be71d8` |
-| `.husky/_/prepare-commit-msg` | 2 | 39 | `34fe496008be71d8` |
 | `.husky/pre-commit` | 5 | 69 | `f0bc40a403f0a7b5` |
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
 | `api/__tests__/bible-audio.test.js` | 84 | 2552 | `aa2c02a21fe32085` |
