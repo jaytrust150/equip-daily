@@ -71,6 +71,17 @@ vi.mock('@sentry/react', () => ({
     setTag: vi.fn(),
     finish: vi.fn(),
   })),
+  startSpan: vi.fn((options, callback) => callback({ setAttribute: vi.fn() })),
+  Replay: vi.fn(() => ({})),
+  consoleLoggingIntegration: vi.fn(() => ({})),
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    trace: vi.fn(),
+    fatal: vi.fn(),
+  },
   withErrorBoundary: vi.fn((component) => component),
 }))
 

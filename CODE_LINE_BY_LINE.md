@@ -14,6 +14,22 @@ This document provides comprehensive documentation for AI assistants and future 
 
 | File | Lines | Bytes | SHA256 Hash |
 |------|-------|-------|-------------|
+| `.husky/_/applypatch-msg` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/commit-msg` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/h` | 23 | 551 | `70200b200ca709b0` |
+| `.husky/_/husky.sh` | 9 | 160 | `21122903fca7209a` |
+| `.husky/_/post-applypatch` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-checkout` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-commit` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-merge` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/post-rewrite` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-applypatch` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-auto-gc` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-commit` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-merge-commit` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-push` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/pre-rebase` | 2 | 39 | `34fe496008be71d8` |
+| `.husky/_/prepare-commit-msg` | 2 | 39 | `34fe496008be71d8` |
 | `.husky/pre-commit` | 5 | 69 | `f0bc40a403f0a7b5` |
 | `add_vercel_env.sh` | 34 | 1068 | `b7e2052aadd3e9cf` |
 | `api/__tests__/bible-audio.test.js` | 84 | 2552 | `aa2c02a21fe32085` |
@@ -791,10 +807,13 @@ This document provides comprehensive documentation for AI assistants and future 
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
 | `SENTRY_VERCEL_SETUP.md` | 250 | 6296 | `dc4cb62856295461` |
 | `SERVERLESS_PROXY_GUIDE.md` | 257 | 7019 | `8939f3957677ed48` |
+| `src/__tests__/features/BibleStudy.test.jsx` | 96 | 2480 | `a433a3970d0f1327` |
 | `src/__tests__/hooks/useAudio.test.js` | 196 | 4806 | `3abe82bd68f70c4f` |
 | `src/__tests__/services/firestoreService.test.js` | 285 | 6988 | `1ba1db3244f2300c` |
-| `src/__tests__/setup.js` | 104 | 2344 | `a4c759f56a844ad2` |
+| `src/__tests__/setup.js` | 115 | 2636 | `f237d0ed2ae83b71` |
 | `src/__tests__/shared/AudioPlayer.test.js` | 172 | 4005 | `f5318dc475cfe7c7` |
+| `src/__tests__/shared/CommunityFeed.test.jsx` | 58 | 1603 | `34bad6e3ca08e9aa` |
+| `src/__tests__/shared/SearchWell.test.jsx` | 61 | 1379 | `02e6feb262cfa719` |
 | `src/App.css` | 205 | 4769 | `d3f3ecd6172ec19b` |
 | `src/App.jsx` | 614 | 31640 | `4ea7e6b22348c285` |
 | `src/assets/react.svg` | 1 | 4126 | `35ef61ed53b323ae` |
