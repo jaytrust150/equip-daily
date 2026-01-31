@@ -1240,15 +1240,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               setShowTestamentNav(showTestamentNav === 'OT' ? null : 'OT');
               setTestamentDrillBook(null);
             }}
-            style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
+            style={{ 
+              padding: '6px 14px', 
+              fontSize: '0.85rem', 
+              borderRadius: '10px'
+            }}
             className={`font-medium transition shadow-sm ${
               showTestamentNav === 'OT'
                 ? 'bg-indigo-600 text-white border-indigo-600' 
                 : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
             }`}
-            style={{
-              color: theme === 'dark' && showTestamentNav !== 'OT' ? '#ffffff' : undefined
-            }}
             title="Browse Old Testament"
           >
             📖 Old Testament
@@ -1258,15 +1259,16 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               setShowTestamentNav(showTestamentNav === 'NT' ? null : 'NT');
               setTestamentDrillBook(null);
             }}
-            style={{ padding: '6px 14px', fontSize: '0.85rem', borderRadius: '10px', border: '1px solid' }}
+            style={{ 
+              padding: '6px 14px', 
+              fontSize: '0.85rem', 
+              borderRadius: '10px'
+            }}
             className={`font-medium transition shadow-sm ${
               showTestamentNav === 'NT'
                 ? 'bg-indigo-600 text-white border-indigo-600' 
                 : (theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50')
             }`}
-            style={{
-              color: theme === 'dark' && showTestamentNav !== 'NT' ? '#ffffff' : undefined
-            }}
             title="Browse New Testament"
           >
             ✝️ New Testament
@@ -1278,9 +1280,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
               style={{ 
                 padding: '6px 14px', 
                 fontSize: '0.85rem', 
-                borderRadius: '10px', 
-                border: '1px solid',
-                color: theme === 'dark' ? '#ffffff' : undefined
+                borderRadius: '10px'
               }}
               className={`font-medium transition shadow-sm ${
                 theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
