@@ -789,6 +789,7 @@ This document provides comprehensive documentation for AI assistants and future 
 | `QUICK_DEPLOY.txt` | 130 | 5819 | `530773f99a57dbff` |
 | `QUICK_REFERENCE_FILE_EDITING.md` | 126 | 2753 | `0492978f861b9717` |
 | `READING_PLANS_DESIGN.md` | 361 | 10308 | `e8e033f55f0901b2` |
+| `READING_PLANS_FOUNDATION_SUMMARY.md` | 375 | 10592 | `8587c2985e351d7d` |
 | `README.md` | 183 | 5131 | `d0b32feae52f2c4d` |
 | `scripts/generate-code-doc.js` | 160 | 4675 | `6e773f954074d75f` |
 | `scripts/safe_replace.py` | 118 | 3620 | `b37899ce7aa6dfad` |
