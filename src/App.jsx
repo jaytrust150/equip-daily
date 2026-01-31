@@ -562,7 +562,7 @@ function App() {
                     <textarea placeholder="What is the Spirit saying to you today?" value={reflection} onChange={(e) => setReflection(e.target.value)} style={{ width: '100%', height: '100px', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', marginBottom: '10px', fontFamily: 'inherit', background: theme === 'dark' ? '#333' : '#fff', color: theme === 'dark' ? '#fff' : '#333' }} />
                     <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                       <button onClick={saveReflection} className="login-btn" style={{ margin: 0 }}>{editingId ? "Update Reflection" : "Share with the Body"}</button>
-                      {editingId ? <button onClick={handleCancelEdit} className="secondary-btn" style={{backgroundColor: '#e53e3e', color: 'white', border: 'none'}}>Cancel</button> : <button onClick={() => setReflection("")} className="secondary-btn">Clear</button>}
+                      {editingId ? <button onClick={handleCancelEdit} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Cancel</button> : <button onClick={() => setReflection("")} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>Clear</button>}
                     </div>
                   </div>
                 ) : hasShared && !editingId ? <div style={{ padding: '20px', backgroundColor: theme === 'dark' ? '#0f2f21' : '#f0fff4', border: '1px solid #c6f6d5', borderRadius: '8px', color: theme === 'dark' ? '#81e6d9' : '#276749' }}><p style={{ fontWeight: 'bold', margin: 0 }}>✓ Shared with the Body!</p></div> : null}
@@ -599,7 +599,7 @@ function App() {
         )}
       </main>
       
-      {user && <footer style={{ textAlign: 'center', padding: '40px 20px', marginTop: '20px', borderTop: '1px solid #eee' }}><button onClick={logout} className="secondary-btn" style={{ fontSize: '0.8rem', opacity: 0.7 }}>Logout</button></footer>}
+      {user && <footer style={{ textAlign: 'center', padding: '40px 20px', marginTop: '20px', borderTop: '1px solid #eee' }}><button onClick={logout} style={{ padding: '8px 16px', fontSize: '12px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)', opacity: 0.7 }}>Logout</button></footer>}
       <Suspense fallback={
         <div style={{ 
           position: 'fixed', 

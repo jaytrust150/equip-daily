@@ -116,11 +116,11 @@ function CommunityFeed({ queryField, queryValue, user, theme, onSearch, onProfil
             </button>
             {/* Cancel button (editing mode) or Clear button (new post) */}
             {editingId ? (
-              <button onClick={() => { setEditingId(null); setInputText(""); }} className="secondary-btn" style={{backgroundColor: '#e53e3e', color: 'white', border: 'none'}}>
+              <button onClick={() => { setEditingId(null); setInputText(""); }} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                 Cancel
               </button>
             ) : (
-              <button onClick={() => setInputText("")} className="secondary-btn">
+              <button onClick={() => setInputText("")} style={{ padding: '8px 16px', fontSize: '14px', fontWeight: '500', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: 'pointer', transition: '0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
                 Clear
               </button>
             )}

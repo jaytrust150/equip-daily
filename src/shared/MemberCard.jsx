@@ -64,7 +64,7 @@ function MemberCard({ user, thought, reactions, location, onSearch, onReact, onP
     // Variables defined in :root and [data-theme="dark"] selectors in global CSS
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '15px', border: '1px solid var(--card-border)', borderRadius: '12px', backgroundColor: 'var(--card-bg)', color: 'var(--card-text)', maxWidth: '450px', margin: '0 auto', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', position: 'relative' }}>
       {/* Owner controls: conditionally rendered based on isOwner prop for access control */}
-      {isOwner && <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '8px', fontSize: '0.75rem' }}><button onClick={onEdit}>Edit</button>|<button onClick={onDelete} style={{color:'red'}}>Delete</button></div>}
+      {isOwner && <div style={{ position: 'absolute', top: '15px', right: '15px', display: 'flex', gap: '8px', fontSize: '0.75rem' }}><button onClick={onEdit} style={{ padding: '4px 8px', fontSize: '12px', fontWeight: '500', background: 'var(--card-bg)', color: 'var(--card-text)', border: '1px solid var(--card-border)', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>Edit</button><span style={{opacity: 0.3}}>|</span><button onClick={onDelete} style={{ padding: '4px 8px', fontSize: '12px', fontWeight: '500', background: 'var(--card-bg)', color: 'var(--card-text)', border: '1px solid var(--card-border)', borderRadius: '4px', cursor: 'pointer', transition: '0.2s' }}>Delete</button></div>}
       {/* User info section: profile photo, name, location badge, and thought */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {/* Clickable profile photo */}

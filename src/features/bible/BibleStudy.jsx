@@ -2066,7 +2066,7 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
                     <button 
                         onClick={handleSaveNote}
                         disabled={!currentNoteText.trim()}
-                        className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 font-medium transition"
+                        style={{ width: '100%', padding: '8px 12px', background: theme === 'dark' ? '#333' : '#f0f0f0', color: theme === 'dark' ? '#fff' : '#333', border: theme === 'dark' ? '1px solid #444' : '1px solid #ccc', borderRadius: '8px', cursor: !currentNoteText.trim() ? 'not-allowed' : 'pointer', fontWeight: '500', transition: '0.2s', opacity: !currentNoteText.trim() ? 0.5 : 1 }}
                     >
                         Save Note
                     </button>
