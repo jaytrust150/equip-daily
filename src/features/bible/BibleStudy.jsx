@@ -969,8 +969,13 @@ function BibleStudy({ theme, book, setBook, chapter, setChapter, onSearch, onPro
   };
 
   const handlePasteVerses = () => {
+    if (!versesCopied) {
+      setNoteFeedback({ type: 'error', msg: 'No verses copied' });
+      setTimeout(() => setNoteFeedback({}), 2000);
+      return;
+    }
     if (selectedVerses.length === 0) {
-      setNoteFeedback({ type: 'error', msg: 'No verses selected' });
+      setNoteFeedback({ type: 'error', msg: 'No verses to reference' });
       setTimeout(() => setNoteFeedback({}), 2000);
       return;
     }
